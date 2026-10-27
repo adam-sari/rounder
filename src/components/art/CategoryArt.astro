@@ -1,0 +1,80 @@
+---
+// Hand-drawn category spot illustrations. Each kind is a flat color shape
+// (printed off-register) under a wobbly ink line drawing.
+import type { CategoryId } from '@/tools/categories';
+
+export type ArtKind = CategoryId;
+
+interface Props {
+  kind: ArtKind;
+  spot?: string;
+  ink?: string;
+  size?: number | string;
+  rough?: boolean;
+  class?: string;
+}
+
+const { kind, spot = '#F4B63F', ink = 'currentColor', size = 96, rough = true, class: className } = Astro.props;
+const id = `art-${kind}-${Math.random().toString(36).slice(2, 8)}`;
+
+// [fill shapes, ink strokes] per kind, in a 120x120 box
+const art: Record<ArtKind, { fill: string; ink: string; dots?: [number, number, number][] }> = {
+  video: {
+    fill: 'M26 48h56v42H26z M86 62l20-10v34l-20-10z',
+    ink: 'M20 44h58a4 4 0 0 1 4 4v38a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4V48a4 4 0 0 1 4-4z M82 60l20-11v36l-20-11 M36 30m-12 0a12 12 0 1 0 24 0a12 12 0 1 0-24 0 M64 30m-12 0a12 12 0 1 0 24 0a12 12 0 1 0-24 0',
+  },
+  audio: {
+    fill: 'M22 66h18v32H22z M86 66h18v32H86z',
+    ink: 'M24 74c0-30 16-48 36-48s36 18 36 48 M18 62h18a2 2 0 0 1 2 2v30a2 2 0 0 1-2 2H18z M84 62h18v34H84a2 2 0 0 1-2-2V64a2 2 0 0 1 2-2z M50 60v14M58 54v26M66 62v10',
+  },
+  image: {
+    fill: 'M26 88l26-30 16 16 12-12 18 26z M86 42m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0',
+    ink: 'M18 24h84a4 4 0 0 1 4 4v64a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V28a4 4 0 0 1 4-4z M22 88l26-30 16 16 12-12 22 26 M80 40m-8 0a8 8 0 1 0 16 0a8 8 0 1 0-16 0',
+  },
+  pdf: {
+    fill: 'M38 20h40l18 18v66H38z',
+    ink: 'M30 14h42l20 20v72H30z M72 14v20h20 M42 52h36M42 64h36M42 76h24',
+  },
+  ai: {
+    fill: 'M58 28c4 20 10 26 30 30-20 4-26 10-30 30-4-20-10-26-30-30 20-4 26-10 30-30z',
+    ink: 'M54 24c4 20 10 26 30 30-20 4-26 10-30 30-4-20-10-26-30-30 20-4 26-10 30-30z M92 18c2 8 4 10 12 12-8 2-10 4-12 12-2-8-4-10-12-12 8-2 10-4 12-12z M90 84c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z',
+  },
+  text: {
+    fill: 'M24 92L44 34h10l20 58z',
+    ink: 'M18 88L40 28h8l22 60 M28 66h30 M86 56c10-6 22-2 22 10v22 M108 70c-6-4-24-4-24 8 0 10 16 12 24 2',
+  },
+  dev: {
+    fill: 'M30 30h66v62H30z',
+    ink: 'M44 38L20 60l24 22 M76 38l24 22-24 22 M66 30L54 90',
+  },
+  everyday: {
+    fill: 'M38 18h52v86H38z',
+    ink: 'M34 14h48a6 6 0 0 1 6 6v80a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z M38 24h40v18H38z',
+    dots: [[42, 56, 4], [58, 56, 4], [74, 56, 4], [42, 72, 4], [58, 72, 4], [74, 72, 4], [42, 88, 4], [58, 88, 4], [74, 88, 4]],
+  },
+  files: {
+    fill: 'M22 42h36l8 10h40v44H22z',
+    ink: 'M14 36h34l8 10h46v50H14z M14 56h88 M52 72h16v14H52z M56 72v-4a4 4 0 0 1 8 0v4',
+  },
+  creator: {
+    fill: 'M44 18h40v88H44z',
+    ink: 'M42 12h36a6 6 0 0 1 6 6v84a6 6 0 0 1-6 6H42a6 6 0 0 1-6-6V18a6 6 0 0 1 6-6z M54 46l18 12-18 12z M54 98h12',
+  },
+};
+
+const a = art[kind];
+---
+
+<svg class={className} width={size} height={size} viewBox="0 0 120 120" fill="none" aria-hidden="true">
+  <defs>
+    <filter id={id} x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" />
+      <feDisplacementMap in="SourceGraphic" scale={rough ? 2.6 : 0} />
+    </filter>
+  </defs>
+  <path d={a.fill} fill={spot} transform="translate(5 5)" />
+  <g filter={`url(#${id})`} stroke={ink} stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d={a.ink} />
+    {a.dots?.map(([cx, cy, r]) => <circle cx={cx} cy={cy} r={r} fill={ink} stroke="none" />)}
+  </g>
+</svg>

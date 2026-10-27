@@ -1,0 +1,22 @@
+---
+import CategoryArt from '@/components/art/CategoryArt.astro';
+import type { Tool } from '@/tools/registry';
+
+interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+---
+
+<a
+  href={`/${tool.slug}`}
+  class="group card flex gap-4 p-4 no-underline transition-[border-color,transform] duration-300 ease-spring hover:-translate-y-0.5 hover:border-(--spot)"
+  style={`--spot: var(--color-${tool.category})`}
+>
+  <CategoryArt kind={tool.category} spot={`var(--color-${tool.category})`} ink="var(--color-chalk)" size={40} rough={false} class="shrink-0" />
+  <span class="min-w-0">
+    <span class="block font-serif text-[22px] leading-tight">{tool.name}</span>
+    <span class="mt-1 block text-sm text-muted">{tool.tagline}</span>
+  </span>
+</a>

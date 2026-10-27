@@ -1,0 +1,13 @@
+---
+// Dev-only bench for the AI engine. Not linked anywhere; noindex.
+import Base from '@/layouts/Base.astro';
+import AiLab from '@/engines/ai/lab/AiLab.svelte';
+---
+
+<Base title="AI lab" description="Internal test bench for the in-browser AI engine." noindex>
+  <div class="wrap">
+    <h1 class="mt-10 text-[clamp(40px,6vw,72px)] leading-none">AI <em>lab</em></h1>
+    <p class="mono mt-3">device · vendored runtimes · transformers.js in a worker · raw ORT session · model cache</p>
+    <AiLab client:only="svelte" />
+  </div>
+</Base>

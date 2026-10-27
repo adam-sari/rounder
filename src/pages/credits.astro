@@ -1,0 +1,103 @@
+---
+import Prose from '@/layouts/Prose.astro';
+
+// Open-source software that does the heavy lifting in our tools. Copyleft components (LGPL, MPL, GPL) are
+// loaded as separate, unmodified modules; their source is linked here as their licenses ask.
+const libraries: { name: string; use: string; license: string; url: string }[] = [
+  { name: 'Astro', use: 'site framework', license: 'MIT', url: 'https://github.com/withastro/astro' },
+  { name: 'Svelte', use: 'interactive tools', license: 'MIT', url: 'https://github.com/sveltejs/svelte' },
+  { name: 'jSquash (MozJPEG, OxiPNG, libwebp, libavif)', use: 'image encoding', license: 'Apache-2.0 / BSD', url: 'https://github.com/jamsinclair/jSquash' },
+  { name: 'heic-to (libheif)', use: 'HEIC photos', license: 'LGPL-3.0', url: 'https://github.com/hoppergee/heic-to' },
+  { name: 'exifr', use: 'photo metadata', license: 'MIT', url: 'https://github.com/MikeKovarik/exifr' },
+  { name: 'gifenc', use: 'GIFs and color reduction', license: 'MIT', url: 'https://github.com/mattdesl/gifenc' },
+  { name: 'imagetracerjs', use: 'image to SVG', license: 'Unlicense', url: 'https://github.com/jankovicsandras/imagetracerjs' },
+  { name: 'MediaPipe Tasks', use: 'face detection', license: 'Apache-2.0', url: 'https://github.com/google-ai-edge/mediapipe' },
+  { name: 'qr-code-styling', use: 'QR codes', license: 'MIT', url: 'https://github.com/kozakdenys/qr-code-styling' },
+  { name: 'pdf-lib', use: 'creating and editing PDFs', license: 'MIT', url: 'https://github.com/Hopding/pdf-lib' },
+  { name: 'PDF.js', use: 'rendering PDFs', license: 'Apache-2.0', url: 'https://github.com/mozilla/pdf.js' },
+  { name: 'PDFium (via EmbedPDF)', use: 'PDF processing', license: 'MIT / BSD', url: 'https://github.com/embedpdf/embed-pdf-viewer' },
+  { name: 'qpdf (qpdf-wasm)', use: 'PDF passwords and optimization', license: 'Apache-2.0', url: 'https://github.com/qpdf/qpdf' },
+  { name: 'Mediabunny', use: 'video and audio conversion', license: 'MPL-2.0', url: 'https://github.com/Vanilagy/mediabunny' },
+  { name: 'ffmpeg.wasm', use: 'fallback for unusual video formats', license: 'MIT (wrapper) / GPL-2.0+ (core)', url: 'https://github.com/ffmpegwasm/ffmpeg.wasm' },
+  { name: 'libarchive.js', use: 'ZIP, RAR and 7z extraction', license: 'MIT (libarchive: BSD)', url: 'https://github.com/nika-begiashvili/libarchivejs' },
+  { name: 'fflate', use: 'zip files', license: 'MIT', url: 'https://github.com/101arrowz/fflate' },
+  { name: 'zxing-wasm', use: 'QR and barcode scanning', license: 'MIT (ZXing-C++: Apache-2.0)', url: 'https://github.com/Sec-ant/zxing-wasm' },
+  { name: 'JsBarcode', use: 'barcodes', license: 'MIT', url: 'https://github.com/lindell/JsBarcode' },
+  { name: 'marked + DOMPurify', use: 'Markdown', license: 'MIT / Apache-2.0', url: 'https://github.com/markedjs/marked' },
+  { name: 'jsdiff', use: 'text comparison', license: 'BSD-3-Clause', url: 'https://github.com/kpdecker/jsdiff' },
+  { name: 'sql-formatter', use: 'SQL formatting', license: 'MIT', url: 'https://github.com/sql-formatter-org/sql-formatter' },
+  { name: 'Terser and CSSO', use: 'code minification', license: 'BSD-2-Clause / MIT', url: 'https://github.com/terser/terser' },
+  { name: 'Papa Parse', use: 'CSV files', license: 'MIT', url: 'https://github.com/mholt/PapaParse' },
+  { name: 'cRonstrue', use: 'cron descriptions', license: 'MIT', url: 'https://github.com/bradymholt/cRonstrue' },
+  { name: 'zxcvbn-ts', use: 'password strength', license: 'MIT', url: 'https://github.com/zxcvbn-ts/zxcvbn' },
+  { name: 'Comlink', use: 'background workers', license: 'Apache-2.0', url: 'https://github.com/GoogleChromeLabs/comlink' },
+  { name: 'Transformers.js', use: 'running AI models', license: 'Apache-2.0', url: 'https://github.com/huggingface/transformers.js' },
+  { name: 'ONNX Runtime Web', use: 'running AI models', license: 'MIT', url: 'https://github.com/microsoft/onnxruntime' },
+  { name: 'Tesseract.js', use: 'text recognition (OCR)', license: 'Apache-2.0', url: 'https://github.com/naptha/tesseract.js' },
+  { name: 'kokoro-js', use: 'text to speech', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro' },
+  { name: 'eSpeak NG (via phonemizer)', use: 'pronunciation for text to speech', license: 'GPL-3.0', url: 'https://github.com/espeak-ng/espeak-ng' },
+  { name: 'demucs-web', use: 'vocal and stem separation', license: 'MIT', url: 'https://github.com/timcsy/demucs-web' },
+];
+
+// model weights, downloaded on first use; each keeps its upstream license
+const models: { name: string; use: string; license: string; url: string }[] = [
+  { name: 'BiRefNet', use: 'background remover', license: 'MIT', url: 'https://github.com/ZhengPeng7/BiRefNet' },
+  { name: 'MODNet', use: 'background remover, fast mode', license: 'Apache-2.0', url: 'https://github.com/ZHKKKe/MODNet' },
+  { name: 'Swin2SR', use: 'image upscaler', license: 'Apache-2.0', url: 'https://github.com/mv-lab/swin2sr' },
+  { name: 'MI-GAN', use: 'object remover', license: 'MIT', url: 'https://github.com/Picsart-AI-Research/MI-GAN' },
+  { name: 'LaMa', use: 'object remover, high quality', license: 'Apache-2.0', url: 'https://github.com/advimman/lama' },
+  { name: 'Whisper (OpenAI)', use: 'transcription and subtitles', license: 'MIT', url: 'https://github.com/openai/whisper' },
+  { name: 'Demucs (Meta)', use: 'vocal remover', license: 'MIT', url: 'https://github.com/facebookresearch/demucs' },
+  { name: 'Kokoro-82M', use: 'text to speech', license: 'Apache-2.0', url: 'https://huggingface.co/hexgrad/Kokoro-82M' },
+  { name: 'OPUS-MT (University of Helsinki)', use: 'translator fallback', license: 'CC-BY-4.0', url: 'https://github.com/Helsinki-NLP/Opus-MT' },
+  { name: 'Qwen', use: 'summarizer and rewriter fallback', license: 'Apache-2.0', url: 'https://github.com/QwenLM' },
+  { name: 'DDColor', use: 'photo colorizer', license: 'Apache-2.0', url: 'https://github.com/piddnad/DDColor' },
+  { name: 'Florence-2 (Microsoft)', use: 'captions and alt text', license: 'MIT', url: 'https://huggingface.co/microsoft/Florence-2-base-ft' },
+  { name: 'Depth Anything V2 Small', use: 'depth maps', license: 'Apache-2.0', url: 'https://github.com/DepthAnything/Depth-Anything-V2' },
+  { name: 'MediaPipe face detection and selfie segmentation', use: 'blur faces, video backgrounds, auto reframe', license: 'Apache-2.0', url: 'https://github.com/google-ai-edge/mediapipe' },
+  { name: 'RNNoise', use: 'noise reduction', license: 'BSD-3-Clause', url: 'https://github.com/xiph/rnnoise' },
+];
+
+const fonts = ['Instrument Serif', 'Geist and Geist Mono', 'Noto Sans (PDF text)', 'handwriting and display fonts used in the signature and thumbnail tools'];
+---
+
+<Prose
+  title="Credits and open-source licenses"
+  description="The open-source software, fonts and models that power Rounder's free tools, with their licenses."
+  heading="Credits"
+  updated="October 2026"
+>
+  <p>
+    Rounder stands on the shoulders of open-source projects. Thank you to everyone who builds and maintains them. Each
+    component is used under its license, linked below.
+  </p>
+
+  <h2>Software</h2>
+  <ul>
+    {libraries.map((l) => (
+      <li>
+        <a href={l.url} rel="noopener">{l.name}</a>: {l.use} <span class="mono">({l.license})</span>
+      </li>
+    ))}
+  </ul>
+
+  <h2>AI models</h2>
+  <p>AI tools download these models the first time you use them, and then run them on your device. Thank you to the researchers who released them openly.</p>
+  <ul>
+    {models.map((m) => (
+      <li>
+        <a href={m.url} rel="noopener">{m.name}</a>: {m.use} <span class="mono">({m.license})</span>
+      </li>
+    ))}
+  </ul>
+
+  <h2>Fonts</h2>
+  <p>All fonts are used under the SIL Open Font License or Apache-2.0: {fonts.join(', ')}.</p>
+
+  <h2>Copyleft components</h2>
+  <p>
+    libheif (via heic-to) is licensed under the LGPL, Mediabunny under the MPL, and the ffmpeg core and eSpeak NG under the GPL. We use them
+    unmodified, as separate modules that your browser loads on demand, and their full source code is available at the links
+    above.
+  </p>
+</Prose>

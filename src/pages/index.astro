@@ -1,0 +1,242 @@
+---
+import Base from '@/layouts/Base.astro';
+import Mascot from '@/components/art/Mascot.astro';
+import CategoryArt from '@/components/art/CategoryArt.astro';
+import { categories, categoryPath } from '@/tools/categories';
+import { tools, toolsIn } from '@/tools/registry';
+
+const promises = ['No uploads', 'No sign-ups', 'No watermarks', 'No daily limits', 'No "premium" wall'];
+const bySlug = (slugs: string[]) => slugs.map((s) => tools.find((t) => t.slug === s)).filter((t) => t !== undefined);
+const popular = bySlug(['background-remover', 'compress-pdf', 'heic-to-jpg', 'video-compressor', 'merge-pdf', 'qr-code-generator']).slice(0, 4);
+// the headline flagships, in this order; any others follow as chips
+const featured = bySlug([
+  'background-remover', 'compress-pdf', 'video-compressor', 'audio-to-text', 'sign-pdf', 'vocal-remover',
+  'image-upscaler', 'screen-recorder', 'heic-to-jpg', 'passport-photo-maker', 'redact-pdf', 'object-remover',
+]).filter((t) => t.flagship).slice(0, 9);
+const moreFlagships = bySlug([
+  'merge-pdf', 'edit-pdf', 'fill-pdf-form', 'compare-pdf', 'image-compressor', 'png-to-svg', 'audio-noise-reduction',
+  'merge-videos', 'add-subtitles-to-video', 'slideshow-maker', 'invoice-generator', 'meme-generator', 'qr-code-generator',
+  'text-to-speech', 'subtitle-generator', 'ocr-pdf', 'photo-colorizer',
+]).filter((t) => t.flagship && !featured.includes(t));
+const toolCount = tools.filter((t) => !t.variantOf).length;
+const liveCategories = categories.filter((c) => toolsIn(c.id).length > 0);
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Rounder',
+    url: Astro.site?.href,
+    description: 'Free online tools that run in your browser. No uploads, no sign-ups, no watermarks.',
+  },
+];
+---
+
+<Base
+  title="Rounder: free online tools, no uploads, no sign-ups"
+  description={`${toolCount} free tools for video, images, PDFs, text and more. Everything runs in your browser, so your files never leave your device. No sign-ups, no watermarks.`}
+  schema={schema}
+>
+  <section class="wrap grid items-center gap-10 pt-[clamp(32px,7vw,96px)] pb-16 md:grid-cols-[1.3fr_0.7fr]">
+    <div>
+      <p class="mono mb-4">[ a workshop of {toolCount} free tools ]</p>
+      <h1 class="text-[clamp(56px,9vw,128px)] leading-[0.9]">Small tools,<br /><em>done properly.</em></h1>
+      <p class="mt-6 mb-7 max-w-[30em] text-[clamp(17px,1.4vw,19px)] text-soft">
+        No uploads, no sign-ups, no watermarks, no “premium” wall halfway through. Just the tool, running on your machine.
+      </p>
+      <div class="hero-palette max-w-[520px] overflow-hidden rounded-2xl border border-line-2 bg-[#1c1b19]">
+        <button type="button" data-open-palette class="flex w-full cursor-text items-center gap-3 border-b border-line px-[18px] py-4 text-left text-lg text-muted">
+          <span class="mono">›</span> What do you need to do?<span class="caret"></span>
+          <kbd class="mono ml-auto">⌘K</kbd>
+        </button>
+        <ul class="p-1.5">
+          {popular.map((t) => (
+            <li>
+              <a href={`/${t.slug}`} class="grid grid-cols-[26px_1fr_auto] items-center gap-3 rounded-[10px] px-3 py-2 no-underline hover:bg-[#f2ede414]">
+                <CategoryArt kind={t.category} spot={`var(--color-${t.category})`} ink="var(--color-chalk)" size={26} rough={false} />
+                <span>{t.name}</span>
+                <span class="mono">{t.category}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    <div class="relative order-first mx-auto w-full max-w-[200px] md:order-none md:max-w-[360px]">
+      <Mascot size="100%" spot="var(--color-sun)" cheek="var(--color-video)" ink="var(--color-chalk)" face="var(--color-bg)" class="roundy" />
+      <p class="note hidden md:block">← that's Roundy.<br />he does the work locally.</p>
+    </div>
+  </section>
+
+  <div class="ticker mono" role="img" aria-label={promises.join(', ')}>
+    {[0, 1].map(() => <ul aria-hidden="true">{[...promises, ...promises].map((p) => <li>✦ {p}</li>)}</ul>)}
+  </div>
+
+  <section class="wrap">
+    <h2 class="mt-24 mb-6 flex items-baseline gap-3.5 text-[clamp(34px,4vw,54px)]"><span class="mono">01</span> The pegboard</h2>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      {liveCategories.map((c) => (
+        <a href={categoryPath(c.id)} class="peg card relative grid justify-items-center px-3.5 pt-8 pb-5 text-center no-underline" style={`--spot:${c.spot}`}>
+          <span class="hook" aria-hidden="true"></span>
+          <CategoryArt kind={c.id} spot={c.spot} ink="var(--color-chalk)" size={76} />
+          <span class="mt-3 font-serif text-[26px] leading-none">{c.name}</span>
+          <span class="mono mt-1">{toolsIn(c.id).length} tools</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  {featured.length >= 3 && (
+    <section class="wrap">
+      <h2 class="mt-24 mb-6 flex items-baseline gap-3.5 text-[clamp(34px,4vw,54px)]"><span class="mono">02</span> What others charge for</h2>
+      <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+        {featured.map((t) => (
+          <a href={`/${t.slug}`} class="card border-t-[3px] p-5 no-underline" style={`border-top-color: var(--color-${t.category})`}>
+            <CategoryArt kind={t.category} spot={`var(--color-${t.category})`} ink="var(--color-chalk)" size={52} />
+            <span class="mt-3 block font-serif text-[28px] leading-tight">{t.name}</span>
+            <span class="mono mt-2 block line-through">elsewhere: {t.flagship!.elsewhere}</span>
+            <span class="mt-1.5 block text-ok">{t.flagship!.here}</span>
+          </a>
+        ))}
+      </div>
+      {moreFlagships.length > 0 && (
+        <p class="mt-6 flex flex-wrap items-baseline gap-2">
+          <span class="mono mr-1">also free here:</span>
+          {moreFlagships.map((t) => <a href={`/${t.slug}`} class="chip">{t.name}</a>)}
+        </p>
+      )}
+    </section>
+  )}
+
+  <section class="wrap" id="tools">
+    <h2 class="mt-24 mb-6 flex items-baseline gap-3.5 text-[clamp(34px,4vw,54px)]"><span class="mono">0{featured.length >= 3 ? 3 : 2}</span> Every tool</h2>
+    <div class="index">
+      {liveCategories.map((c) => (
+        <section class="index-group" style={`--spot:${c.spot}`}>
+          <h3 class="mb-2 flex items-baseline gap-3 border-b border-line-2 pb-2 text-[28px]">
+            <a href={categoryPath(c.id)} class="no-underline hover:text-sun">{c.name}</a>
+            <span class="mono ml-auto">{toolsIn(c.id).length}</span>
+          </h3>
+          <ul>
+            {toolsIn(c.id).map((t) => (
+              <li>
+                <a href={`/${t.slug}`} title={t.tagline}>{t.name}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero-palette {
+    box-shadow: 0 30px 80px -30px #000, 0 0 0 6px #f2ede40a;
+  }
+  .caret {
+    width: 2px;
+    height: 22px;
+    margin-left: -6px;
+    background: var(--color-sun);
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  :global(.roundy) {
+    animation: bob 5s ease-in-out infinite;
+  }
+  @keyframes bob {
+    50% { transform: translateY(-8px) rotate(-2deg); }
+  }
+  .note {
+    position: absolute;
+    right: -10px;
+    bottom: 10px;
+    margin: 0;
+    font: italic 20px/1.1 var(--font-serif);
+    color: var(--color-sun);
+    transform: rotate(-6deg);
+  }
+  .ticker {
+    display: flex;
+    overflow: hidden;
+    padding: 14px 0;
+    white-space: nowrap;
+    border-block: 1px solid var(--color-line-2);
+  }
+  .ticker ul {
+    display: flex;
+    flex: none;
+    gap: 40px;
+    margin: 0;
+    padding: 0 20px;
+    list-style: none;
+    animation: slide 30s linear infinite;
+  }
+  .ticker li {
+    color: var(--color-chalk);
+  }
+  @keyframes slide {
+    to { transform: translateX(-100%); }
+  }
+  .chip {
+    padding: 4px 12px;
+    font-size: 14px;
+    color: var(--color-soft);
+    text-decoration: none;
+    border: 1px solid var(--color-line-2);
+    border-radius: 99px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .chip:hover {
+    color: var(--color-chalk);
+    border-color: var(--color-sun);
+  }
+  .index {
+    columns: 300px 3;
+    column-gap: 40px;
+  }
+  .index-group {
+    break-inside: avoid;
+    margin-bottom: 36px;
+  }
+  .index-group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .index-group li {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 3px 0;
+  }
+  .index-group li a {
+    color: var(--color-soft);
+    text-decoration: none;
+    background: linear-gradient(var(--spot), var(--spot)) 0 100% / 0 1px no-repeat;
+    transition: color 0.2s, background-size 0.3s;
+  }
+  .index-group li a:hover {
+    color: var(--color-chalk);
+    background-size: 100% 1px;
+  }
+  .peg {
+    transform-origin: 50% 0;
+    transition: transform 0.5s cubic-bezier(0.3, 1.8, 0.4, 1), border-color 0.2s;
+  }
+  .peg:hover {
+    transform: rotate(-3deg);
+    border-color: var(--spot);
+  }
+  .hook {
+    position: absolute;
+    top: 10px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--color-muted);
+    border-radius: 50%;
+  }
+</style>

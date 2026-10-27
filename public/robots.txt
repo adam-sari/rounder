@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://roundertools.com/sitemap-index.xml

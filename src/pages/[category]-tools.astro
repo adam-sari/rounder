@@ -1,0 +1,46 @@
+---
+import Base from '@/layouts/Base.astro';
+import ToolCard from '@/components/site/ToolCard.astro';
+import CategoryArt from '@/components/art/CategoryArt.astro';
+import { categories, categoryPath, type Category } from '@/tools/categories';
+import { toolsIn } from '@/tools/registry';
+
+export function getStaticPaths() {
+  return categories
+    .filter((category) => toolsIn(category.id).length > 0)
+    .map((category) => ({ params: { category: category.id }, props: { category } }));
+}
+
+const { category } = Astro.props as { category: Category };
+const list = toolsIn(category.id);
+const url = new URL(categoryPath(category.id), Astro.site).href;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `Free ${category.name} tools`,
+    url,
+    description: category.intro,
+    hasPart: list.map((t) => ({ '@type': 'WebApplication', name: t.name, url: new URL(`/${t.slug}`, Astro.site).href })),
+  },
+];
+---
+
+<Base title={`Free ${category.name} tools: no uploads, no sign-ups`} description={category.intro} schema={schema} ogImage={`/og/${category.id}-tools.png`}>
+  <div class="wrap">
+    <nav class="mono mt-6" aria-label="Breadcrumb">
+      <a href="/" class="no-underline hover:text-chalk">index</a> / <span class="text-chalk">{category.id}</span>
+    </nav>
+    <header class="mt-6 flex flex-wrap items-center gap-6">
+      <CategoryArt kind={category.id} spot={category.spot} ink="var(--color-chalk)" size={110} />
+      <div class="max-w-2xl">
+        <h1 class="text-[clamp(48px,7vw,96px)] leading-[0.92]">{category.name} <em>tools</em></h1>
+        <p class="mt-3 text-lg text-soft">{category.intro}</p>
+      </div>
+    </header>
+    <div class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {list.map((t) => <ToolCard tool={t} />)}
+    </div>
+  </div>
+</Base>

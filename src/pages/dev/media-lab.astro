@@ -1,0 +1,13 @@
+---
+// Dev-only bench for the media engine. Not linked anywhere; noindex.
+import Base from '@/layouts/Base.astro';
+import MediaLab from '@/engines/media/lab/MediaLab.svelte';
+---
+
+<Base title="Media lab" description="Internal test bench for the video and audio engine." noindex>
+  <div class="wrap">
+    <h1 class="mt-10 text-[clamp(40px,6vw,72px)] leading-none">Media <em>lab</em></h1>
+    <p class="mono mt-3">probe · transcode · trim · frames · audio · gif · concat · slideshow · ffmpeg fallback</p>
+    <MediaLab client:only="svelte" />
+  </div>
+</Base>

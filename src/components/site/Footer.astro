@@ -1,0 +1,30 @@
+---
+import { categories, categoryPath } from '@/tools/categories';
+---
+
+<footer class="wrap mt-32 pb-16">
+  <div class="grid gap-10 border-t border-line-2 pt-10 md:grid-cols-[1.4fr_1fr_1fr]">
+    <div>
+      <p class="font-serif text-4xl leading-none">rounder</p>
+      <p class="mt-3 max-w-sm text-soft">
+        Small tools, done properly. Free, no sign-ups, and your files never leave your device. Kept free by a few polite ads.
+      </p>
+    </div>
+    <nav aria-label="Categories">
+      <p class="mono mb-3">categories</p>
+      <ul class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-soft">
+        {categories.map((c) => <li><a href={categoryPath(c.id)} class="no-underline hover:text-chalk">{c.name}</a></li>)}
+      </ul>
+    </nav>
+    <nav aria-label="About">
+      <p class="mono mb-3">about</p>
+      <ul class="grid gap-1.5 text-soft">
+        <li><a href="/why-free" class="no-underline hover:text-chalk">Why it's free</a></li>
+        <li><a href="/privacy" class="no-underline hover:text-chalk">Privacy</a></li>
+        <li><a href="/terms" class="no-underline hover:text-chalk">Terms</a></li>
+        <li><a href="/credits" class="no-underline hover:text-chalk">Credits</a></li>
+      </ul>
+    </nav>
+  </div>
+  <p class="mono mt-10">© {new Date().getFullYear()} rounder · roundertools.com</p>
+</footer>

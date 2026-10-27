@@ -1,0 +1,17 @@
+---
+import Base from '@/layouts/Base.astro';
+import Mascot from '@/components/art/Mascot.astro';
+---
+
+<Base title="You're offline" description="This page isn't saved for offline use yet." noindex>
+  <section class="wrap grid justify-items-center py-24 text-center">
+    <Mascot size={180} spot="var(--color-muted)" ink="var(--color-chalk)" face="var(--color-bg)" />
+    <h1 class="mt-6 text-[clamp(48px,8vw,96px)] leading-none">Off the <em>grid.</em></h1>
+    <p class="mt-4 max-w-md text-soft">
+      You're offline and this page hasn't been saved yet. Tools you've opened before still work without a connection.
+    </p>
+    <div class="mt-8 flex gap-3">
+      <a href="/" class="btn btn-primary">Back to the index</a>
+    </div>
+  </section>
+</Base>

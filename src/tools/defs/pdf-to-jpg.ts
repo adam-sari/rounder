@@ -1,0 +1,55 @@
+import { filePrivacyFaq, type Tool } from '../types';
+
+export default [
+  {
+    slug: 'pdf-to-jpg',
+    category: 'pdf',
+    name: 'PDF to JPG',
+    title: 'PDF to JPG Converter: every page as an image, free',
+    h1: 'PDF to *JPG*',
+    description: 'Turn PDF pages into JPG, PNG or WebP images at 72, 150, 300 dpi or any size. Pick pages, download a zip. No upload, no page limits.',
+    tagline: 'Save every page, or just the ones you pick, as sharp images.',
+    keywords: ['pdf to jpg', 'pdf to jpeg', 'convert pdf to image', 'pdf to image', 'save pdf page as jpg', 'pdf to jpg high quality', 'pdf to jpg 300 dpi', 'extract pdf pages as images'],
+    island: 'PdfToImage',
+    props: { format: 'jpeg' },
+    steps: [
+      'Drop in a PDF. Password-protected files ask for their password first.',
+      'Convert all pages or pick some, then choose the format and resolution: 150 dpi suits screens, 300 dpi suits print.',
+      'Download a single image, or all pages at once as a zip.',
+    ],
+    faq: [
+      { q: 'Which resolution should I choose?', a: '72 dpi matches the page\'s size on screen and makes the smallest files. 150 dpi is sharp on most screens and fine for sharing. 300 dpi is print quality, but the images are four times the pixels of 150 dpi.' },
+      { q: 'Why was a page made at a lower dpi than I chose?', a: 'Browsers can only draw images up to a certain size. Very large pages, like posters or architectural drawings, can pass that limit at high dpi, so those pages are drawn at the highest resolution that fits, and the tool tells you when that happens.' },
+      { q: 'JPG, PNG or WebP?', a: 'JPG gives small files for scanned pages and photos. PNG is lossless, which keeps text and line art perfectly crisp at the cost of larger files. WebP is usually smaller than JPG at the same quality and opens in every modern browser.' },
+      { q: 'Is there a page limit?', a: 'No. Pages are converted one at a time on your device, so a 300-page PDF works too. It just takes longer, and you can cancel and keep the pages already done.' },
+      filePrivacyFaq,
+    ],
+    related: ['jpg-to-pdf', 'extract-images-from-pdf', 'split-pdf', 'compress-pdf'],
+    flagship: { elsewhere: 'Daily task limits and upload size caps', here: 'Any number of pages, up to 1200 dpi' },
+  },
+  {
+    slug: 'pdf-to-png',
+    category: 'pdf',
+    name: 'PDF to PNG',
+    title: 'PDF to PNG Converter: crisp, lossless page images, free',
+    h1: 'PDF to *PNG*',
+    description: 'Convert PDF pages to lossless PNG images at any dpi, with an optional transparent background. Pick pages, download a zip. Nothing is uploaded.',
+    tagline: 'Lossless PNG images of your PDF pages, with crisp text and lines.',
+    keywords: ['pdf to png', 'convert pdf to png', 'pdf to png high resolution', 'pdf page to png', 'pdf to png transparent', 'pdf to png converter', 'save pdf as png'],
+    island: 'PdfToImage',
+    props: { format: 'png' },
+    variantOf: 'pdf-to-jpg',
+    steps: [
+      'Drop in a PDF. Password-protected files ask for their password first.',
+      'Convert all pages or pick some, then set the resolution. Turn on a transparent background if you need one.',
+      'Download a single PNG, or all pages at once as a zip.',
+    ],
+    faq: [
+      { q: 'PDF to PNG or PDF to JPG?', a: 'PNG is lossless, so text, diagrams and line art stay perfectly sharp with no smudging. JPG files are much smaller and fine for scanned pages and photos.' },
+      { q: 'Can the background be transparent?', a: 'Yes. Turn on "Transparent background" and anything the page doesn\'t paint stays see-through. Some PDFs paint a white rectangle behind everything, and that stays white.' },
+      { q: 'Why are the PNG files large?', a: 'PNG stores every pixel exactly. At 300 dpi a letter-size page is about 2550 × 3300 pixels, so files of a few megabytes are normal. At 150 dpi each image has a quarter as many pixels.' },
+      filePrivacyFaq,
+    ],
+    related: ['jpg-to-pdf', 'extract-images-from-pdf', 'split-pdf'],
+  },
+] satisfies Tool[];

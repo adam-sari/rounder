@@ -1,0 +1,74 @@
+---
+// Roundy, the Rounder mascot: a round little helper drawn riso-style
+// (a flat color blob printed slightly off-register under an ink outline).
+interface Props {
+  size?: number | string;
+  spot?: string;
+  cheek?: string;
+  ink?: string;
+  /** eyes and smile; defaults to ink, override when ink is light (dark themes) */
+  face?: string;
+  rough?: boolean;
+  class?: string;
+}
+
+const {
+  size = 220,
+  spot = 'var(--spot-1, #F4B63F)',
+  cheek = 'var(--cheek, #F2654A)',
+  ink = 'currentColor',
+  face = ink,
+  rough = true,
+  class: className,
+} = Astro.props;
+
+const id = `roundy-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 220 220"
+  fill="none"
+  role="img"
+  aria-label="Roundy, the Rounder mascot, waving and holding a wrench"
+>
+  <defs>
+    <filter id={id} x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" />
+      <feDisplacementMap in="SourceGraphic" scale={rough ? 3.2 : 0} />
+    </filter>
+  </defs>
+
+  <ellipse cx="110" cy="200" rx="56" ry="7" fill={ink} opacity="0.12" />
+
+  <!-- color layer, nudged off-register -->
+  <g>
+    <circle cx="117" cy="113" r="64" fill={spot} />
+    <ellipse cx="76" cy="122" rx="10" ry="6" fill={cheek} opacity="0.75" />
+    <ellipse cx="144" cy="122" rx="10" ry="6" fill={cheek} opacity="0.75" />
+  </g>
+
+  <!-- ink layer -->
+  <g filter={`url(#${id})`} stroke={ink} stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="110" cy="108" r="64" />
+    <!-- tuft -->
+    <path d="M108 44c-8-12-2-24 9-22 9 2 7 13-1 14" />
+    <!-- waving arm -->
+    <path d="M50 112c-16-6-22-22-16-38" />
+    <path d="M28 68c2-6 8-8 12-4M36 62c4-4 10-3 11 2" />
+    <!-- arm holding wrench -->
+    <path d="M171 120c12 2 20-4 22-14" />
+    <path d="M193 106l7-26" />
+    <path d="M196 80c-7-3-9-12-4-17l4 7 7-1 1-8c6 3 7 12 2 17" />
+    <!-- legs -->
+    <path d="M92 171c-2 12-8 18-16 20M128 171c2 12 8 18 16 20" />
+  </g>
+  <!-- face, separate so it stays dark on the color blob -->
+  <g filter={`url(#${id})`} stroke={face} stroke-width="4.5" stroke-linecap="round">
+    <ellipse cx="90" cy="100" rx="4.5" ry="7" fill={face} />
+    <ellipse cx="130" cy="100" rx="4.5" ry="7" fill={face} />
+    <path d="M97 121c7 9 19 9 26 0" />
+  </g>
+</svg>

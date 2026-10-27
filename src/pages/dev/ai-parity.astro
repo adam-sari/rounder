@@ -1,0 +1,13 @@
+---
+// Dev-only WebGPU vs CPU parity check for every AI model. Not linked anywhere; noindex.
+import Base from '@/layouts/Base.astro';
+import AiParity from '@/engines/ai/lab/AiParity.svelte';
+---
+
+<Base title="AI parity" description="Internal check that every AI model gives the same result on the graphics card as on the processor." noindex>
+  <div class="wrap">
+    <h1 class="mt-10 text-[clamp(40px,6vw,72px)] leading-none">AI <em>parity</em></h1>
+    <p class="mono mt-3">same input · CPU reference · WebGPU EP vs JSEP · Δ, cosine, pass/fail</p>
+    <AiParity client:only="svelte" />
+  </div>
+</Base>

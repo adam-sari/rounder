@@ -1,0 +1,44 @@
+---
+import Prose from '@/layouts/Prose.astro';
+---
+
+<Prose
+  title="Privacy policy"
+  description="Rounder's privacy policy. Tools run in your browser, so your files and text are never uploaded to our servers."
+  heading="Privacy"
+  updated="October 2026"
+>
+  <p><strong>Short version:</strong> the files and text you use with our tools never leave your device. We don't have accounts, so we don't hold your email, name or password.</p>
+
+  <h2>Your files and text</h2>
+  <p>
+    Every tool on Rounder processes data locally in your browser. Files you drop in, text you paste and results you generate
+    are not uploaded to or stored on our servers. Some AI tools download a model file the first time you use them, from
+    our site or from Hugging Face, a public model library. That download only goes to you; nothing about your input goes
+    the other way.
+  </p>
+
+  <h2>The few tools that go online</h2>
+  <p>A handful of tools need a little data from the internet, and they say so on the page:</p>
+  <ul>
+    <li>The <a href="/currency-converter">currency converter</a> fetches daily exchange rates from the Frankfurter API (European Central Bank reference rates). Only the request for rates is sent, never the amounts you type.</li>
+    <li>The <a href="/password-strength-checker">password strength checker</a> can check whether a password appeared in a known data breach, but only if you click to do so. It then sends the first 5 characters of the password's SHA-1 hash to Have I Been Pwned, never the password itself.</li>
+    <li>AI tools download their model the first time you run them, after asking you.</li>
+  </ul>
+
+  <h2>What your browser stores</h2>
+  <p>
+    We keep a few small things in your browser's local storage to make the site nicer, such as your recently used tools and
+    downloaded AI models. They stay on your device and you can clear them at any time in your browser settings.
+  </p>
+
+  <h2>Analytics and advertising</h2>
+  <p>
+    To keep Rounder free we may show ads and measure basic, aggregated traffic (such as how many people visit a page). Ad
+    partners may use cookies according to their own policies, and where the law requires it we will ask for your consent
+    first. Ad and analytics scripts never receive your files or tool input.
+  </p>
+
+  <h2>Contact</h2>
+  <p>Questions about privacy? Email <a href="mailto:hello@roundertools.com">hello@roundertools.com</a>.</p>
+</Prose>

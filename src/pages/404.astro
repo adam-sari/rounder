@@ -1,0 +1,16 @@
+---
+import Base from '@/layouts/Base.astro';
+import Mascot from '@/components/art/Mascot.astro';
+---
+
+<Base title="Page not found" description="This page doesn't exist." noindex>
+  <section class="wrap grid justify-items-center py-24 text-center">
+    <Mascot size={180} spot="var(--color-sun)" ink="var(--color-chalk)" face="var(--color-bg)" />
+    <h1 class="mt-6 text-[clamp(48px,8vw,96px)] leading-none">Nothing on <em>this hook.</em></h1>
+    <p class="mt-4 max-w-md text-soft">That page doesn't exist, or it moved. Try searching for the tool you need.</p>
+    <div class="mt-8 flex gap-3">
+      <button type="button" class="btn btn-primary" data-open-palette>Search tools</button>
+      <a href="/" class="btn">Back to the index</a>
+    </div>
+  </section>
+</Base>
