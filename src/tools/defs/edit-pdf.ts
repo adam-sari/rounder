@@ -34,6 +34,19 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Text', effect: 'Real PDF text in Helvetica, Times or Courier (regular or bold). Letters those fonts lack switch to a bundled Unicode sans font.' },
+      { name: 'Whiteout', effect: 'An opaque white rectangle drawn over the page. It hides what\'s under it on screen and in print, but the covered text is still in the file and can be copied out.' },
+      { name: 'Highlight', effect: 'A see-through color band drawn underneath your other additions, so it never covers them.' },
+      { name: 'Shapes, lines, arrows and pen', effect: 'Vector paths, so they stay sharp at any zoom. Hold Shift while drawing a line to snap it to 45°.' },
+      { name: 'Image', effect: 'Upright JPGs go in byte for byte; other formats are redrawn as PNG (graphics) or JPG (photos), turned the right way up.' },
+    ],
+    formats: [
+      { name: 'What changes in the file', about: 'Your additions are drawn on top of each page as new content. The original page content is wrapped and kept as it was, so its text stays selectable and searchable.' },
+      { name: 'Need text gone for good?', about: 'Use Redact PDF: it removes the text and images under the box instead of covering them.' },
+    ],
+  },
   related: ['sign-pdf', 'redact-pdf', 'fill-pdf-form', 'watermark-pdf'],
   next: ['sign-pdf', 'compress-pdf'],
   flagship: { elsewhere: 'Editing behind a subscription or a daily task limit', here: 'Every editing tool, free and unlimited' },

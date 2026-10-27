@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { decodeImage, encodeCanvas, formatInfo, toDecodable } from '@/engines/image/client';
-  import { downloadBlob } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+  import { downloadResult } from '@/tools/lib/files';
   import {
     aspects, canvasSize, cellBoxes, coverCrop, DEFAULT_VIEW, layouts, layoutsFor, MAX_PHOTOS, MAX_ZOOM, MIN_PHOTOS, panView,
     type Layout, type View,
@@ -59,6 +61,8 @@
   const current = $derived(selected === null ? undefined : byId(slots[selected]));
   const emptyCells = $derived(slots.filter((id) => id === null).length);
   const placedCount = $derived(slots.length - emptyCells);
+  // low-end devices: saving draws the full-size collage on one canvas
+  const deviceFit = $derived(placedCount ? checkDevice('collage', { width: size.w, height: size.h, count: placedCount, tip: 'Try the 1080 or 2160 size.' }) : null);
 
   const isImage = (f: File) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(f.name);
 
@@ -339,10 +343,10 @@
         full?.close();
       }
       const blob = await encodeCanvas(out, { format: fmt, quality: 90 });
-      downloadBlob(blob, `collage.${formatInfo[fmt].ext}`);
+      downloadResult(blob, `collage.${formatInfo[fmt].ext}`);
     } catch (e) {
       console.error(e);
-      notice = 'Something went wrong while saving. Try a smaller size.';
+      notice = deviceMessage('collage', e, 'Try the 1080 or 2160 size.') ?? 'Something went wrong while saving. Try a smaller size.';
     } finally {
       out.width = out.height = 0;
       exporting = false;
@@ -591,7 +595,8 @@
             <button type="button" aria-pressed={format === f} onclick={() => (format = f)}>{formatInfo[f].label}</button>
           {/each}
         </div>
-        <button type="button" class="btn btn-primary" disabled={!placedCount || exporting || decoding > 0} onclick={download}>
+        <DeviceNote verdict={deviceFit} />
+        <button type="button" class="btn btn-primary" disabled={!placedCount || exporting || decoding > 0 || deviceFit?.level === 'block'} onclick={download}>
           {exporting ? 'Saving…' : `Download ${formatInfo[format].label}`}
         </button>
         {#if emptyCells}<p class="mono">{emptyCells} empty {emptyCells === 1 ? 'cell' : 'cells'} will show the background</p>{/if}

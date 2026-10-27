@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,35 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Light', effect: 'Repacks the file with qpdf: objects go into compressed streams and every Flate stream is squeezed again at level 9. No pixel changes, so scans and photo PDFs barely shrink.' },
+      { name: 'Recommended / Strong', effect: 'Photos are scaled down to 150 dpi (Recommended) or 100 dpi (Strong) at the largest size they appear on any page, then saved as JPEG at quality 75 or 60. A photo is only replaced when the new copy is smaller.' },
+      { name: 'Custom', effect: 'Pick the resolution (50–300 dpi) and the JPEG quality (30–95) yourself.' },
+      { name: 'Target size', effect: 'Instead of a level, give a limit in KB: the tool steps down resolution and quality until the PDF fits, and says so when it can\'t. 1 KB counts as 1,000 bytes.' },
+      { name: 'Grayscale images', effect: 'Drops the color from photos only; text and vector drawings keep theirs.' },
+      { name: 'Remove metadata', effect: 'Deletes the title, author, creator software and XMP block.' },
+    ],
+    results: [
+      { input: '10-page color scan at 300 dpi, 15 MB', setting: 'Recommended', output: '3.5 MB', note: '−77%, 2.4 s' },
+      { input: '10-page color scan at 300 dpi, 15 MB', setting: 'Strong', output: '1.4 MB', note: '−91%, still readable on screen' },
+      { input: '10-page color scan at 300 dpi, 15 MB', setting: 'Light', output: '15 MB', note: '−0%: lossless can\'t shrink scanned pages' },
+      { input: '20-page report with photos and charts, 2.3 MB', setting: 'Recommended', output: '631 KB', note: '−73%, text untouched' },
+      { input: '20-page report with photos and charts, 2.3 MB', setting: 'Strong', output: '372 KB', note: '−84%' },
+      { input: '4 phone photos made into a PDF, 11 MB', setting: 'Recommended', output: '1.1 MB', note: '−91%' },
+      { input: '10-page color scan at 300 dpi, 15 MB', setting: 'Target size, under 1 MB', output: '873 KB', note: 'photos at 85 dpi, quality 45; 17.5 s' },
+      { input: '10-page color scan at 300 dpi, 15 MB', setting: 'Target size, under 500 KB', output: '333 KB', note: 'photos at 60 dpi, quality 35; the tool warns to check that small print still reads' },
+      { input: '20-page report with photos and charts, 2.3 MB', setting: 'Target size, under 200 KB', output: '248 KB, doesn\'t fit', note: 'its text, fonts and drawings alone take about 217 KB; the tool says so and suggests grayscale or splitting it' },
+      { input: '64-page library scan using JPEG 2000 and JBIG2 images, 2.5 MB', setting: 'Recommended', output: '2.4 MB', note: '−1%: those image types are already compact and left as they are' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'Scanned PDFs', about: 'Each page is one big picture, so downscaling it is where the savings are. Expect the biggest drops here.' },
+      { name: 'Digital PDFs', about: 'Text and vector drawings from Word, Google Docs or a website are already compact. Only the photos inside them shrink.' },
+      { name: 'Images left alone', about: 'JPEG 2000, JBIG2, CMYK and masked images, and anything under 10 KB, are copied as they are: re-encoding them risks more than it saves.' },
+    ],
+    limits: [LIMITS.gmail, LIMITS.yahoo, LIMITS.outlook, LIMITS.exchange],
+  },
   related: ['merge-pdf', 'protect-pdf', 'split-pdf', 'image-compressor'],
   next: ['protect-pdf', 'sign-pdf'],
   flagship: { elsewhere: 'Daily task limits and file size caps', here: 'Unlimited PDFs, no size cap' },

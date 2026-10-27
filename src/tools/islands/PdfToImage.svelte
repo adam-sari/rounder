@@ -3,7 +3,7 @@
   import PdfDrop, { type OpenedPdf } from '@/components/tool/PdfDrop.svelte';
   import PdfPageGrid from '@/components/tool/PdfPageGrid.svelte';
   import { canvasToBlob, formatPageRanges, getPageSize, isAbort, pageRefs, parsePageRanges, pdfName, renderPage, type PageRef } from '@/engines/pdf';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { DESKTOP_LIMITS, IOS_LIMITS, pageImageName, planRender, type RenderPlan, type Sizing } from '@/tools/lib/pdf-to-jpg/render';
   import { zipBlobs } from '@/tools/lib/pdf-to-jpg/zip';
 
@@ -185,10 +185,10 @@
   async function downloadAll() {
     if (!result || !pdf) return;
     const { files } = result;
-    if (files.length === 1) return downloadBlob(files[0].blob, files[0].name);
+    if (files.length === 1) return downloadResult(files[0].blob, files[0].name);
     zipping = 0;
     try {
-      downloadBlob(await zipBlobs(files, (n) => (zipping = n)), pdfName(pdf.file.name, `-${extOf(files[0])}`, 'zip'));
+      downloadResult(await zipBlobs(files, (n) => (zipping = n)), pdfName(pdf.file.name, `-${extOf(files[0])}`, 'zip'));
     } catch {
       error = "The zip couldn't be made. Try downloading the images one by one.";
     } finally {
@@ -354,7 +354,7 @@
                       <span class="block truncate text-sm">{f.name}</span>
                       <span class="mono">{f.width}×{f.height} · {formatBytes(f.blob.size)}</span>
                     </span>
-                    <button type="button" class="btn px-3! py-2!" onclick={() => downloadBlob(f.blob, f.name)} aria-label="Download {f.name}">↓</button>
+                    <button type="button" class="btn px-3! py-2!" onclick={() => downloadResult(f.blob, f.name)} aria-label="Download {f.name}">↓</button>
                   </li>
                 {/each}
               </ul>

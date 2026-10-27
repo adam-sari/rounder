@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -30,6 +31,19 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Password prompt', effect: 'Appears only for files that need a password to open. The password is checked by PDF.js on your device and handed to qpdf to decrypt.' },
+      { name: 'Restrictions only', effect: 'Files that open freely but block printing, copying or editing need no password: qpdf rewrites them without the permission flags.' },
+      { name: 'Checks first', effect: 'Each file is inspected before anything runs, and a PDF with no password or restrictions is reported as not locked instead of being copied for nothing.' },
+    ],
+    results: [{ input: '20-page report protected with AES-256, 2.2 MB', setting: 'With the password', output: 'unlocked copy, 2.2 MB', note: 'pages, text and images unchanged, 1–2 s' }],
+    measured: MEASURED,
+    formats: [
+      { name: 'What qpdf removes', about: 'The encryption dictionary and the permission flags. Content, links, bookmarks and form fields are copied over as they are.' },
+      { name: 'What it can\'t do', about: 'Recover a forgotten open password. AES-256 can\'t be bypassed, and this tool doesn\'t guess passwords.' },
+    ],
+  },
   related: ['protect-pdf', 'merge-pdf', 'compress-pdf', 'pdf-to-text'],
   next: ['edit-pdf', 'compress-pdf'],
   noAds: true,

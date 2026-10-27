@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,21 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Convert to', effect: 'MP4 with H.264, which plays on every phone, browser and app, or WebM with VP9, smaller and at home in browsers and on Android.' },
+      { name: 'Play the GIF', effect: '1×, 2×, 3× or 5× in a row, or "≥ 3 s", which repeats a short GIF until the video lasts at least 3 seconds. Most players can also loop the video themselves.' },
+      { name: 'Background', effect: 'Video has no transparency, so see-through pixels become black (default), white or a color you pick.' },
+      { name: 'Quality', effect: 'Smaller, balanced (default) or sharpest: how many bits the video gets per frame.' },
+    ],
+    results: [{ input: '5-second 480×270 GIF, 60 frames, 2.3 MB', setting: 'MP4, balanced', output: '628 KB MP4', note: '73% smaller, 0.9–1.5 s' }],
+    measured: MEASURED,
+    formats: [
+      { name: 'GIF', about: 'A 1987 image format: at most 256 colors per frame and weak compression, which is why animated GIFs get so heavy.' },
+      { name: 'MP4 and WebM', about: 'Modern video codecs: full color and much stronger compression than GIF.' },
+    ],
+    limits: [LIMITS.discord, LIMITS.gmail],
+  },
   related: ['video-to-gif', 'video-compressor', 'video-converter', 'image-compressor'],
   next: ['video-compressor'],
   flagship: { elsewhere: 'One GIF at a time, uploaded to a server', here: 'Whole batches, converted on your device' },

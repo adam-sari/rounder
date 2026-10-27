@@ -1,4 +1,5 @@
 import { decodeAudio, MediaError, probe, type StatusControl } from '@/engines/media';
+import { guard, type Verdict } from '../device-guard';
 import { SAMPLE_RATE } from './segment';
 
 /** decoded in pieces so a long film never sits in memory as 48 kHz stereo */
@@ -21,10 +22,16 @@ async function to16k(samples: Float32Array, rate: number): Promise<Float32Array>
  * Any audio or video file → 16 kHz mono samples for Whisper, plus the file's duration. Files the
  * browser can't read go through the media engine's ffmpeg.wasm fallback.
  */
-export async function decodeSpeech(file: Blob, ctl: StatusControl = {}): Promise<{ audio: Float32Array; duration: number }> {
+export async function decodeSpeech(
+  file: Blob,
+  ctl: StatusControl = {},
+  /** the low-end device check, once the length is known (it throws DeviceLimitError instead of 'block') */
+  onCheck?: (v: Verdict) => void,
+): Promise<{ audio: Float32Array; duration: number }> {
   const info = await probe(file, { signal: ctl.signal });
   if (info.readable && !info.audio) throw new MediaError('no-tracks', 'This file has no sound to transcribe.');
   const duration = info.durationSec;
+  onCheck?.(guard('transcribe', { bytes: file.size, seconds: duration > 0 ? duration : undefined }));
   if (!info.audio?.canDecode || !(duration > 0)) {
     const pcm = await decodeAudio(file, { mono: true }, ctl);
     const audio = await to16k(pcm.channels[0], pcm.sampleRate);

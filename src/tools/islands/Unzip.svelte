@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import ArchiveTree from './ArchiveTree.svelte';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { ArchiveProblem, LIBARCHIVE_MAX_BYTES, OpenArchive, decompressStream, explain } from '@/tools/lib/unzip/archive';
   import { folderPicker, writeToFolder } from '@/tools/lib/unzip/disk';
   import {
@@ -343,7 +343,7 @@
       const files = (await collect(nodes)).map((f) => ({ ...f, path: f.path.slice(base.length) }));
       job = { label: 'Zipping', done: 0, total: files.reduce((s, f) => s + f.blob.size, 0), unit: 'bytes' };
       const zip = await buildZip(files, 'normal', (read) => (job!.done = read), signal);
-      downloadBlob(zip, name);
+      downloadResult(zip, name);
       jobDone = `${name} · ${formatBytes(zip.size)}`;
     });
   }
@@ -352,7 +352,7 @@
     if (node.dir) return downloadZip(tree!.files.slice(node.first, node.end), `${node.name}.zip`, node.path.slice(0, -node.name.length));
     await run(async () => {
       if (!cache.has(node.item!.raw)) job = { label: 'Unpacking', done: 0, total: 0, unit: 'files' };
-      downloadBlob(await blobFor(node), node.name);
+      downloadResult(await blobFor(node), node.name);
     });
   }
 

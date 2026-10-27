@@ -13,7 +13,7 @@
     type Capabilities,
     type MediaInfo,
   } from '@/engines/media';
-  import { downloadBlob, formatBytes, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, zipFiles } from '@/tools/lib/files';
   import {
     acceptFor,
     batchProgress,
@@ -248,12 +248,12 @@
 
   async function downloadAll() {
     const ready = items.filter((i) => i.out);
-    if (ready.length === 1) return downloadBlob(ready[0].out!.blob, ready[0].out!.name);
+    if (ready.length === 1) return downloadResult(ready[0].out!.blob, ready[0].out!.name);
     const exts = new Set(ready.map((i) => ext(i.out!.name).toLowerCase()));
     zipping = true;
     zipError = '';
     try {
-      downloadBlob(await zipFiles(ready.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), `converted-${exts.size === 1 ? [...exts][0] : 'audio'}.zip`);
+      downloadResult(await zipFiles(ready.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), `converted-${exts.size === 1 ? [...exts][0] : 'audio'}.zip`);
     } catch (e) {
       console.error(e);
       zipError = "Couldn't build the zip; the files may be too big to hold in memory at once. Download them one at a time with the ↓ buttons.";
@@ -381,7 +381,7 @@
               </span>
             </button>
             {#if item.out}
-              <button type="button" class="btn icon" onclick={() => downloadBlob(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
+              <button type="button" class="btn icon" onclick={() => downloadResult(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
             {/if}
             <button type="button" class="btn icon" disabled={item.status === 'working'} onclick={() => remove(item)} aria-label={`Remove ${item.file.name}`}>✕</button>
             {#if item.status === 'working' || item.status === 'queued'}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import CopyButton from '@/components/tool/CopyButton.svelte';
   import { decodeImage, resizeImage } from '@/engines/image/client';
@@ -14,7 +15,9 @@
   let error = $state('');
   let result = $state.raw<TraceResult | null>(null);
   let svgUrl = $state('');
-  let s = $state<TraceSettings>({ ...presets.logo, removeBg: false });
+  // from 'jpg' (/jpg-to-svg): a JPG can't be see-through, so the box around a logo is nearly always background to drop
+  let { from }: { from?: 'jpg' } = $props();
+  let s = $state<TraceSettings>({ ...presets.logo, removeBg: untrack(() => from === 'jpg') });
 
   let canvas = $state<HTMLCanvasElement>();
   let latest = 0;
@@ -109,7 +112,7 @@
 </script>
 
 {#if !file}
-  <Dropzone accept="image/*,.heic,.heif,.avif" title="Drop an image to vectorize" hint="PNG, JPG, WebP · logos and line art work best" onfiles={load} />
+  <Dropzone accept="image/*,.heic,.heif,.avif" title={from === 'jpg' ? 'Drop a JPG to vectorize' : 'Drop an image to vectorize'} hint="PNG, JPG, WebP · logos and line art work best" onfiles={load} />
 {:else}
   <div class="grid gap-5">
     <div class="flex flex-wrap items-center justify-between gap-3">

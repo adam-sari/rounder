@@ -5,6 +5,23 @@ export interface Faq {
   a: string;
 }
 
+/**
+ * First-hand facts about a tool, shown between "How it works" and the questions. Only what we checked ourselves:
+ * results come from real runs (never estimates), and limits say where they come from.
+ */
+export interface ToolNotes {
+  /** "What the settings do": each control and what it changes in the result */
+  settings?: { name: string; effect: string }[];
+  /** "Typical results": measured runs, e.g. { input: '12-page scan, 8.4 MB', setting: 'Strong', output: '1.1 MB' } */
+  results?: { input: string; setting: string; output: string; note?: string }[];
+  /** when (YYYY-MM-DD) and on what the results were measured, e.g. 'Chrome 141 on a 2021 MacBook Air'; required with results */
+  measured?: { date: string; device: string };
+  /** "About the formats": what each format is good at */
+  formats?: { name: string; about: string }[];
+  /** "Platform limits": where a file has to fit, with an https link to the platform's own docs when there is one */
+  limits?: { where: string; limit: string; source?: string }[];
+}
+
 export interface Tool {
   /** url path segment, e.g. "word-counter" → /word-counter */
   slug: string;
@@ -28,6 +45,8 @@ export interface Tool {
   steps: string[];
   faq: Faq[];
   related?: string[];
+  /** first-hand content (settings, measured results, formats, platform limits); see ToolNotes */
+  notes?: ToolNotes;
   /** where to go once this tool is done, in order (e.g. compress → protect): a "Next step" line under the tool */
   next?: string[];
   /** privacy-critical tools (passwords, encryption, redaction) carry no ad code at all */

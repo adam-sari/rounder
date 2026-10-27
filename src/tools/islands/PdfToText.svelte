@@ -2,7 +2,7 @@
   import PdfDrop, { type OpenedPdf } from '@/components/tool/PdfDrop.svelte';
   import CopyButton from '@/components/tool/CopyButton.svelte';
   import { formatPageRanges, getThumbnail, isAbort, pdfName, type PdfDoc } from '@/engines/pdf';
-  import { downloadBlob } from '@/tools/lib/files';
+  import { downloadResult } from '@/tools/lib/files';
   import { pageToText, stats, toMarkdown, toText } from '@/tools/lib/pdf-text/format';
   import type { PageResult } from '@/tools/lib/pdf-text/read';
 
@@ -106,7 +106,7 @@
     if (!pdf) return;
     const title = pdf.file.name.replace(/\.pdf$/i, '');
     const body = kind === 'txt' ? output : toMarkdown(texts, { markers, title });
-    downloadBlob(new Blob([body], { type: kind === 'txt' ? 'text/plain;charset=utf-8' : 'text/markdown;charset=utf-8' }), pdfName(pdf.file.name, '', kind));
+    downloadResult(new Blob([body], { type: kind === 'txt' ? 'text/plain;charset=utf-8' : 'text/markdown;charset=utf-8' }), pdfName(pdf.file.name, '', kind));
   }
 
   const plural = (n: number, word: string) => `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`;

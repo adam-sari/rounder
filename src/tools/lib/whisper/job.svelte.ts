@@ -1,6 +1,7 @@
 import { AiError, toAiError } from '@/engines/ai/errors';
 import type { ModelWorker } from '@/engines/ai/worker-utils';
 import { MediaError } from '@/engines/media';
+import { deviceMessage, type Verdict } from '../device-guard';
 import type { Word } from '../subtitle-cues';
 import { decodeSpeech } from './audio';
 import { runWhisper, type RunOptions, type WhisperSpec } from './engine';
@@ -16,6 +17,8 @@ const mediaText: Record<string, string> = {
 };
 
 function friendly(err: unknown): string {
+  const device = deviceMessage('transcribe', err);
+  if (device) return device;
   if (err instanceof AiError) return err.message;
   if (err instanceof MediaError) return mediaText[err.code] ?? err.message;
   return toAiError(err).message;
@@ -42,6 +45,8 @@ export class Transcription {
   total = $state(0);
   language = $state<WhisperLanguage | null>(null);
   error = $state('');
+  /** the low-end device check for this file: a warning to show, or null */
+  deviceNote = $state.raw<Verdict | null>(null);
   /** performance.now() when the last run started and finished (0 while running) */
   startedAt = $state(0);
   finishedAt = $state(0);
@@ -59,7 +64,11 @@ export class Transcription {
     this.file = file;
     this.readable = true;
     this.reading = new AbortController();
-    const read = decodeSpeech(file, { signal: this.reading.signal, onProgress: (p) => this.audio === read && (this.readProgress = p) });
+    const read = decodeSpeech(
+      file,
+      { signal: this.reading.signal, onProgress: (p) => this.audio === read && (this.readProgress = p) },
+      (v) => this.audio === read && (this.deviceNote = v),
+    );
     this.audio = read;
     read.then(
       (r) => this.audio === read && (this.duration = r.duration),
@@ -150,6 +159,7 @@ export class Transcription {
     this.draft = null;
     this.language = null;
     this.error = '';
+    this.deviceNote = null;
     this.readable = false;
     this.stage = 'idle';
   }

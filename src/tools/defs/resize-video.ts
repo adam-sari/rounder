@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,21 @@ export default {
     { q: 'Will a small video look sharp at 1080 × 1920?', a: 'If your video is smaller than the size you pick, it has to be enlarged, and that can\'t add detail, so it may look a little soft. The tool tells you when that\'s the case.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Platform', effect: 'TikTok, Instagram Reels and YouTube Shorts at 1080×1920; YouTube 1920×1080; Instagram post 1080×1080 and portrait 1080×1350; X 1280×720.' },
+      { name: 'Custom size or scale down', effect: 'Any width and height, or the same shape at a smaller size (for example 1080p to 720p).' },
+      { name: 'How to fit', effect: 'Blurred background fills the empty bars with a soft, zoomed copy of the video; solid color uses a plain color; fill & crop covers the frame and trims the edges, and you drag to choose which part stays in view.' },
+      { name: 'Format', effect: 'MP4 or WebM, whichever your browser can encode.' },
+    ],
+    results: [{ input: '23-second 1080p landscape clip, 42 MB', setting: 'TikTok 1080×1920, blurred background', output: '16 MB MP4, 1080×1920', note: '4.5–12.9 s in two runs' }],
+    measured: MEASURED,
+    formats: [
+      { name: 'Vertical 9:16', about: 'What TikTok, Reels and Shorts fill the phone screen with. A landscape video placed in it shows with bars, which is what the blur or color fill is for.' },
+      { name: 'Square and 4:5', about: 'Instagram feed shapes; 4:5 takes up more of the screen than square.' },
+    ],
+    limits: [LIMITS.discord],
+  },
   related: ['crop-video', 'video-compressor', 'video-converter', 'trim-video'],
   next: ['video-compressor'],
   flagship: { elsewhere: 'Watermarks, or 1080p only on paid plans', here: 'Full 1080p, no watermark, no sign-up' },

@@ -13,7 +13,7 @@
   import type { Snippet } from 'svelte';
   import Dropzone from './Dropzone.svelte';
   import CompareSlider from './CompareSlider.svelte';
-  import { downloadBlob, formatBytes, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, zipFiles } from '@/tools/lib/files';
 
   interface Props {
     /** turns one dropped file into one output file */
@@ -147,10 +147,10 @@
 
   async function downloadAll() {
     const done = items.filter((i) => i.out);
-    if (done.length === 1) return downloadBlob(done[0].out!.blob, done[0].out!.name);
+    if (done.length === 1) return downloadResult(done[0].out!.blob, done[0].out!.name);
     zipping = true;
     try {
-      downloadBlob(await zipFiles(done.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), zipName);
+      downloadResult(await zipFiles(done.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), zipName);
     } finally {
       zipping = false;
     }
@@ -217,7 +217,7 @@
               </p>
             </div>
             {#if item.out}
-              <button type="button" class="btn px-3! py-2!" onclick={() => downloadBlob(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
+              <button type="button" class="btn px-3! py-2!" onclick={() => downloadResult(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
             {/if}
             <button type="button" class="btn px-3! py-2!" onclick={() => remove(item)} aria-label={`Remove ${item.file.name}`}>✕</button>
           </li>

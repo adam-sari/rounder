@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { formatInfo, sourceInfo, type OutFormat, type SourceFormat } from '../lib/audio-converter/formats';
 import { filePrivacyFaq, type Tool } from '../types';
 
@@ -45,6 +46,29 @@ export default [
       { q: 'Are the song tags kept?', a: 'By default the title, artist and album tags are carried over where the output format can hold them. Untick "Keep title, artist and album tags" for clean files.' },
       filePrivacyFaq,
     ],
+    notes: {
+      settings: [
+        { name: 'Convert to', effect: 'MP3, M4A (AAC), WAV, OGG or FLAC. A format your browser can\'t encode is greyed out or uses a one-time ffmpeg.wasm download, and the tool asks first.' },
+        { name: 'Quality', effect: 'MP3 128–320 kbps (default 192), M4A 96–192 (default 160), OGG up to 192 (default 128). WAV takes a bit depth instead (16-bit CD quality, or 24-bit); FLAC is always lossless.' },
+        { name: 'Sample rate', effect: 'Keep (default), 48 kHz, 44.1 kHz or 22.05 kHz. Lowering it only makes sense for speech or old hardware.' },
+        { name: 'Channels', effect: 'Keep, stereo or mono. Mono halves the size of a WAV and suits voice recordings.' },
+        { name: 'Keep title, artist and album tags', effect: 'Carries the tags across where the new format can hold them.' },
+      ],
+      results: [
+        { input: '70-second song, WAV 16-bit 44.1 kHz stereo, 12 MB', setting: 'MP3, 192 kbps', output: '1.6 MB', note: '1.9–10.3 s in two runs' },
+        { input: '70-second song, WAV, 12 MB', setting: 'M4A, 160 kbps', output: '1.3 MB', note: '0.9–2.6 s' },
+        { input: '70-second song, MP3 320 kbps, 2.7 MB', setting: 'WAV, 16-bit', output: '12 MB', note: 'bigger, but no better: the MP3\'s losses stay' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'MP3', about: 'Plays on every phone, car stereo and app.' },
+        { name: 'M4A (AAC)', about: 'Apple\'s default; a little smaller than MP3 at the same quality.' },
+        { name: 'WAV', about: 'Uncompressed: about 10 MB a minute in CD quality. What editors and DAWs like.' },
+        { name: 'FLAC', about: 'Lossless like WAV, usually around half the size; for archives and hi-fi players.' },
+        { name: 'OGG', about: 'Opus or Vorbis audio, used by games, Android and the web.' },
+      ],
+      limits: [LIMITS.gmail, LIMITS.discord],
+    },
     related: ['audio-cutter', 'audio-joiner', 'video-to-mp3', 'volume-booster'],
     next: ['audio-cutter', 'audio-normalizer'],
     flagship: { elsewhere: 'Upload size caps and a few free conversions a day', here: 'Unlimited files, converted on your device' },

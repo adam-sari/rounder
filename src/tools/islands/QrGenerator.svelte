@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import QRCodeStyling from 'qr-code-styling';
+  import { toolSucceeded } from '@/tools/lib/success';
 
   type Kind = 'url' | 'text' | 'wifi' | 'email' | 'phone' | 'contact';
 
@@ -84,6 +85,7 @@
     // render a separate print-quality copy for the file; the preview stays small
     const big = new QRCodeStyling({ ...options, width: EXPORT, height: EXPORT, margin: 64, type: extension === 'svg' ? 'svg' : 'canvas' });
     await big.download({ name: 'qr-code', extension });
+    toolSucceeded();
   }
 
   // a low-contrast code may not scan; warn using relative luminance

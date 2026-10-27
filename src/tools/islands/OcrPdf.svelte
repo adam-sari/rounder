@@ -1,9 +1,11 @@
 <script lang="ts">
   import CopyButton from '@/components/tool/CopyButton.svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import PdfDrop, { type OpenedPdf } from '@/components/tool/PdfDrop.svelte';
   import { toAiError } from '@/engines/ai/errors';
   import { formatPageRanges, getThumbnail, isAbort, loadEditablePdf, pdfName, savePdf, type PdfDoc } from '@/engines/pdf';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import type { OcrEngine } from '@/tools/lib/ocr/engine';
   import { addTextLayers, documentText, hasRealText, renderForOcr } from '@/tools/lib/ocr/pdf';
   import { pageText } from '@/tools/lib/ocr/text';
@@ -51,6 +53,8 @@
   const fraction = $derived(total ? (done.length + reading.reduce((s, p) => s + p.progress, 0)) / total : 0);
   const fullText = $derived(documentText(pages.map((p) => (p.status === 'done' ? p.text : p.existing))));
   const page = $derived(pages[selected]);
+  // low-end devices: the PDF stays open while each page is rendered, read and given a text layer
+  const deviceFit = $derived(pdf && todo.length ? checkDevice('ocr', { bytes: pdf.file.size, count: todo.length }) : null);
 
   async function open(opened: OpenedPdf) {
     reset();
@@ -136,10 +140,10 @@
       const layers = new Map<number, Uint8Array>();
       pages.forEach((p, i) => p.status === 'done' && p.layer && layers.set(i, p.layer));
       await addTextLayers(doc, layers);
-      downloadBlob(await savePdf(doc), pdfName(pdf.file.name, '-searchable'));
+      downloadResult(await savePdf(doc), pdfName(pdf.file.name, '-searchable'));
     } catch (e) {
       console.error(e);
-      error = (e as Error)?.message || "The searchable PDF couldn't be made.";
+      error = deviceMessage('pdf', e, 'Try reading fewer pages, or split the PDF first.') ?? ((e as Error)?.message || "The searchable PDF couldn't be made.");
     } finally {
       building = false;
     }
@@ -266,7 +270,8 @@
           </div>
           <div class="grid gap-2 border-t border-line pt-5">
             {#if todo.length && !running}
-              <button type="button" class="btn btn-ai" disabled={!engine} onclick={run}>
+              <DeviceNote verdict={deviceFit} />
+              <button type="button" class="btn btn-ai" disabled={!engine || deviceFit?.level === 'block'} onclick={run}>
                 {done.length ? `Continue: read ${plural(todo.length, 'page')}` : `Read ${plural(todo.length, 'page')}`}
               </button>
               {#if !engine}<p class="mono">waiting for the OCR engine (see above)</p>{/if}
@@ -274,7 +279,7 @@
             {#if !running && done.length}
               {#if todo.length}<p class="mono">{plural(todo.length, 'page')} still unread; the PDF keeps them as they are.</p>{/if}
               <button type="button" class="btn btn-primary" disabled={building} onclick={download}>{building ? 'Making the PDF…' : 'Download searchable PDF'}</button>
-              <button type="button" class="btn" onclick={() => downloadBlob(new Blob([fullText], { type: 'text/plain;charset=utf-8' }), pdfName(pdf!.file.name, '', 'txt'))}>
+              <button type="button" class="btn" onclick={() => downloadResult(new Blob([fullText], { type: 'text/plain;charset=utf-8' }), pdfName(pdf!.file.name, '', 'txt'))}>
                 Download text (.txt)
               </button>
               <CopyButton text={() => fullText} label="Copy all text" />

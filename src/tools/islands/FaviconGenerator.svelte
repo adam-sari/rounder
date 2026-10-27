@@ -3,9 +3,13 @@
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import CopyButton from '@/components/tool/CopyButton.svelte';
   import { decodeImage, encodeCanvas, imageKind, resizeImage, resolveSize } from '@/engines/image/client';
-  import { downloadBlob, zipFiles } from '@/tools/lib/files';
-  import { buildIco } from '@/tools/lib/favicon/ico';
+  import { downloadResult, withExtension, zipFiles } from '@/tools/lib/files';
+  import { buildIco, ICO_SIZES, type IcoSet } from '@/tools/lib/favicon/ico';
   import { firstGraphemes, linkTags, nestSvg, shapeRadius, textSvg, webManifest, type Shape } from '@/tools/lib/favicon/markup';
+
+  // output 'ico' (/png-to-ico) makes the single .ico file the main download, with a choice of sizes up to 256
+  let { output = 'pack' }: { output?: 'pack' | 'ico' } = $props();
+  let icoSet = $state<IcoSet>('favicon');
 
   // system font stacks, so the favicon.svg looks the same on your site as it does here
   const fonts = {
@@ -217,10 +221,13 @@
     const manifest = webManifest(title, themeColor);
     try {
       const png = async (size: number, apple = false) => encodeCanvas(await render(d, size, apple), { format: 'png' });
-      const small = await Promise.all([16, 32, 48].map((s) => png(s)));
-      const entries = await Promise.all(small.map(async (b, i) => ({ size: [16, 32, 48][i], png: new Uint8Array(await b.arrayBuffer()) })));
+      // the pack's favicon.ico always holds 16–48; small[0] and small[1] double as the 16 and 32 px PNGs
+      const sizes = icoOnly ? ICO_SIZES[icoSet] : ICO_SIZES.favicon;
+      const small = await Promise.all(sizes.map((s) => png(s)));
+      const entries = await Promise.all(small.map(async (b, i) => ({ size: sizes[i], png: new Uint8Array(await b.arrayBuffer()) })));
       const ico = new Blob([buildIco(entries) as Uint8Array<ArrayBuffer>], { type: 'image/x-icon' });
-      if (icoOnly) return downloadBlob(ico, 'favicon.ico');
+      // logo.png → logo.ico on the converter page; the favicon page keeps the name browsers look for
+      if (icoOnly) return downloadResult(ico, output === 'ico' && d.mode === 'image' && d.source ? withExtension(d.source.name, 'ico') : 'favicon.ico');
 
       const [apple, a192, a512] = await Promise.all([png(180, true), png(192), png(512)]);
       const files = [
@@ -233,7 +240,7 @@
         { name: 'site.webmanifest', blob: new Blob([manifest], { type: 'application/manifest+json' }) },
       ];
       if (svgFile) files.splice(1, 0, { name: 'favicon.svg', blob: new Blob([svgFile], { type: 'image/svg+xml' }) });
-      downloadBlob(await zipFiles(files), 'favicon.zip');
+      downloadResult(await zipFiles(files), 'favicon.zip');
     } catch {
       error = 'Something went wrong while making the files. Please try again.';
     } finally {
@@ -283,7 +290,7 @@
           </div>
         </div>
       {:else}
-        <Dropzone {accept} title="Drop your logo here" hint="PNG, JPG, WebP or SVG · square works best" onfiles={(f) => load(f[0])} />
+        <Dropzone {accept} title={output === 'ico' ? 'Drop a PNG to turn into an .ico' : 'Drop your logo here'} hint="PNG, JPG, WebP or SVG · square works best" onfiles={(f) => load(f[0])} />
         {#if loading}<p class="mono" aria-live="polite">reading image…</p>{/if}
       {/if}
     {:else}
@@ -347,11 +354,26 @@
         </label>
       </div>
 
-      <div class="grid gap-2 sm:grid-cols-[1.4fr_1fr]">
-        <button type="button" class="btn btn-primary" disabled={busy} onclick={() => download(false)}>{busy ? 'Packing…' : 'Download favicon pack (.zip)'}</button>
-        <button type="button" class="btn" disabled={busy} onclick={() => download(true)}>favicon.ico only</button>
-      </div>
-      <p class="mono">ico (16, 32, 48){svg ? ' · svg' : ''} · 16 & 32 png · apple-touch 180 · android 192 & 512 · webmanifest</p>
+      {#if output === 'ico'}
+        <div>
+          <span class="label">sizes inside the .ico</span>
+          <div class="seg" role="group" aria-label="ICO sizes">
+            <button type="button" aria-pressed={icoSet === 'favicon'} onclick={() => (icoSet = 'favicon')}>website favicon</button>
+            <button type="button" aria-pressed={icoSet === 'windows'} onclick={() => (icoSet = 'windows')}>Windows icon</button>
+          </div>
+          <p class="mono mt-2">{ICO_SIZES[icoSet].join(', ')} px</p>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-[1.4fr_1fr]">
+          <button type="button" class="btn btn-primary" disabled={busy} onclick={() => download(true)}>{busy ? 'Making…' : 'Download .ico'}</button>
+          <button type="button" class="btn" disabled={busy} onclick={() => download(false)}>full favicon pack (.zip)</button>
+        </div>
+      {:else}
+        <div class="grid gap-2 sm:grid-cols-[1.4fr_1fr]">
+          <button type="button" class="btn btn-primary" disabled={busy} onclick={() => download(false)}>{busy ? 'Packing…' : 'Download favicon pack (.zip)'}</button>
+          <button type="button" class="btn" disabled={busy} onclick={() => download(true)}>favicon.ico only</button>
+        </div>
+        <p class="mono">ico (16, 32, 48){svg ? ' · svg' : ''} · 16 & 32 png · apple-touch 180 · android 192 & 512 · webmanifest</p>
+      {/if}
     {/if}
     {#if error}<p class="text-bad text-sm" role="alert">{error}</p>{/if}
   </div>

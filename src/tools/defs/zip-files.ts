@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,24 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Compression: store', effect: 'No compression at all: the fastest, and right for photos and videos, which barely shrink anyway.' },
+      { name: 'Compression: normal (default)', effect: 'Deflates documents, code and text; photos, videos and other archives are stored as they are, since squeezing them again wastes time.' },
+      { name: 'Compression: max', effect: 'Squeezes every file as hard as Deflate can. Slower, and usually only a little smaller than normal.' },
+      { name: 'Leave out system files', effect: 'Skips .DS_Store, Thumbs.db and similar clutter that macOS and Windows leave in folders. Shown only when there is some.' },
+    ],
+    results: [
+      { input: '5 files, 18 MB: a JPG photo, a WAV song, two PDFs and a text file', setting: 'Normal', output: '16 MB zip', note: '−9%, 1.2 s: already-compressed files such as JPG and PDF barely shrink' },
+      { input: 'The same 5 files', setting: 'Max', output: '16 MB zip', note: 'only 15 KB smaller than normal, 2.0 s' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'ZIP', about: 'Opens on Windows, macOS, Linux, iOS and Android without extra software. Folders you drop keep their structure inside.' },
+      { name: 'Size ceiling', about: 'A standard ZIP holds up to 4 GB or 65,535 files. Bigger archives need ZIP64, which this tool doesn\'t write yet, so split the files into a few ZIPs.' },
+    ],
+    limits: [LIMITS.gmail, LIMITS.outlook],
+  },
   related: ['unzip-files', 'file-encryptor', 'image-compressor'],
   next: ['file-encryptor'],
 } satisfies Tool;

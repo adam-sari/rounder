@@ -35,6 +35,11 @@ const libraries: { name: string; use: string; license: string; url: string }[] =
   { name: 'Transformers.js', use: 'running AI models', license: 'Apache-2.0', url: 'https://github.com/huggingface/transformers.js' },
   { name: 'ONNX Runtime Web', use: 'running AI models', license: 'MIT', url: 'https://github.com/microsoft/onnxruntime' },
   { name: 'Tesseract.js', use: 'text recognition (OCR)', license: 'Apache-2.0', url: 'https://github.com/naptha/tesseract.js' },
+  { name: 'docx', use: 'writing Word documents', license: 'MIT', url: 'https://github.com/dolanmiu/docx' },
+  { name: 'docx-preview', use: 'laying out Word documents', license: 'Apache-2.0', url: 'https://github.com/VolodymyrBaydalka/docxjs' },
+  { name: 'ExcelJS + SSF', use: 'reading and writing Excel workbooks', license: 'MIT / Apache-2.0', url: 'https://github.com/exceljs/exceljs' },
+  { name: 'pptx-renderer (with ECharts and mtx-decompressor)', use: 'laying out PowerPoint slides', license: 'Apache-2.0 (mtx-decompressor: MPL-2.0)', url: 'https://github.com/aiden0z/pptx-renderer' },
+  { name: 'PptxGenJS', use: 'writing PowerPoint decks', license: 'MIT', url: 'https://github.com/gitbrent/PptxGenJS' },
   { name: 'kokoro-js', use: 'text to speech', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro' },
   { name: 'eSpeak NG (via phonemizer)', use: 'pronunciation for text to speech', license: 'GPL-3.0', url: 'https://github.com/espeak-ng/espeak-ng' },
   { name: 'demucs-web', use: 'vocal and stem separation', license: 'MIT', url: 'https://github.com/timcsy/demucs-web' },
@@ -59,7 +64,7 @@ const models: { name: string; use: string; license: string; url: string }[] = [
   { name: 'RNNoise', use: 'noise reduction', license: 'BSD-3-Clause', url: 'https://github.com/xiph/rnnoise' },
 ];
 
-const fonts = ['Instrument Serif', 'Geist and Geist Mono', 'Noto Sans (PDF text)', 'handwriting and display fonts used in the signature and thumbnail tools'];
+const fonts = ['Instrument Serif', 'Geist and Geist Mono', 'Noto Sans (PDF text)', 'Carlito, Caladea, Arimo, Tinos and Cousine (Office to PDF)', 'handwriting and display fonts used in the signature and thumbnail tools'];
 ---
 
 <Prose

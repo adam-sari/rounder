@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onDestroy, tick } from 'svelte';
   import CopyButton from '@/components/tool/CopyButton.svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { MODELS } from '@/engines/ai/models';
-  import { downloadBlob, formatBytes, withExtension } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, withExtension } from '@/tools/lib/files';
   import { Transcription } from '@/tools/lib/whisper/job.svelte';
   import { languageName, type LanguageChoice } from '@/tools/lib/whisper/languages';
   import { clock, toJson, toTxt, transcriptLines, transcriptSrt, transcriptVtt } from '@/tools/lib/whisper/transcript';
@@ -74,7 +75,7 @@
     const meta = { model: ranWith ? MODELS[ranWith.spec.key].name : 'Whisper', language: job.language ?? 'en', task: ranWith?.translate ? ('translate' as const) : ('transcribe' as const), duration: job.duration };
     const body = kind === 'txt' ? text() : kind === 'srt' ? transcriptSrt(job.words) : kind === 'vtt' ? transcriptVtt(job.words) : toJson(job.words, meta);
     const type = { txt: 'text/plain', srt: 'application/x-subrip', vtt: 'text/vtt', json: 'application/json' }[kind];
-    downloadBlob(new Blob([body], { type: `${type};charset=utf-8` }), withExtension(baseName, kind));
+    downloadResult(new Blob([body], { type: `${type};charset=utf-8` }), withExtension(baseName, kind));
   }
 
   // follow the transcript as it grows, unless the reader has scrolled up
@@ -126,6 +127,7 @@
   </WhisperGate>
 
   {#if job.busy}<TranscribeProgress {job} />{/if}
+  {#if !job.error}<DeviceNote verdict={job.deviceNote} />{/if}
   {#if job.error}<p class="msg bad" role="alert">{job.error}</p>{/if}
   {#if job.stage === 'stopped'}<p class="msg">Stopped. Everything transcribed up to that point is below.</p>{/if}
   {#if job.stage === 'done' && !job.words.length}

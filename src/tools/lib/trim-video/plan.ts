@@ -124,14 +124,17 @@ export interface SourceVideo {
 }
 
 /**
- * Video options for a preset: null = copy the stream, otherwise a quality level, or a bitrate
- * just above the source's (scaled for codec efficiency) when the level would make it bigger.
+ * Video options for a preset: null = copy the stream, otherwise always an explicit bitrate: the
+ * level's estimate, capped just above the source's (scaled for codec efficiency). A bare quality
+ * level makes mediabunny encode at a constant quantizer for H.264/HEVC/VP9/AV1, whose size has no
+ * bound (Best turned a 16 Mbps 1080p clip into 42 Mbps), so the level is never passed on as is.
  */
-export function videoQuality(preset: Preset, src: SourceVideo, outCodec: VideoCodec): null | { quality: QualityLevel } | { bitrate: number } {
+export function videoQuality(preset: Preset, src: SourceVideo, outCodec: VideoCodec): null | { bitrate: number } {
   if (preset === 'copy') return null;
-  if (!src.bitrate) return { quality: preset };
+  const level = estimateVideoBitrate(outCodec, src.width, src.height, preset);
+  if (!src.bitrate) return { bitrate: level };
   const ceiling = Math.round((src.bitrate * 1.15 * (efficiency[outCodec] ?? 1)) / (efficiency[src.codec ?? ''] ?? 1));
-  return estimateVideoBitrate(outCodec, src.width, src.height, preset) > ceiling ? { bitrate: ceiling } : { quality: preset };
+  return { bitrate: Math.min(level, ceiling) };
 }
 
 // ---------------------------------------------------------------- progress & errors

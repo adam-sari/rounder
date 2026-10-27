@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,24 @@ export default {
     { q: 'Which formats can I open?', a: 'Anything your browser can play, which covers MP3, M4A/AAC, WAV, OGG, Opus and FLAC, plus the sound from MP4, MOV and WebM videos. Rarer formats such as WMA or AMR can be opened with a one-time decoder download.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Keep selection / remove parts', effect: 'Keep one stretch between the handles, or stripe out any number of sections; the remaining pieces are joined with a crossfade of a few milliseconds so the joins don\'t click.' },
+      { name: 'Fade in and out', effect: 'Ramps the volume at the start and end. Fades mean re-encoding, so the "same format" copy no longer applies.' },
+      { name: 'Output format', effect: '"same" (when the source format can be written back) cuts without re-encoding if you keep one part and add no fades: no quality loss, though the cut snaps to the nearest audio frame and can start up to a fifth of a second early. MP3 128/192/320 kbps, M4A 128/160/192, OGG 96/128/192 (the middle one is the default), or WAV.' },
+    ],
+    results: [
+      { input: '70-second song, MP3 320 kbps, 2.7 MB', setting: 'Keep 0:10–0:40, same (MP3)', output: '1.1 MB MP3', note: 'copied at 320 kbps without re-encoding, 0.1 s' },
+      { input: '70-second song, MP3 320 kbps, 2.7 MB', setting: 'Keep 0:10–0:40, MP3 192 kbps', output: '705 KB MP3', note: '30 seconds of audio, 3.5 s' },
+      { input: '70-second song, MP3 320 kbps, 2.7 MB', setting: 'Keep 0:10–0:40, WAV', output: '5.0 MB WAV', note: 'uncompressed, 1.4 s' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'Same format', about: 'The fastest and lossless route: the original frames are copied, so an MP3 stays exactly as good as it was.' },
+      { name: 'MP3, M4A, OGG', about: 'Re-encoded at the bitrate you pick: needed for fades, joins and format changes.' },
+      { name: 'WAV', about: 'Uncompressed, for editing further; about 10 MB a minute.' },
+    ],
+  },
   related: ['ringtone-maker', 'audio-joiner', 'audio-converter', 'trim-video'],
   next: ['audio-normalizer', 'audio-joiner'],
 } satisfies Tool;

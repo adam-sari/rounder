@@ -99,10 +99,24 @@ const owner = SITE.owner.name;
     protect it from abuse, like any web host.
   </p>
 
+  <h2 id="ratings">Ratings</h2>
+  <p>
+    After a tool works for you, a small box under it asks for a 1 to 5 star rating. It's optional, it never holds up your
+    download, and you get nothing for rating. If you send one, we store the tool's name, the stars, your comment if you
+    wrote one, and the date, with nothing that says who sent it: no IP address, no cookie, no account.
+  </p>
+  <p>
+    To stop one person from rating a tool over and over, our server (a Cloudflare Worker) keeps a one-way hash of your IP
+    address mixed with a random value that changes every day. Both are deleted after the day ends (UTC), so a rating can't be
+    traced back to you afterwards. Your browser remembers that you rated or closed the box for that tool, so it doesn't ask
+    again. Once a tool has at least 20 ratings, its average and count are shown on its page and in the page's search data.
+    We read comments to improve the tools and never publish them. Please leave personal details out of them.
+  </p>
+
   <h2>What your browser stores</h2>
   <p>
     We keep a few things in your browser to make the site nicer: your recently used tools, some settings, downloaded AI
-    models, and drafts a few tools keep for you (such as an invoice, an email signature, a Markdown draft, or a handwritten
+    models, whether you've already rated or closed the rating box for a tool, and drafts a few tools keep for you (such as an invoice, an email signature, a Markdown draft, or a handwritten
     signature you chose to remember). They stay on your device, we never receive them, and you can clear them at any time in
     your browser settings. Ad cookies, where you allow them, are described above.
   </p>
@@ -116,7 +130,8 @@ const owner = SITE.owner.name;
   <h2>Your rights</h2>
   <p>
     Depending on where you live (for example under the GDPR or US state laws), you can ask what personal data we hold about
-    you, and ask us to correct or delete it. Apart from emails you send us, we hold none: no accounts, no files, no profiles.
+    you, and ask us to correct or delete it. Apart from emails you send us and the day-long rating hash above, we hold none: no accounts, no files, no profiles. Ratings are anonymous, so we can't
+    tell which one is yours.
     For data Google collects for ads, use the consent settings and opt-outs above, or contact Google. We rely on your consent
     for ad cookies where the law requires it, and on our legitimate interest in running and securing the site for cookieless
     analytics and hosting logs. You can also complain to your local data protection authority.

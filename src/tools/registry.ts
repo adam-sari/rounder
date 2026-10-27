@@ -1,7 +1,7 @@
 import type { CategoryId } from './categories';
-import { privacyFaq, type Tool } from './types';
+import { privacyFaq, type Tool, type ToolNotes } from './types';
 
-export type { Faq, Tool } from './types';
+export type { Faq, Tool, ToolNotes } from './types';
 
 // Tools added in batches live in ./defs, one file per tool (default export: a tool or a list of tools).
 const defs = import.meta.glob<{ default: Tool | Tool[] }>('./defs/*.ts', { eager: true });
@@ -224,3 +224,31 @@ export function splitEmphasis(text: string): { text: string; em: boolean }[] {
 }
 
 export const plainText = (text: string) => text.replaceAll('*', '');
+
+/** "October 27, 2026" from "2026-10-27", for the caption under measured results */
+export const measuredOn = (date: string) => new Date(`${date}T00:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', dateStyle: 'long' });
+
+/** what is wrong with a tool's notes, empty when nothing is: measured results say when and on what, links are https */
+export function notesProblems(notes: ToolNotes | undefined, today = new Date().toISOString().slice(0, 10)): string[] {
+  if (!notes) return [];
+  const problems: string[] = [];
+  const { settings, results, measured, formats, limits } = notes;
+  for (const [name, list] of Object.entries({ settings, results, formats, limits })) {
+    if (!list) continue;
+    if (list.length === 0) problems.push(`${name} is empty`);
+    for (const entry of list as Record<string, string | undefined>[]) {
+      for (const [key, value] of Object.entries(entry)) if (value !== undefined && !value.trim()) problems.push(`${name}: blank ${key}`);
+    }
+  }
+  if (results?.length && !measured) problems.push('results need measured: { date, device }');
+  if (measured && !results?.length) problems.push('measured without results');
+  if (measured) {
+    const time = /^\d{4}-\d{2}-\d{2}$/.test(measured.date) ? Date.parse(`${measured.date}T00:00:00Z`) : NaN;
+    // Date.parse rolls 2026-02-30 over to March, so a real date must survive the round trip
+    if (Number.isNaN(time) || new Date(time).toISOString().slice(0, 10) !== measured.date) problems.push(`measured.date "${measured.date}" isn't a YYYY-MM-DD date`);
+    else if (measured.date > today) problems.push(`measured.date ${measured.date} is in the future`);
+    if (!measured.device.trim()) problems.push('measured.device is blank');
+  }
+  for (const l of limits ?? []) if (l.source !== undefined && !/^https:\/\/[^\s/]+\.[^\s]+$/.test(l.source)) problems.push(`limits: source "${l.source}" isn't an https link`);
+  return problems;
+}

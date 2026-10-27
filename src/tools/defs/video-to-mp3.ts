@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,24 @@ export default {
     { q: 'Is there a limit on file size or number of files?', a: 'No caps from us. Files are read in pieces rather than loaded into memory whole, so long videos work too; they just take longer on slower devices. Add as many videos as you like and download the results as one zip.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Audio format', effect: 'MP3 (plays on everything), M4A with AAC (smaller at the same quality, at home on Apple devices), OGG with Opus (most quality per kilobyte), WAV (uncompressed) or FLAC (lossless, about half of WAV).' },
+      { name: 'Bitrate', effect: 'MP3 128–320 kbps (default 192), M4A 96–192 (default 160), OGG 64–192 (default 128). Below 160 is fine for speech and podcasts; 160 and up suits music.' },
+      { name: '"original" bitrate', effect: 'Copies the sound track out of the video untouched when it already suits the format: AAC into M4A, MP3 into MP3, Opus or Vorbis into OGG. No re-encoding, no quality loss, and far faster.' },
+      { name: 'Only keep part of it', effect: 'Drag the handles or type exact times to export just a section.' },
+    ],
+    results: [
+      { input: '1-minute 1080p MP4 with AAC sound, 117 MB', setting: 'MP3, 192 kbps', output: '1.4 MB MP3', note: '2.0 s' },
+      { input: '1-minute 1080p MP4 with AAC sound, 117 MB', setting: 'M4A, original', output: '1.4 MB M4A', note: 'copied without re-encoding, 0.2 s' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'MP3', about: 'The safe pick for any player, car stereo or app.' },
+      { name: 'M4A (AAC)', about: 'What phones record and stream in; often the original track of an MP4, so it can be copied without any loss.' },
+      { name: 'WAV and FLAC', about: 'For editing: WAV is about 10 MB a minute, FLAC roughly half that, both without loss.' },
+    ],
+  },
   related: ['audio-converter', 'audio-to-text', 'audio-cutter', 'mute-video'],
   next: ['audio-cutter', 'audio-to-text'],
   flagship: { elsewhere: 'Upload size caps and daily conversion limits', here: 'No size cap, no upload, whole batches at once' },

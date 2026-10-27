@@ -9,6 +9,7 @@
   import { formatMB } from '@/engines/ai/progress';
   import { modelWorker, proxy, transfer } from '@/engines/ai/worker-utils';
   import { decodeImage, encodeImage, formatInfo, imageKind, outputFormatFor, type ImageKind, type OutputFormat } from '@/engines/image/client';
+  import { deviceMessage, guard } from '@/tools/lib/device-guard';
   import { downloadBlob, formatBytes, withExtension, withSuffix } from '@/tools/lib/files';
   import { cropAround, groupStrokes, shiftStrokes, SIDE, type Rect, type Stroke } from '@/tools/lib/object-remover/geometry';
   import type { InpaintModel, InpaintWorker, ModelChoice } from '@/tools/lib/object-remover/inpaint.worker';
@@ -112,13 +113,15 @@
     try {
       const [data, k] = await Promise.all([decodeImage(f), imageKind(f)]);
       if (ticket !== opening) return;
+      // low-end devices: the photo, its preview and undo history stay in memory at full size
+      guard('image-ai', { width: data.width, height: data.height });
       clear();
       image = data;
       kind = k;
       format = outputFormatFor(k);
       file = f;
-    } catch {
-      if (ticket === opening) error = "Couldn't read that image. Try a JPG, PNG, WebP, AVIF or HEIC file.";
+    } catch (err) {
+      if (ticket === opening) error = deviceMessage('image-ai', err) ?? "Couldn't read that image. Try a JPG, PNG, WebP, AVIF or HEIC file.";
     } finally {
       if (ticket === opening) loading = false;
     }

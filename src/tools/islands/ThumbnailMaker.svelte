@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { decodeImage, encodeImage, resizeImage } from '@/engines/image/client';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { free, surface } from '@/tools/lib/social-media-image-resizer/canvas';
   import { panFocus } from '@/tools/lib/social-media-image-resizer/sizes';
   import { capRatio, fontCss, fontIds, fonts, loadFonts } from '@/tools/lib/youtube-thumbnail-maker/fonts';
@@ -378,11 +378,11 @@
       const name = fileNameFor(firstText?.kind === 'text' ? firstText.text : undefined, format === 'png' ? 'png' : 'jpg');
       if (format === 'png') {
         const blob = await encodeImage(img, { format: 'png' });
-        downloadBlob(blob, name);
+        downloadResult(blob, name);
         result = { name, size: blob.size };
       } else {
         const { blob, quality } = await fitUnder(SIZE_LIMIT, (q) => encodeImage(img, { format: 'jpeg', quality: q }));
-        downloadBlob(blob, name);
+        downloadResult(blob, name);
         result = { name, size: blob.size, quality };
       }
     } catch {

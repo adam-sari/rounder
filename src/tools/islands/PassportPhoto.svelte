@@ -2,7 +2,7 @@
   import { onDestroy } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { decodeImage, encodeCanvas, encodeImage, resizeImage } from '@/engines/image/client';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { DPI, SPECS, formatLength, guideFor, sizeLabel } from '@/tools/lib/passport/specs';
   import { PAPERS, cutLines, layoutSheet, type SheetLayout } from '@/tools/lib/passport/sheet';
   import { backgroundHints, backgroundStats, coversFrame, type Hint, type Placement } from '@/tools/lib/passport/check';
@@ -300,7 +300,7 @@
   const downloadPhoto = () =>
     run('photo', async () => {
       const blob = await withDpi(await encodeImage(await renderPhoto(), { format: 'jpeg', quality: 92 }), DPI);
-      downloadBlob(blob, `${name}-${spec.id}-photo.jpg`);
+      downloadResult(blob, `${name}-${spec.id}-photo.jpg`);
       saved = `${guide.width} × ${guide.height} px · ${formatBytes(blob.size)}`;
     });
 
@@ -312,7 +312,7 @@
       const sheet = document.createElement('canvas');
       drawSheet(sheet, photo, layout, 1);
       const blob = await withDpi(await encodeCanvas(sheet, { format: sheetFormat, quality: 92 }), DPI);
-      downloadBlob(blob, `${name}-${spec.id}-${paper.id}-sheet.${sheetFormat === 'jpeg' ? 'jpg' : 'png'}`);
+      downloadResult(blob, `${name}-${spec.id}-${paper.id}-sheet.${sheetFormat === 'jpeg' ? 'jpg' : 'png'}`);
     });
 
   function onPick(e: Event & { currentTarget: HTMLInputElement }) {

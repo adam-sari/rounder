@@ -1,8 +1,9 @@
 import { formatInfo, type OutputFormat } from '../../engines/image/types';
 import { sourceInfo, type SourceFormat } from '../lib/image-converter/formats';
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
-type Copy = Pick<Tool, 'title' | 'description' | 'tagline' | 'keywords' | 'steps' | 'faq' | 'related' | 'flagship'>;
+type Copy = Pick<Tool, 'title' | 'description' | 'tagline' | 'keywords' | 'steps' | 'faq' | 'related' | 'flagship' | 'notes'>;
 
 /** a /from-to-to page that opens the converter preset to that pair */
 function variant(from: SourceFormat, to: OutputFormat, copy: Copy): Tool {
@@ -45,6 +46,28 @@ export default [
       { q: 'Does it keep photo metadata?', a: 'No. Converting re-encodes the image, which leaves out EXIF data such as camera details and GPS location. Photos are turned the right way up first, so nothing ends up sideways.' },
       filePrivacyFaq,
     ],
+    notes: {
+      settings: [
+        { name: 'Convert to', effect: 'JPG, PNG, WebP or AVIF. Each format starts at its own quality (JPG 90, WebP 85, AVIF 65) because the scales differ between codecs.' },
+        { name: 'Quality (10–100)', effect: 'Only for lossy output. Lower values give smaller files with more blur and blockiness; the before/after slider shows the difference.' },
+        { name: 'Lossless WebP', effect: 'Keeps every pixel, like PNG, usually in fewer bytes. Best for logos and screenshots, not photos.' },
+        { name: 'Background', effect: 'JPG has no transparency, so see-through pixels are filled with white, black or a color you pick.' },
+        { name: 'Maximum size', effect: 'Full keeps the original pixels; 4K, 2560, 1920 or 1280 cap the longest side. Images are never enlarged.' },
+      ],
+      results: [
+        { input: '12 MP phone photo, JPG, 4.0 MB', setting: 'WebP, quality 85', output: '1.3 MB', note: '3.9 s' },
+        { input: '12 MP phone photo, JPG, 4.0 MB', setting: 'AVIF, quality 65', output: '910 KB', note: '35.9 s: AVIF is slow to encode' },
+        { input: '12 MP HEIC photo, 3.0 MB', setting: 'JPG, quality 90', output: '2.1 MB', note: '6.9 s' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'HEIC', about: 'The iPhone camera default. Small files, but many Windows apps, sites and upload forms can\'t open it. Safari reads it natively; in other browsers we decode it with a WebAssembly build of libheif.' },
+        { name: 'JPG', about: 'Opens everywhere. Lossy, no transparency.' },
+        { name: 'PNG', about: 'Lossless with transparency: ideal for graphics, large for photos.' },
+        { name: 'WebP and AVIF', about: 'Modern web formats, smaller than JPG at a similar look. Browsers show both; plenty of apps and forms still refuse them.' },
+      ],
+      limits: [LIMITS.passport, LIMITS.gmail],
+    },
     related: ['image-compressor', 'image-resizer', 'heic-to-jpg', 'svg-to-png'],
     next: ['image-compressor', 'image-resizer'],
     flagship: { elsewhere: 'Daily conversion limits and upload size caps', here: 'Unlimited files, converted on your device' },
@@ -66,6 +89,24 @@ export default [
       { q: 'Can I make my iPhone take JPGs instead?', a: 'Yes. In Settings > Camera > Formats, choose "Most Compatible" and the camera saves JPG from then on. The trade-off is that each photo takes more space.' },
       { q: 'Is the location data removed?', a: 'Yes. The JPG is a fresh encode of the picture, so EXIF data like GPS location and camera model isn\'t carried over. That\'s handy before posting online, but keep the HEIC files too if you rely on the original date taken for sorting.' },
     ],
+    notes: {
+      settings: [
+        { name: 'Quality (default 90)', effect: 'The JPG quality. 90 keeps a 12 MP photo close to the original; lower it to trade detail for a smaller file.' },
+        { name: 'Maximum size', effect: 'Full keeps all 12 megapixels; 1920 or 1280 make light copies for sharing. Photos are never enlarged.' },
+        { name: 'Format buttons', effect: 'JPG is preselected here. The same page also makes PNG, WebP or AVIF if you switch.' },
+      ],
+      results: [
+        { input: '12 MP HEIC photo of a street (4032×3024), 3.0 MB', setting: 'JPG, quality 90', output: '2.1 MB', note: '7.0 s' },
+        { input: 'Another 12 MP HEIC photo, 3.8 MB', setting: 'JPG, quality 90', output: '3.6 MB', note: '8.5 s' },
+        { input: '3 HEIC photos, 9.5 MB together', setting: 'JPG, quality 90, as a zip', output: '8.3 MB zip', note: '12–17 s for all three in two runs, converted side by side' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'HEIC', about: 'HEVC-compressed photos, the iPhone default since iOS 11. Chrome, Edge and Firefox can\'t display them, so we decode them with a WebAssembly build of libheif; Safari reads them natively.' },
+        { name: 'JPG', about: 'Every phone, PC, printer and upload form accepts it, which is why it\'s the safe target.' },
+      ],
+      limits: [LIMITS.passport, LIMITS.gmail],
+    },
     related: ['image-compressor', 'image-resizer', 'exif-remover'],
     flagship: { elsewhere: '5 to 10 photos per batch, then a queue', here: 'Hundreds of photos at once, no queue' },
   }),
@@ -103,6 +144,23 @@ export default [
       { q: 'What happens to transparent areas?', a: 'JPG can\'t store transparency, so transparent pixels are filled with a solid color. White is the default; pick black or any color to match where the image will sit.' },
       { q: 'Should I convert screenshots and logos too?', a: 'Usually not. Text and sharp edges can pick up faint smudges in JPG. For those, try WebP with lossless on, or keep the PNG and run it through the image compressor.' },
     ],
+    notes: {
+      settings: [
+        { name: 'Quality (default 90)', effect: 'The JPG quality. Photos look the same at 90; text and sharp edges can pick up faint smudges at any quality.' },
+        { name: 'Background', effect: 'Transparent pixels become this color (white unless you pick black or another), since JPG can\'t store transparency.' },
+        { name: 'Maximum size', effect: 'Optionally caps the longest side at 4K, 2560, 1920 or 1280 pixels.' },
+      ],
+      results: [
+        { input: '12 MP photo saved as PNG, 12 MB', setting: 'JPG, quality 90', output: '2.1 MB', note: '−82%, 3.9 s' },
+        { input: '1920×1080 screenshot of a web page, PNG, 173 KB', setting: 'JPG, quality 90', output: '216 KB', note: '+25%: screenshots stay smaller as PNG' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'PNG', about: 'Lossless, so photos saved as PNG are several times larger than they need to be. Flat screenshots compress well in it.' },
+        { name: 'JPG', about: 'Built for photos. It drops detail the eye barely sees, which is why a PNG photo shrinks so much.' },
+      ],
+      limits: [LIMITS.gmail, LIMITS.passport],
+    },
     related: ['image-compressor', 'png-to-webp', 'jpg-to-png'],
   }),
 
@@ -122,6 +180,21 @@ export default [
       { q: 'Why is the PNG bigger than the JPG?', a: 'JPG throws away fine detail to save space, while PNG stores every pixel exactly. For photos that means a larger file.' },
       { q: 'Will the background become transparent?', a: 'No. A JPG has no transparency to carry over, so the PNG keeps the same solid background.' },
     ],
+    notes: {
+      settings: [
+        { name: 'Maximum size', effect: 'Full keeps every pixel; 1920 or 1280 make a much lighter PNG. Nothing else changes, since PNG is lossless.' },
+        { name: 'No quality slider', effect: 'PNG stores exactly what the JPG decodes to, so there is no quality to choose.' },
+      ],
+      results: [
+        { input: '12 MP phone photo, JPG, 4.0 MB', setting: 'PNG, full size', output: '11 MB', note: '+182%, 21.7 s' },
+        { input: '12 MP phone photo, JPG, 4.0 MB', setting: 'PNG, max 1920', output: '3.6 MB at 1920×1440', note: '10.0 s' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'JPG', about: 'Lossy: every re-save loses a little more detail.' },
+        { name: 'PNG', about: 'Lossless: freezes the picture as it is, at the cost of a bigger file for photos.' },
+      ],
+    },
     related: ['png-to-jpg', 'image-compressor', 'image-resizer'],
   }),
 
@@ -140,6 +213,20 @@ export default [
       { q: 'Will I lose quality?', a: 'A tiny bit, since both formats are lossy. At the default quality of 90 it\'s very hard to spot. If you need zero further loss, convert to PNG instead.' },
       { q: 'What about transparent WebP images?', a: 'JPG has no transparency, so transparent areas are filled with white or a color you choose. To keep transparency, convert WebP to PNG.' },
     ],
+    notes: {
+      settings: [
+        { name: 'Quality (default 90)', effect: 'The JPG quality. WebP squeezes harder than JPG, so expect the JPG to be bigger even at the same look.' },
+        { name: 'Background', effect: 'Fills transparent areas with white or the color you pick. Convert to PNG instead to keep them see-through.' },
+        { name: 'Maximum size', effect: 'Optionally caps the longest side at 4K, 2560, 1920 or 1280 pixels.' },
+      ],
+      results: [{ input: '1600×1200 WebP photo from a website, 484 KB', setting: 'JPG, quality 90', output: '699 KB', note: '+45%, 1.9 s' }],
+      measured: MEASURED,
+      formats: [
+        { name: 'WebP', about: 'Google\'s web format: smaller than JPG, shown by every current browser, refused by some editors, print shops and forms.' },
+        { name: 'JPG', about: 'Bigger for the same picture, but accepted everywhere.' },
+      ],
+      limits: [LIMITS.passport],
+    },
     related: ['webp-to-png', 'image-compressor', 'jpg-to-webp'],
   }),
 

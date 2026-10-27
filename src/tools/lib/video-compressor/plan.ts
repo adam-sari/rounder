@@ -203,3 +203,18 @@ const friendly: Partial<Record<MediaErrorCode, string>> = {
 export function errorText(code: string | undefined, message: string | undefined) {
   return friendly[code as MediaErrorCode] ?? message ?? 'Something went wrong while compressing this video.';
 }
+
+/**
+ * The size to aim for on another try after a result came out over the target: the last aim shrunk by how far it
+ * overshot, with 3% spare. Encoders overshoot most on short clips and on ones with a lot of motion or grain.
+ */
+export function retryAimMB(targetMB: number, aimedMB: number, gotBytes: number) {
+  return Math.max(0.1, Math.floor(aimedMB * ((targetMB * MB) / gotBytes) * 0.97 * 100) / 100);
+}
+
+/** why a target-size result came out over the limit, in a sentence */
+export function overReason(plan: Plan, durationSec: number, targetMB: number) {
+  if (!plan.feasible) return `${targetMB} MB leaves too little room for ${shortDuration(durationSec)} of video, even with the audio squeezed. Trim the clip or pick a bigger target.`;
+  if (plan.audioBitrate && plan.audioBitrate > plan.videoBitrate / 2) return 'The sound takes a big share of the budget. Removing the audio, or trimming the clip, leaves more room for the picture.';
+  return 'The encoder spent a little more than planned, which happens with lots of motion or grain. Another try aims lower to make up for it.';
+}

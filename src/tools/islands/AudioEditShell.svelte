@@ -26,7 +26,7 @@
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { FALLBACK_DOWNLOAD_MB, audioCodecLabel, formatBitrate, formatBytes, formatTime, preloadFallback, probe, transcode, type AudioCodec } from '@/engines/media';
   import { errorText, etaSeconds } from '@/tools/lib/audio-cutter/edit';
-  import { downloadBlob } from '@/tools/lib/files';
+  import { downloadResult } from '@/tools/lib/files';
 
   interface Props {
     /** primary button, e.g. "Cut audio" */
@@ -282,7 +282,7 @@
         {#if result.note}<span>{result.note}</span>{/if}
       </p>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="btn btn-primary" onclick={() => downloadBlob(result!.blob, result!.name)}>Download</button>
+        <button type="button" class="btn btn-primary" onclick={() => downloadResult(result!.blob, result!.name)}>Download</button>
         <button type="button" class="btn" onclick={startOver}>Start over</button>
       </div>
       {@render done?.(result)}

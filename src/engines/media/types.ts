@@ -231,7 +231,7 @@ export class MediaError extends Error {
 
 export const isAbort = (e: unknown) => e instanceof MediaError && e.code === 'aborted';
 
-const OOM = /out of memory|allocation failed|array buffer allocation|memory access out of bounds|quotaexceeded|cannot allocate/i;
+const OOM = /out of memory|\boom\b|allocation failed|array buffer allocation|memory access out of bounds|cannot enlarge memory|quotaexceeded|cannot allocate|could not allocate|allocation size overflow|canvas memory/i;
 
 /** maps anything thrown (including errors that crossed a worker boundary) to a MediaError */
 export function toMediaError(e: unknown): MediaError {
@@ -239,13 +239,16 @@ export function toMediaError(e: unknown): MediaError {
   const err = e as { name?: string; message?: string; code?: unknown } | undefined;
   const message = err?.message ?? String(e);
   if (err?.name === 'MediaError' && typeof err.code === 'string') return new MediaError(err.code as MediaErrorCode, message);
+  // before the cancel check: a wasm out-of-memory abort reads "Aborted(OOM)", which isn't the visitor cancelling
+  if (e instanceof RangeError || OOM.test(message) || err?.name === 'QuotaExceededError') {
+    return new MediaError('out-of-memory', 'Ran out of memory. Try a shorter clip or a smaller output size.', { cause: e });
+  }
+  // any other wasm abort ("Aborted(…)") is a crash, not a cancel
+  if (/^(RuntimeError: )?Aborted\(/.test(message)) return new MediaError('failed', 'The video engine crashed on this file.', { cause: e });
   if (err?.name === 'AbortError' || err?.name === 'ConversionCanceledError' || /cancel+ed|aborted/i.test(message)) {
     return new MediaError('aborted', 'Cancelled.', { cause: e });
   }
   if (err?.name === 'UnsupportedInputFormatError') return new MediaError('unsupported-input', "This file's format isn't supported.", { cause: e });
-  if (e instanceof RangeError || OOM.test(message) || err?.name === 'QuotaExceededError') {
-    return new MediaError('out-of-memory', 'Ran out of memory. Try a shorter clip or a smaller output size.', { cause: e });
-  }
   return new MediaError('failed', message || 'Something went wrong while processing the file.', { cause: e });
 }
 

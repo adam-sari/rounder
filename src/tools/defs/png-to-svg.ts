@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,23 @@ export default {
     { q: 'How do I get a transparent background?', a: 'Turn on "Remove background". It clears the color that touches the edges of the image, such as white paper behind a signature, while keeping the same color inside the design. Areas that are already transparent in a PNG stay transparent.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Presets', effect: 'Logo (6 colors), flat illustration (16 colors, light blur), black & white (2 colors, background removed) and detailed (48 colors, finest detail). Each just sets the sliders below.' },
+      { name: 'Colors / threshold', effect: 'How many flat colors the image is reduced to before tracing; in black and white mode, the brightness that splits ink from paper.' },
+      { name: 'Detail, smoothing and blur', effect: 'Detail keeps smaller shapes; smoothing rounds jagged edges into curves; blur evens out JPG noise before tracing.' },
+      { name: 'Remove background', effect: 'Clears the color touching the image\'s edges (white paper, a solid backdrop) while keeping the same color inside the shape. On by default when the page opens for JPG to SVG.' },
+    ],
+    results: [
+      { input: '512×512 PNG logo, 10 KB', setting: 'Logo preset', output: '9.2 KB SVG, 123 paths, 6 colors', note: '0.9 s' },
+      { input: '12 MP phone photo, JPG, 4.0 MB', setting: 'Logo preset', output: '2.2 MB SVG, 12,966 paths', note: 'photos turn into thousands of flat patches: keep them as JPG' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'SVG', about: 'Shapes described as paths, so it stays sharp at any size and prints cleanly. Ideal for logos, icons, print and cutting machines.' },
+      { name: 'Raster images (PNG, JPG, WebP)', about: 'A grid of pixels. Tracing guesses the shapes behind them, which works for flat artwork and badly for photos.' },
+    ],
+  },
   related: ['svg-to-png', 'image-converter', 'favicon-generator', 'image-color-picker'],
   flagship: { elsewhere: 'Paid plan or sign-up to download the SVG', here: 'Free SVG download, no sign-up' },
 } satisfies Tool;

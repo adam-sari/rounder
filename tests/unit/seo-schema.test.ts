@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { breadcrumbs, jsonLd, faqPage, organization, webApplication, website } from '@/seo/schema';
+import { SITE } from '@/site';
 
 const site = new URL('https://roundertools.com');
 
@@ -13,9 +14,9 @@ describe('JSON-LD', () => {
     expect(org.email).toBe('hello@roundertools.com');
   });
 
-  it('leaves out an empty owner name and empty profiles', () => {
+  it('names the owner only when set, and leaves out empty profiles', () => {
     const org = organization(site) as Record<string, unknown>;
-    expect(org.founder).toBeUndefined();
+    expect(org.founder).toEqual(SITE.owner.name ? { '@type': 'Person', name: SITE.owner.name } : undefined);
     expect((org.sameAs as string[]).every(Boolean)).toBe(true);
   });
 

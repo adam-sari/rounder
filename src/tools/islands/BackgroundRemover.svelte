@@ -12,7 +12,8 @@
   import { canvas, compose, cutout, encode, frameSource, maskCanvas, onChecker, paintStroke, subjectBox, type Backdrop, type Look, type SaveFormat } from '@/tools/lib/background-remover/compose';
   import { fitSize, type Stroke } from '@/tools/lib/background-remover/matte';
   import type { RemoverWorker } from '@/tools/lib/background-remover/remover.worker';
-  import { downloadBlob, withExtension, withSuffix, zipFiles } from '@/tools/lib/files';
+  import { deviceMessage, maxPixels as deviceMaxPixels } from '@/tools/lib/device-guard';
+  import { downloadResult, withExtension, withSuffix, zipFiles } from '@/tools/lib/files';
 
   type Mode = 'best' | 'fast';
   const MODELS: Record<Mode, ModelKey> = { best: 'birefnet-lite', fast: 'modnet' };
@@ -91,6 +92,8 @@
     detectDevice().then((info) => {
       gpu = info.webgpu;
       if (info.isMobile) maxPixels = 16e6;
+      // low-memory devices (navigator.deviceMemory) get a smaller working size still, never under 4 MP
+      maxPixels = Math.min(maxPixels, deviceMaxPixels('image-ai'));
       for (const m of ['best', 'fast'] as const) {
         const c = pickVariant(MODELS[m], info);
         if (c) sizes[m] = formatMB(totalDownloadSize(MODELS[m], c.variant));
@@ -179,10 +182,10 @@
         item.h = img.height;
         if (!stale()) setThumb(item, frameSource(item.heavy.preview, item.w, item.h, null, 120 / Math.max(item.w, item.h)));
       }
-    } catch {
+    } catch (err) {
       if (stale()) return;
       item.status = 'error';
-      item.error = "Couldn't read this image. Try a JPG, PNG, WebP or HEIC file.";
+      item.error = deviceMessage('image-ai', err) ?? "Couldn't read this image. Try a JPG, PNG, WebP or HEIC file.";
       return;
     }
     if (stale()) return item.heavy.preview?.close();
@@ -436,10 +439,10 @@
         saving = list.length > 1 ? `Saving ${i + 1} of ${list.length}…` : 'Saving…';
         files.push({ name: outName(item), blob: await render(item, l, fmt) });
       }
-      if (files.length === 1) downloadBlob(files[0].blob, files[0].name);
+      if (files.length === 1) downloadResult(files[0].blob, files[0].name);
       else {
         saving = 'Zipping…';
-        downloadBlob(await zipFiles(files), 'rounder-cutouts.zip');
+        downloadResult(await zipFiles(files), 'rounder-cutouts.zip');
       }
     } catch (err) {
       console.error(err);

@@ -2,6 +2,7 @@ import { unzlibSync, inflateSync, zlibSync } from 'fflate';
 import { PDFArray, PDFBool, PDFDict, PDFName, PDFNumber, PDFRawStream, PDFRef, PDFStream, type PDFDocument, type PDFObject } from 'pdf-lib';
 import { grayPlane, grayscale, isFlatGraphic, jpegInfo, targetSize, toRgba, unpredictPng, type Pixels } from './pixels';
 import type { ImageOptions } from './settings';
+import type { ImageSample } from './target';
 
 /** the pixel work, which needs a browser (or a fake in tests) */
 export interface Codec {
@@ -170,12 +171,8 @@ async function shrink(c: Candidate, o: ImageOptions, maxSidePt: number, codec: C
   return { bytes, width, height };
 }
 
-/**
- * Downscales and re-encodes the photos in a PDF as JPEG, in place. Only replaces
- * an image when the new one is smaller (or when converting to grayscale);
- * anything unusual is left exactly as it was.
- */
-export async function optimizeImages(doc: PDFDocument, o: ImageOptions, codec: Codec, onprogress?: (done: number, total: number) => void): Promise<ImageStats> {
+/** the file's images, the ones worth recompressing, and how large each can be drawn */
+function collect(doc: PDFDocument, grayscale: boolean) {
   const images: [PDFRef, PDFRawStream][] = [];
   const masks = new Set<PDFRef>();
   for (const [ref, obj] of doc.context.enumerateIndirectObjects()) {
@@ -186,9 +183,47 @@ export async function optimizeImages(doc: PDFDocument, o: ImageOptions, codec: C
       if (m instanceof PDFRef) masks.add(m);
     }
   }
-  const work = images.map(([ref, s]) => candidate(doc, ref, s, masks, o.grayscale)).filter((c) => c !== null);
+  const work = images.map(([ref, s]) => candidate(doc, ref, s, masks, grayscale)).filter((c) => c !== null);
   const { images: sizes, fallback } = drawnSizes(doc);
-  const stats: ImageStats = { found: images.length, replaced: 0, before: 0, after: 0 };
+  return { found: images.length, work, side: (c: Candidate) => sizes.get(c.ref) ?? fallback };
+}
+
+/**
+ * Tries each setting on a few of the file's images (the biggest plus an even spread of the rest) without changing
+ * the document, so a target-size search can estimate before it commits to a full pass.
+ */
+export async function sampleImages(doc: PDFDocument, settings: ImageOptions[], codec: Codec, max = 3, onprogress?: (done: number, total: number) => void): Promise<ImageSample> {
+  const { found, work, side } = collect(doc, settings[0]?.grayscale ?? false);
+  const bySize = [...work].sort((a, b) => b.stream.contents.length - a.stream.contents.length);
+  const picks = bySize.length <= max ? bySize : [...new Set(Array.from({ length: max }, (_, k) => bySize[Math.round((k * (bySize.length - 1)) / (max - 1))]))];
+  const total = picks.length * settings.length;
+  let done = 0;
+  onprogress?.(0, total);
+  const samples: ImageSample['samples'] = [];
+  let unreadable = 0;
+  for (const c of picks) {
+    const before = c.stream.contents.length;
+    const after: number[] = [];
+    let failed = 0;
+    for (const o of settings) {
+      const out = await shrink(c, o, side(c), codec).catch(() => (failed++, null));
+      after.push(out ? out.bytes.length : before);
+      onprogress?.(++done, total);
+    }
+    if (failed) unreadable++;
+    samples.push({ before, after });
+  }
+  return { found, candidates: work.length, candidateBytes: work.reduce((s, c) => s + c.stream.contents.length, 0), samples, unreadable };
+}
+
+/**
+ * Downscales and re-encodes the photos in a PDF as JPEG, in place. Only replaces
+ * an image when the new one is smaller (or when converting to grayscale);
+ * anything unusual is left exactly as it was.
+ */
+export async function optimizeImages(doc: PDFDocument, o: ImageOptions, codec: Codec, onprogress?: (done: number, total: number) => void): Promise<ImageStats> {
+  const { found, work, side } = collect(doc, o.grayscale);
+  const stats: ImageStats = { found, replaced: 0, before: 0, after: 0 };
 
   let next = 0;
   let done = 0;
@@ -197,7 +232,7 @@ export async function optimizeImages(doc: PDFDocument, o: ImageOptions, codec: C
   const lane = async () => {
     for (let c = work[next++]; c; c = work[next++]) {
       try {
-        const out = await shrink(c, o, sizes.get(c.ref) ?? fallback, codec);
+        const out = await shrink(c, o, side(c), codec);
         if (out) {
           const dict = c.stream.dict.clone(doc.context);
           dict.set(N('Width'), PDFNumber.of(out.width));

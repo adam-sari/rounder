@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import ModelGate, { type GateLoadContext } from '@/components/tool/ModelGate.svelte';
   import { deviceLabel, detectDevice, type DeviceInfo } from '@/engines/ai/device';
   import { toAiError } from '@/engines/ai/errors';
@@ -8,7 +9,8 @@
   import { formatMB } from '@/engines/ai/progress';
   import { modelWorker, proxy, transfer } from '@/engines/ai/worker-utils';
   import { decodeImage, encodeImage, formatInfo, imageKind, outputFormatFor, resizeImage, type OutputFormat } from '@/engines/image/client';
-  import { downloadBlob, formatBytes, withExtension, withSuffix } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+  import { downloadResult, formatBytes, withExtension, withSuffix } from '@/tools/lib/files';
   import ZoomCompare from '@/tools/lib/image-upscaler/ZoomCompare.svelte';
   import { blendTile, copyAlpha, crop, estimateSeconds, fitWithin, formatDuration, hasTransparency, maxInputSide, planTiles, tiling, type Scale } from '@/tools/lib/image-upscaler/tiles';
   import type { UpscalerWorker } from '@/tools/lib/image-upscaler/upscaler.worker';
@@ -56,6 +58,8 @@
   const limit = $derived(maxInputSide(scale, mobile));
   const tooBig = $derived(!!original && Math.max(original.width, original.height) > limit);
   const busy = $derived(phase === 'preparing' || phase === 'running');
+  // low-end devices: the stitched result is the big part, so warn about (or stop) an output this device can't hold
+  const deviceFit = $derived(input ? checkDevice('upscale', { width: input.width * scale, height: input.height * scale, tip: `Try ${scale === 4 ? '2× instead of 4×, or ' : ''}a smaller or cropped image.` }) : null);
   const tiles = $derived.by(() => {
     if (!input || !choice) return [];
     const { tile, overlap } = tiling(choice.device, scale, info?.maxBufferSize ?? 0);
@@ -130,8 +134,8 @@
       const fmt = outputFormatFor(kind);
       format = hasTransparency(data) ? 'png' : FORMATS.includes(fmt) ? fmt : 'webp';
       await useInput(Math.max(data.width, data.height) <= limit ? data : null);
-    } catch {
-      if (ticket === opening) error = "Couldn't read that image. Try a JPG, PNG, WebP, AVIF or HEIC file.";
+    } catch (err) {
+      if (ticket === opening) error = deviceMessage('image-ai', err) ?? "Couldn't read that image. Try a JPG, PNG, WebP, AVIF or HEIC file.";
     } finally {
       if (ticket === opening) loading = false;
     }
@@ -238,7 +242,7 @@
       const blob = await encodeImage(img, { format, quality, background: '#ffffff' });
       if (img !== result) return;
       const name = withSuffix(withExtension(file.name, formatInfo[format].ext), `-upscaled-${scale}x`);
-      downloadBlob(blob, name);
+      downloadResult(blob, name);
       saved = `${name} · ${formatBytes(blob.size)}`;
     } catch {
       error = "Couldn't save the image. Try JPG or WebP, which need less memory than PNG.";
@@ -331,7 +335,8 @@
               That's a long wait on the processor. {scale === 4 ? '2× is about four times quicker. ' : ''}A smaller image helps too, as does Chrome or Edge on a computer with WebGPU. Keep this tab open while it works.
             </p>
           {/if}
-          <button type="button" class="btn btn-primary" onclick={run}>Upscale {scale}×</button>
+          <DeviceNote verdict={deviceFit} />
+          <button type="button" class="btn btn-primary" onclick={run} disabled={deviceFit?.level === 'block'}>Upscale {scale}×</button>
           {#if error}<p class="text-sm text-bad" role="alert">{error}</p>{/if}
           <button type="button" class="btn py-2! text-sm!" onclick={reset}>Use another image</button>
         {:else if busy}

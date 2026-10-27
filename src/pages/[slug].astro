@@ -1,13 +1,16 @@
 ---
 import Base from '@/layouts/Base.astro';
 import ToolHost from '@/components/tool/ToolHost.svelte';
+import RateSlot from '@/components/tool/RateSlot.svelte';
 import ToolCard from '@/components/site/ToolCard.astro';
 import Ad from '@/components/site/Ad.astro';
 import CategoryArt from '@/components/art/CategoryArt.astro';
-import { tools, toolBySlug, toolsIn, variantsOf, nextSteps, adsAllowed, splitEmphasis, plainText, type Tool } from '@/tools/registry';
+import { tools, toolBySlug, toolsIn, variantsOf, nextSteps, adsAllowed, splitEmphasis, plainText, measuredOn, type Tool } from '@/tools/registry';
 import { categoryById, categoryPath } from '@/tools/categories';
 import { SITE, RAIL_MEDIA, adSlotLive } from '@/site';
 import { breadcrumbs, faqPage, webApplication } from '@/seo/schema';
+import { ratingLabel, shownRating } from '@/seo/ratings';
+import { HUB, isSizePreset } from '@/tools/lib/exact-size/pages';
 
 export function getStaticPaths() {
   return tools.map((tool) => ({ params: { slug: tool.slug }, props: { tool } }));
@@ -29,9 +32,19 @@ const related = [
 ].slice(0, 6);
 
 const next = nextSteps(tool);
+// visitors' own ratings (build-time snapshot), shown and marked up together, and only from MIN_RATINGS on
+const rating = shownRating(tool.slug);
+// the rating prompt is built separately; its space under the tool appears once src/components/tool/RatePrompt.svelte exists
+// the ad-free privacy tools (noAds) get no rating box either, so those pages never talk to our server
+const ratePrompt = ads && Object.keys(import.meta.glob('/src/components/tool/RatePrompt.svelte')).length > 0;
+// first-hand notes sit between "How it works" and the questions; "What the settings do" pairs with the steps
+const { settings = [], results = [], measured, formats = [], limits = [] } = tool.notes ?? {};
+const hasNotes = settings.length + results.length + formats.length + limits.length > 0;
 // the main tool and its preset pages (png-to-jpg, flac-to-mp3…) all link to each other
 const main = (tool.variantOf && toolBySlug[tool.variantOf]) || tool;
-const family = [main, ...variantsOf(main.slug)].filter((t) => t.slug !== tool.slug);
+const family = [main, ...variantsOf(main.slug)].filter((t) => t.slug !== tool.slug && !isSizePreset(t));
+// exact-size presets (compress-pdf-to-100kb…) get their own "Common targets" line, with the hub that lists them all
+const targets = variantsOf(main.slug).filter((t) => t.slug !== tool.slug && isSizePreset(t));
 const familyTitle = /convert|-to-/.test(main.slug) ? 'Popular conversions' : 'Shortcuts';
 
 const report = `mailto:${SITE.email}?subject=${encodeURIComponent(`Problem with ${tool.name}`)}&body=${encodeURIComponent(
@@ -39,7 +52,7 @@ const report = `mailto:${SITE.email}?subject=${encodeURIComponent(`Problem with 
 )}`;
 
 const schema = [
-  webApplication(site, { name: plainText(tool.h1), url, description: tool.description }),
+  webApplication(site, { name: plainText(tool.h1), url, description: tool.description, rating }),
   faqPage(tool.faq),
   breadcrumbs([
     { name: SITE.name, url: site.href },
@@ -65,12 +78,20 @@ const schema = [
             {splitEmphasis(tool.h1).map((p) => (p.em ? <em>{p.text}</em> : p.text))}
           </h1>
           <p class="mt-3 text-lg text-soft">{tool.tagline}</p>
+          {rating && (
+            <p class="mono mt-2">
+              <span aria-hidden="true">{ratingLabel(rating)}</span>
+              <span class="sr-only">Rated {rating.avg.toFixed(1)} out of 5 from {rating.count.toLocaleString('en-US')} visitor ratings</span>
+            </p>
+          )}
         </div>
       </header>
 
       <section class="card p-[clamp(16px,3vw,32px)]" aria-label="Tool">
-        <ToolHost client:load island={tool.island} props={tool.props} />
+        <ToolHost client:load island={tool.island} slug={tool.slug} props={tool.props} />
       </section>
+
+      {ratePrompt && <div class="mt-3"><RateSlot client:idle slug={tool.slug} /></div>}
 
       <div class="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
         {next.length > 0 && (
@@ -85,8 +106,9 @@ const schema = [
 
     <div class:list={[rail && 'min-[1280px]:grid min-[1280px]:grid-cols-[minmax(0,1fr)_300px] min-[1280px]:gap-x-10']}>
       <div>
+        {/* one grid, so the questions sit beside the steps on pages without notes and after the notes on pages with them */}
         <div class="mt-20 grid gap-12 md:grid-cols-[1fr_1.3fr]">
-          <section>
+          <section class:list={[hasNotes && settings.length === 0 && 'md:col-span-2 max-w-[760px]']}>
             <h2 class="text-4xl">How it works</h2>
             <ol class="mt-5 grid gap-4">
               {tool.steps.map((step, i) => (
@@ -98,7 +120,61 @@ const schema = [
             </ol>
             {ads && <Ad kind="content" class="mt-12" />}
           </section>
-          <section>
+
+          {settings.length > 0 && (
+            <section>
+              <h2 class="text-4xl">What the settings do</h2>
+              <dl class="notes mt-5">
+                {settings.map((s) => <div><dt>{s.name}</dt><dd>{s.effect}</dd></div>)}
+              </dl>
+            </section>
+          )}
+
+          {results.length > 0 && (
+            <section class="min-w-0 md:col-span-2 md:mt-8">
+              <h2 class="text-4xl">Typical results</h2>
+              <div class="card mt-5 overflow-x-auto">
+                <table class="results">
+                  <thead><tr><th scope="col">Input</th><th scope="col">Setting</th><th scope="col">Result</th></tr></thead>
+                  <tbody>
+                    {results.map((r) => (
+                      <tr>
+                        <td>{r.input}</td>
+                        <td>{r.setting}</td>
+                        <td><span class="text-chalk">{r.output}</span>{r.note && <span class="block text-sm">{r.note}</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {measured && <p class="mono mt-3">measured on {measuredOn(measured.date)} with {measured.device}</p>}
+            </section>
+          )}
+
+          {formats.length > 0 && (
+            <section class:list={['md:mt-8', limits.length === 0 && 'md:col-span-2 max-w-[760px]']}>
+              <h2 class="text-4xl">About the formats</h2>
+              <dl class="notes mt-5">
+                {formats.map((f) => <div><dt>{f.name}</dt><dd>{f.about}</dd></div>)}
+              </dl>
+            </section>
+          )}
+
+          {limits.length > 0 && (
+            <section class:list={['md:mt-8', formats.length === 0 && 'md:col-span-2 max-w-[760px]']}>
+              <h2 class="text-4xl">Platform limits</h2>
+              <dl class="notes mt-5">
+                {limits.map((l) => (
+                  <div>
+                    <dt>{l.where}</dt>
+                    <dd>{l.limit}{l.source && <a href={l.source} rel="noopener" class="mono ml-2 hover:text-chalk">source ↗</a>}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          <section class:list={[hasNotes && 'md:col-span-2 md:mt-8 max-w-[760px]']}>
             <h2 class="text-4xl">Questions</h2>
             <div class="mt-5 grid gap-2">
               {tool.faq.map((f) => (
@@ -112,6 +188,16 @@ const schema = [
             </div>
           </section>
         </div>
+
+        {(targets.length > 0 || isSizePreset(tool)) && (
+          <section class="mt-20">
+            <h2 class="text-4xl">Common targets</h2>
+            <p class="mt-5 flex flex-wrap gap-2">
+              {targets.map((t) => <a href={`/${t.slug}`} class="chip">{t.name}</a>)}
+              <a href={HUB} class="chip">Every exact size <span aria-hidden="true">→</span></a>
+            </p>
+          </section>
+        )}
 
         {family.length > 0 && (
           <section class="mt-20">
@@ -154,5 +240,44 @@ const schema = [
   .chip:hover {
     color: var(--color-chalk);
     border-color: var(--color-sun);
+  }
+
+  /* first-hand notes: a term over its explanation, between hairlines */
+  .notes > div {
+    padding-block: 14px;
+    border-top: 1px solid var(--color-line);
+    &:last-child { border-bottom: 1px solid var(--color-line); }
+  }
+  .notes dt {
+    font-weight: 500;
+    color: var(--color-chalk);
+  }
+  .notes dd {
+    margin-top: 2px;
+    color: var(--color-soft);
+  }
+  .results {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    th {
+      padding: 14px 20px 10px;
+      text-align: left;
+      font: 400 12.5px var(--font-mono);
+      color: var(--color-muted);
+      border-bottom: 1px solid var(--color-line-2);
+    }
+    td {
+      padding: 12px 20px;
+      vertical-align: top;
+      color: var(--color-soft);
+      border-top: 1px solid var(--color-line);
+    }
+    tbody tr:first-child td { border-top: 0; }
+    /* three short columns fit a phone once the padding shrinks, so the result never scrolls out of view */
+    @media (max-width: 639px) {
+      th, td { padding-inline: 12px; }
+    }
+    td span.block { color: var(--color-muted); }
   }
 </style>

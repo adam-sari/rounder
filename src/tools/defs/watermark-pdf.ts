@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,19 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Text or image', effect: 'Text (default "CONFIDENTIAL") in sans, serif or mono, optionally bold, at a size in points; or a logo image scaled as a share of the page.' },
+      { name: 'Opacity (default 25%)', effect: 'How see-through the mark is. Around 15–30% stays readable without hiding the page.' },
+      { name: 'Rotation', effect: 'Diagonal runs corner to corner on every page whatever its shape; Level is horizontal; Custom takes any angle.' },
+      { name: 'Position', effect: 'One of nine spots with a margin, or tiled to repeat across the whole page.' },
+      { name: 'Layer', effect: 'Over content sits on top of everything; Under content goes beneath the text and images, so it shows only through empty areas.' },
+      { name: 'Pages', effect: 'Every page, or only the ranges you type.' },
+    ],
+    results: [{ input: '20-page report with photos, 2.3 MB', setting: 'Text "CONFIDENTIAL", defaults', output: '2.2 MB', note: '0.3 s; the mark is stored once and placed on every page by reference' }],
+    measured: MEASURED,
+    formats: [{ name: 'What is added', about: 'Real PDF text or one embedded image, drawn into each page\'s content. The original pages aren\'t rasterized, so their text stays selectable.' }],
+  },
   related: ['add-page-numbers-to-pdf', 'protect-pdf', 'watermark-image', 'merge-pdf'],
   next: ['protect-pdf', 'compress-pdf'],
   flagship: { elsewhere: 'Daily task limits and file size caps', here: 'Unlimited PDFs, no size cap' },

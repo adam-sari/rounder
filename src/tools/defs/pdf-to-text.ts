@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,5 +23,22 @@ export default {
     { q: 'Is there a page or size limit?', a: 'No. Long documents are read page by page with a progress bar, and you can stop at any time and keep what has been read so far.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Page markers (on)', effect: 'Puts a "Page 3" line between pages (a "## Page 3" heading in Markdown), so quotes can be traced back.' },
+      { name: 'Join wrapped lines', effect: 'One line per paragraph instead of the PDF\'s line breaks, and words hyphenated at a line end are mended ("exam-" + "ple" becomes "example") while real hyphens stay.' },
+      { name: 'Reading order', effect: 'Text is grouped into lines and paragraphs, and two-column layouts are read column by column by splitting at the gutter between them.' },
+      { name: '.txt or .md', effect: 'Plain text, or Markdown where table-like rows (cells separated by wide gaps) become Markdown tables.' },
+    ],
+    results: [
+      { input: '20-page report with photos and charts, 2.3 MB', setting: 'Defaults', output: '10,590 words, 72 KB of text', note: '0.3 s' },
+      { input: '50-page text-only PDF, 21 KB', setting: 'Defaults', output: '950 words', note: '0.2 s' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'PDFs with a text layer', about: 'Made from Word, Google Docs, a browser or most office software. The text is read exactly as stored, so nothing is guessed.' },
+      { name: 'Scans', about: 'Only pictures of pages, with no text inside. Those pages come out empty; OCR PDF reads them instead.' },
+    ],
+  },
   related: ['ocr-pdf', 'pdf-to-jpg', 'extract-images-from-pdf', 'word-counter'],
 } satisfies Tool;

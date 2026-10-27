@@ -36,10 +36,10 @@ const toolCount = tools.filter((t) => !t.variantOf).length;
 
   <h2>How it's built</h2>
   <ul>
-    <li><strong>Everything runs locally.</strong> Tools use WebAssembly, Web Workers, WebCodecs and WebGPU to do the heavy work on your device. There's no server that processes files, and no database.</li>
+    <li><strong>Everything runs locally.</strong> Tools use WebAssembly, Web Workers, WebCodecs and WebGPU to do the heavy work on your device. There's no server that processes files. The only server code stores the optional <a href="/privacy#ratings">tool ratings</a>.</li>
     <li><strong>On the shoulders of open source.</strong> The engines are well-known libraries such as PDF.js, pdf-lib, FFmpeg and ONNX Runtime, and AI models released openly by researchers. They're all on the <a href="/credits">credits page</a>.</li>
     <li><strong>Tested in real browsers.</strong> Automated tests open every page in Chrome, Firefox and Safari's engine, at desktop and phone sizes, and run real files through the tools.</li>
-    <li><strong>Simple hosting.</strong> The site is a set of static files on Cloudflare Pages. <a href="/security">Here's every network request it makes.</a></li>
+    <li><strong>Simple hosting.</strong> The site is a set of static files on Cloudflare, plus that small ratings API. <a href="/security">Here's every network request it makes.</a></li>
   </ul>
 
   <h2>Built with AI help</h2>

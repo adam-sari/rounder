@@ -17,7 +17,21 @@ export interface RawItem {
 /** one paragraph = its lines, in order */
 export type Paragraph = string[];
 
+/** a laid-out line: the input items on it (left to right, by index) and its box; y grows downwards */
+export interface TextLine {
+  items: number[];
+  text: string;
+  x0: number;
+  x1: number;
+  top: number;
+  bottom: number;
+  /** the largest font size on the line */
+  size: number;
+}
+
 interface Box {
+  /** index of the item in the input */
+  i: number;
   str: string;
   x0: number;
   x1: number;
@@ -50,7 +64,7 @@ function quarter(t: number[]) {
   return (((Math.round(Math.atan2(t[1], t[0]) / (Math.PI / 2)) % 4) + 4) % 4);
 }
 
-function toBox(item: RawItem, q: number): Box {
+function toBox(item: RawItem, q: number, i: number): Box {
   const [, , c, d, e, f] = item.transform;
   const size = Math.hypot(c, d) || 1;
   // rotate the page so this orientation reads left to right
@@ -59,7 +73,7 @@ function toBox(item: RawItem, q: number): Box {
   const along = e * cos + f * sin;
   const base = -(-e * sin + f * cos);
   const width = item.width > 0 ? item.width : item.str.length * size * 0.5;
-  return { str: item.str, x0: along, x1: along + width, base, top: base - size * 0.8, bottom: base + size * 0.25, size, rtl: item.dir === 'rtl' };
+  return { i, str: item.str, x0: along, x1: along + width, base, top: base - size * 0.8, bottom: base + size * 0.25, size, rtl: item.dir === 'rtl' };
 }
 
 /** Groups boxes into lines (vertical overlap with the line's largest item), top to bottom */
@@ -175,11 +189,11 @@ function blocks(boxes: Box[], em: number): Box[][] {
 }
 
 /** Breaks a block's lines into paragraphs at first-line indents and size changes (headings) */
-function paragraphs(lines: Line[]): Paragraph[] {
+function paragraphs(lines: Line[]): TextLine[][] {
   const left = median(lines.map((l) => l.x0));
   const aligned = lines.filter((l) => Math.abs(l.x0 - left) < l.size * 0.5).length;
   const indents = lines.length >= 3 && aligned >= lines.length / 2;
-  const out: Paragraph[] = [];
+  const out: TextLine[][] = [];
   let prev: Line | undefined;
   for (const l of lines) {
     const text = lineText(l);
@@ -187,10 +201,37 @@ function paragraphs(lines: Line[]): Paragraph[] {
     const sizeChange = prev && Math.abs(l.size - prev.size) > 0.2 * Math.max(l.size, prev.size);
     const indented = indents && prev && l.x0 - left >= l.size * 0.8 && prev.x0 - left < l.size * 0.5;
     if (!prev || sizeChange || indented) out.push([]);
-    out.at(-1)!.push(text);
+    out.at(-1)!.push(textLine(l, text));
     prev = l;
   }
   return out;
+}
+
+function textLine(l: Line, text = lineText(l)): TextLine {
+  const items = [...l.boxes].sort((a, b) => a.x0 - b.x0).map((b) => b.i);
+  return { items, text, x0: l.x0, x1: l.x1, top: l.top, bottom: l.bottom, size: l.size };
+}
+
+/** the items in one orientation as boxes, without blank ones and without text drawn twice for fake bold */
+function boxesOf(items: RawItem[], q: number, only?: (i: number) => boolean): Box[] {
+  const seen = new Set<string>();
+  const boxes: Box[] = [];
+  items.forEach((item, i) => {
+    if (!item.str.trim() || item.transform.length < 6 || quarter(item.transform) !== q || (only && !only(i))) return;
+    const b = toBox(item, q, i);
+    const key = `${b.str}|${Math.round(b.x0)}|${Math.round(b.base)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    boxes.push(b);
+  });
+  return boxes;
+}
+
+/** The page's upright lines top to bottom, each across the full page width (for finding tables) */
+export function pageLines(items: RawItem[], only?: (i: number) => boolean): TextLine[] {
+  return groupLines(boxesOf(items, 0, only))
+    .map((l) => textLine(l))
+    .filter((l) => l.text);
 }
 
 /**
@@ -198,26 +239,24 @@ function paragraphs(lines: Line[]): Paragraph[] {
  * orientations (e.g. a rotated margin note) follows the main text.
  */
 export function layoutPage(items: RawItem[]): Paragraph[] {
-  const byQuarter = new Map<number, RawItem[]>();
-  for (const item of items) {
-    if (!item.str.trim() || item.transform.length < 6) continue;
+  return layoutLines(items).map((p) => p.map((l) => l.text));
+}
+
+/**
+ * layoutPage with each line's geometry and items; `only` limits it to some of the items
+ * (e.g. those outside tables). Coordinates are in the line's own orientation.
+ */
+export function layoutLines(items: RawItem[], only?: (i: number) => boolean): TextLine[][] {
+  const chars = new Map<number, number>();
+  items.forEach((item, i) => {
+    if (!item.str.trim() || item.transform.length < 6 || (only && !only(i))) return;
     const q = quarter(item.transform);
-    const list = byQuarter.get(q);
-    if (list) list.push(item);
-    else byQuarter.set(q, [item]);
-  }
-  const chars = (list: RawItem[]) => list.reduce((n, i) => n + i.str.length, 0);
-  const groups = [...byQuarter].sort((a, b) => chars(b[1]) - chars(a[1]));
-  const out: Paragraph[] = [];
-  for (const [q, list] of groups) {
+    chars.set(q, (chars.get(q) ?? 0) + item.str.length);
+  });
+  const out: TextLine[][] = [];
+  for (const [q] of [...chars].sort((a, b) => b[1] - a[1])) {
     // fake bold is often the same text drawn twice a hair apart
-    const seen = new Set<string>();
-    const boxes = list.map((i) => toBox(i, q)).filter((b) => {
-      const key = `${b.str}|${Math.round(b.x0)}|${Math.round(b.base)}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const boxes = boxesOf(items, q, only);
     const em = median(boxes.map((b) => b.size));
     for (const block of blocks(boxes, em)) out.push(...paragraphs(groupLines(block)));
   }

@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default [
@@ -24,6 +25,17 @@ export default [
       { q: 'Is there a limit on pages or file size?', a: 'Not from us. The work happens on your device, so very large files are limited only by your browser\'s memory. Thumbnails load as you scroll, so long documents stay responsive.' },
       filePrivacyFaq,
     ],
+    notes: {
+      settings: [
+        { name: 'Order menu', effect: 'Reverse order; odd pages then even; "Fix a duplex scan" (fronts first, backs scanned last-to-first, woven back together); "Interleave halves" (backs in order). Each applies to the selected pages, or to all when none are selected.' },
+        { name: 'Rotate', effect: '90° either way or 180°, for the selected pages or all of them. Saved as the page\'s rotation setting, so nothing is redrawn.' },
+        { name: 'Blank page', effect: 'Inserts an empty page the same size and orientation as the page next to it.' },
+        { name: 'Select or mark by number', effect: 'Type ranges like "2-5, 9" instead of clicking. Numbers follow the original pages while they are unambiguous, then positions in the current order.' },
+      ],
+      results: [{ input: '20-page report, 2.3 MB', setting: 'Rotate all pages 90°, Save PDF', output: '2.2 MB', note: 'saved in 0.4 s; text stays selectable' }],
+      measured: MEASURED,
+      formats: [{ name: 'What gets saved', about: 'The pages you kept, copied into a new PDF in the new order. Images aren\'t recompressed and text stays text; bookmarks of the original aren\'t carried over.' }],
+    },
     related: ['merge-pdf', 'split-pdf', 'compress-pdf', 'delete-pdf-pages'],
     next: ['compress-pdf', 'add-page-numbers-to-pdf'],
     flagship: { elsewhere: 'Free tiers cap file size, page count or tasks per day', here: 'No caps, and every edit can be undone' },

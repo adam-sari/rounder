@@ -1,4 +1,5 @@
 import { zipSync } from 'fflate';
+import { toolSucceeded } from './success';
 
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -32,6 +33,12 @@ export function downloadBlob(blob: Blob, name: string) {
   a.remove();
   // revoking straight away can cancel the download in some browsers
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
+/** saves a tool's finished result, which also counts as the run working (toolSucceeded, so the rating prompt may follow) */
+export function downloadResult(blob: Blob, name: string) {
+  downloadBlob(blob, name);
+  toolSucceeded();
 }
 
 /** Gives clashing names a " (2)" suffix so nothing is overwritten inside a zip */

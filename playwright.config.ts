@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // a production build outside the repo, so it never clobbers dist/ or the dev server on :4321
 export const DIST = process.env.E2E_DIST ?? 'D:/work/personal/.rounder-e2edist';
-const PORT = 4600;
+const PORT = Number(process.env.E2E_PORT ?? 4600);
 
 export default defineConfig({
   testDir: 'tests/e2e',

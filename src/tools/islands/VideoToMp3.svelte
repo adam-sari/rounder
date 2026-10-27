@@ -19,9 +19,12 @@
     type MediaInfo,
     type VideoCodec,
   } from '@/engines/media';
-  import { downloadBlob, formatBytes, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, zipFiles } from '@/tools/lib/files';
   import { AUDIO_FORMATS, audioBitrate, canCopy, clipLength, estimateAudioBytes, formatSpec, isLossless, type AudioFormat, type Bitrate } from '@/tools/lib/video-to-mp3/audio';
   import { mediaErrorText } from '@/tools/lib/video-to-mp3/job';
+
+  // from (e.g. 'MP4' on /mp4-to-mp3) only names the format in the drop area; every video still opens
+  let { from }: { from?: string } = $props();
 
   const ACCEPT = 'video/*,audio/*,.mkv,.avi,.wmv,.flv,.m4v,.3gp,.ts,.mts,.m2ts,.mpg,.mpeg,.ogv,.vob';
 
@@ -241,10 +244,10 @@
   }
 
   async function downloadAll() {
-    if (done.length === 1) return downloadBlob(done[0].out!.blob, done[0].out!.name);
+    if (done.length === 1) return downloadResult(done[0].out!.blob, done[0].out!.name);
     zipping = true;
     try {
-      downloadBlob(await zipFiles(done.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), 'extracted-audio.zip');
+      downloadResult(await zipFiles(done.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), 'extracted-audio.zip');
     } catch {
       runError = "The zip couldn't be made. Try downloading the files one by one.";
     } finally {
@@ -273,7 +276,7 @@
 </script>
 
 {#if !items.length}
-  <Dropzone accept={ACCEPT} multiple title="Drop videos here" hint="or click to choose · batches welcome" onfiles={add} />
+  <Dropzone accept={ACCEPT} multiple title={from ? `Drop ${from} videos here` : 'Drop videos here'} hint="or click to choose · batches welcome" onfiles={add} />
 {:else}
   <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
     <div class="grid min-w-0 content-start gap-4">
@@ -314,7 +317,7 @@
                   </p>
                 </div>
                 <audio src={sel.out.url} controls preload="metadata" class="w-full"></audio>
-                <button type="button" class="btn btn-primary" onclick={() => downloadBlob(sel.out!.blob, sel.out!.name)}>Download {sel.out.name.split('.').pop()?.toUpperCase()}</button>
+                <button type="button" class="btn btn-primary" onclick={() => downloadResult(sel.out!.blob, sel.out!.name)}>Download {sel.out.name.split('.').pop()?.toUpperCase()}</button>
               </div>
             {/if}
 
@@ -381,7 +384,7 @@
               </span>
             </button>
             {#if item.out}
-              <button type="button" class="btn px-3! py-2!" onclick={() => downloadBlob(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
+              <button type="button" class="btn px-3! py-2!" onclick={() => downloadResult(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
             {/if}
             <button type="button" class="btn px-3! py-2!" disabled={!!job} onclick={() => remove(item)} aria-label={`Remove ${item.file.name}`}>✕</button>
           </li>

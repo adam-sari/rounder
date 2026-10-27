@@ -15,7 +15,7 @@
   import { modelWorker, proxy } from '@/engines/ai/worker-utils';
   import { writeWav } from '@/engines/media/dsp';
   import { formatTime } from '@/engines/media/math';
-  import { downloadBlob } from '@/tools/lib/files';
+  import { downloadResult } from '@/tools/lib/files';
   import { fileStem, joinAudio, PAUSE, SAMPLE_RATE, splitParagraphs, splitSentences } from '@/tools/lib/text-to-speech/text';
   import type { Opts, TtsWorker } from '@/tools/lib/text-to-speech/tts.worker';
   import { DEFAULT_VOICE, loadPrefs, MAX_SPEED, MIN_SPEED, previewLine, savePrefs, voiceById, type VoiceId } from '@/tools/lib/text-to-speech/voices';
@@ -256,7 +256,7 @@
       const pcm = { sampleRate: SAMPLE_RATE, channels: [joinAudio(clips)] };
       const blob =
         format === 'wav' ? new Blob([writeWav(pcm)], { type: 'audio/wav' }) : await (await import('@/engines/media')).encodeAudio(pcm, { format: 'mp3', bitrate: 128_000 });
-      downloadBlob(blob, `${fileStem(source)}.${format}`);
+      downloadResult(blob, `${fileStem(source)}.${format}`);
     } catch (err) {
       error = (err as Error).message || "The audio file couldn't be made. Try WAV instead.";
     } finally {

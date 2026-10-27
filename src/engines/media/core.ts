@@ -617,7 +617,12 @@ export async function transcode(file: Blob, o: TranscodeOptions, ctl: JobControl
     const sink = await makeSink(file.size, c.mime);
     const output = new Output({ format: outputFormat(o.container), target: sink.target });
     const tags = o.keepMetadata === false ? {} : undefined;
-    const base = { input, output, trim: o.trim ? { start, end } : undefined, tracks: 'primary' as const, showWarnings: false, tags };
+    // An audio-only trim that copies packets (MP3, WAV, FLAC… out) must start the file at zero, which a
+    // packet boundary rarely matches exactly. Without a little shift mediabunny falls back to re-encoding,
+    // and with no MP3 encoder registered (Chrome has none) the cut fails. 0.2 s covers a FLAC frame or
+    // two MP3/AAC frames, so the copy starts at most that early.
+    const copy = o.trim && start > 0 && !wantVideo ? { shiftTolerance: 0.2 } : undefined;
+    const base = { input, output, trim: o.trim ? { start, end } : undefined, copy, tracks: 'primary' as const, showWarnings: false, tags };
     const main = await Conversion.init({ ...base, video, audio, composable: !!replace });
     const err = (wantVideo && discardError(main, vTrack)) || (wantAudio && !replace && discardError(main, aTrack));
     if (err) throw err;

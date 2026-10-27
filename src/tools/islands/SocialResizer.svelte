@@ -2,7 +2,7 @@
   import { onDestroy } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { decodeImage, encodeCanvas, processImage, resizeImage, type EncodeOptions } from '@/engines/image/client';
-  import { downloadBlob, formatBytes, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, zipFiles } from '@/tools/lib/files';
   import { drawBlurred, free, surface } from '@/tools/lib/social-media-image-resizer/canvas';
   import {
     containRect, defaultSelection, focalCrop, outputName, panFocus, pixelCrop, platforms, sizes, upscaled,
@@ -189,7 +189,7 @@
     try {
       const o = settingsFor(s);
       const blob = await render(s, src, o);
-      downloadBlob(blob, outputName(src.name, s, extOf(o)));
+      downloadResult(blob, outputName(src.name, s, extOf(o)));
     } catch {
       error = `Couldn't create the ${platforms[s.platform].name} ${s.label.toLowerCase()}. Please try again.`;
     } finally {
@@ -220,12 +220,12 @@
       };
       await Promise.all([lane(), lane()]);
       if (files.length === 1) {
-        downloadBlob(files[0].blob, files[0].name);
+        downloadResult(files[0].blob, files[0].name);
         saved = { name: files[0].name, size: files[0].blob.size };
       } else {
         const zip = await zipFiles(files);
         const name = `${source.name.replace(/\.[^.]+$/, '') || 'image'}-social-sizes.zip`;
-        downloadBlob(zip, name);
+        downloadResult(zip, name);
         saved = { name, size: zip.size };
       }
     } catch {

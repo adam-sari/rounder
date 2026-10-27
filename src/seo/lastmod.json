@@ -4,7 +4,11 @@
     "lastmod": "2026-10-27"
   },
   "src/pages/about.astro": {
-    "hash": "e20a28ed971d876e",
+    "hash": "11157c08c88fd3c1",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/compress-to-exact-size.astro": {
+    "hash": "8a4e82bf049c674b",
     "lastmod": "2026-10-27"
   },
   "src/pages/contact.astro": {
@@ -12,7 +16,7 @@
     "lastmod": "2026-10-27"
   },
   "src/pages/credits.astro": {
-    "hash": "c0511d94072de51b",
+    "hash": "5857ec68745fc893",
     "lastmod": "2026-10-27"
   },
   "src/pages/index.astro": {
@@ -28,11 +32,11 @@
     "lastmod": "2026-10-27"
   },
   "src/pages/privacy.astro": {
-    "hash": "dbafa53246a908c5",
+    "hash": "de60b5a376d23eb2",
     "lastmod": "2026-10-27"
   },
   "src/pages/security.astro": {
-    "hash": "01ae07f28738ce77",
+    "hash": "dd7e65ae7810b97e",
     "lastmod": "2026-10-27"
   },
   "src/pages/terms.astro": {
@@ -64,11 +68,11 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/audio-converter.ts": {
-    "hash": "32449d0e66725fbc",
+    "hash": "102ae5ce2f87b1aa",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/audio-cutter.ts": {
-    "hash": "1aae8094ab400900",
+    "hash": "6d4af87e07842951",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/audio-joiner.ts": {
@@ -88,7 +92,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/audio-to-text.ts": {
-    "hash": "6277b569557c6557",
+    "hash": "7b4055798af7606a",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/audiogram-maker.ts": {
@@ -100,7 +104,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/background-remover.ts": {
-    "hash": "7bf3e8c5d4e07d72",
+    "hash": "e1ab4bb0e1a55275",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/barcode-generator.ts": {
@@ -140,7 +144,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/compress-pdf.ts": {
-    "hash": "9d869942ec63bda7",
+    "hash": "4f5726dd01ed6050",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/cron-expression-generator.ts": {
@@ -148,7 +152,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/crop-image.ts": {
-    "hash": "cd35403f4b95a635",
+    "hash": "907f17152c9ea88d",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/crop-video.ts": {
@@ -184,15 +188,35 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/edit-pdf.ts": {
-    "hash": "5d734f9612d5d31d",
+    "hash": "e6a588ae98334aa1",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/email-signature-generator.ts": {
     "hash": "7b1db9eaf1c57f94",
     "lastmod": "2026-10-27"
   },
+  "src/tools/defs/exact-image.ts": {
+    "hash": "0f917c30d88ff221",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/exact-jpg-to-pdf.ts": {
+    "hash": "45bee988b3a228ba",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/exact-pdf.ts": {
+    "hash": "7d607edec74bc397",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/exact-video.ts": {
+    "hash": "379de30e4384bd95",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/excel-to-pdf.ts": {
+    "hash": "eac050e0bcc0197d",
+    "lastmod": "2026-10-27"
+  },
   "src/tools/defs/exif-remover.ts": {
-    "hash": "d2e7bc23597bd4e2",
+    "hash": "9bf24d3ea2591a1c",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/extract-images-from-pdf.ts": {
@@ -216,7 +240,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/gif-to-mp4.ts": {
-    "hash": "12401a1bcbe0ac57",
+    "hash": "42abec62db113ba3",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/gpa-calculator.ts": {
@@ -232,15 +256,15 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/image-compressor.ts": {
-    "hash": "e8a4de89effc7561",
+    "hash": "e39e7a3149d33c68",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/image-converter.ts": {
-    "hash": "ed467c481169f651",
+    "hash": "f963ee0990c731dc",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/image-resizer.ts": {
-    "hash": "9b48140453b63145",
+    "hash": "4c981ede1093fe8c",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/image-to-ascii.ts": {
@@ -248,11 +272,15 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/image-to-text.ts": {
-    "hash": "49d69b7378082525",
+    "hash": "7814870f4fe786b4",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/image-upscaler.ts": {
-    "hash": "6acf71b2abfe05a2",
+    "hash": "7facfa8493b20b43",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/india-forms.ts": {
+    "hash": "6428e8255d28e454",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/instagram-grid-maker.ts": {
@@ -264,7 +292,11 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/jpg-to-pdf.ts": {
-    "hash": "56a547f1e0bb57ae",
+    "hash": "496d303cf1ac10a0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/jpg-to-word.ts": {
+    "hash": "172221c4ae24cfd9",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/jwt-decoder.ts": {
@@ -292,7 +324,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/merge-pdf.ts": {
-    "hash": "ad426872235cc87a",
+    "hash": "76539c6f253e0f11",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/merge-videos.ts": {
@@ -312,7 +344,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/ocr-pdf.ts": {
-    "hash": "32e34f250c9fff19",
+    "hash": "554f5c8270c47c2f",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/online-timer.ts": {
@@ -324,7 +356,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/organize-pdf.ts": {
-    "hash": "c32383b0a6919229",
+    "hash": "582b60a8286cbad1",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/paraphrasing-tool.ts": {
@@ -332,19 +364,31 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/passport-photo-maker.ts": {
-    "hash": "881e7f21400dd0e5",
+    "hash": "a774c68adaa70b58",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/password-strength-checker.ts": {
     "hash": "32a4d7b2e0b48e7b",
     "lastmod": "2026-10-27"
   },
+  "src/tools/defs/pdf-to-excel.ts": {
+    "hash": "f9cdc7a0621bd4ee",
+    "lastmod": "2026-10-27"
+  },
   "src/tools/defs/pdf-to-jpg.ts": {
-    "hash": "831adbadf57f2b57",
+    "hash": "b520655277b11cd2",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pdf-to-powerpoint.ts": {
+    "hash": "1631c3fc8425919f",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/pdf-to-text.ts": {
-    "hash": "369c3f266b84036c",
+    "hash": "bf68a4f6927731c8",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pdf-to-word.ts": {
+    "hash": "f1a70dab535007fb",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/percentage-calculator.ts": {
@@ -364,15 +408,19 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/png-to-svg.ts": {
-    "hash": "3d347771416c95fa",
+    "hash": "6980ef4eee93c631",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/pomodoro-timer.ts": {
     "hash": "449dbff8144946b0",
     "lastmod": "2026-10-27"
   },
+  "src/tools/defs/powerpoint-to-pdf.ts": {
+    "hash": "48803d06d1c2ea4d",
+    "lastmod": "2026-10-27"
+  },
   "src/tools/defs/protect-pdf.ts": {
-    "hash": "041f514ed71d48e5",
+    "hash": "b2c49645bccc40fc",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/qr-code-scanner.ts": {
@@ -392,7 +440,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/resize-video.ts": {
-    "hash": "3f91dd78f0670658",
+    "hash": "03505a99f184f7bb",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/ringtone-maker.ts": {
@@ -416,7 +464,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/sign-pdf.ts": {
-    "hash": "939d4fdf0b598897",
+    "hash": "17de99f4f0199ba3",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/slideshow-maker.ts": {
@@ -428,7 +476,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/split-pdf.ts": {
-    "hash": "65de574b02a3438d",
+    "hash": "704e1bee62d309fd",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/sql-formatter.ts": {
@@ -444,7 +492,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/svg-to-png.ts": {
-    "hash": "80bd9a3d3df8a85f",
+    "hash": "9f1801793769357e",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/text-summarizer.ts": {
@@ -460,7 +508,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/trim-video.ts": {
-    "hash": "24ee16b7db800b9c",
+    "hash": "6b5211d91aa49949",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/unit-converter.ts": {
@@ -468,11 +516,27 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/unlock-pdf.ts": {
-    "hash": "0d57bda4bf9aa617",
+    "hash": "7ada1dd5e1f7064a",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/unzip-files.ts": {
     "hash": "2bd68c1d49c25970",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/variants-image.ts": {
+    "hash": "980d83912bc9bc4b",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/variants-pdf.ts": {
+    "hash": "e40434834bd9d259",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/variants-text.ts": {
+    "hash": "3388470ebfdb243b",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/variants-video.ts": {
+    "hash": "9a306db0537dfb88",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/video-background-remover.ts": {
@@ -480,11 +544,11 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/video-compressor.ts": {
-    "hash": "d7514792469fad9c",
+    "hash": "5f14b724d1af50bd",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/video-converter.ts": {
-    "hash": "160d559755e946e0",
+    "hash": "0f40c3bec593b695",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/video-frame-extractor.ts": {
@@ -496,15 +560,15 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/video-to-gif.ts": {
-    "hash": "44cb1219e1700ddb",
+    "hash": "a067584d4d778fbd",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/video-to-mp3.ts": {
-    "hash": "e93bd4444a981cd7",
+    "hash": "d73f91fdf611c9ee",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/vocal-remover.ts": {
-    "hash": "a05233c158d33260",
+    "hash": "8403b76d008ac59a",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/voice-recorder.ts": {
@@ -520,7 +584,7 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/watermark-pdf.ts": {
-    "hash": "d66e3354918d709c",
+    "hash": "9191133daa7804fe",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/webcam-recorder.ts": {
@@ -531,16 +595,20 @@
     "hash": "2c1f85d07511e5c8",
     "lastmod": "2026-10-27"
   },
+  "src/tools/defs/word-to-pdf.ts": {
+    "hash": "d75ccee7828fcec6",
+    "lastmod": "2026-10-27"
+  },
   "src/tools/defs/youtube-thumbnail-maker.ts": {
     "hash": "f25bfaf580a39c51",
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/zip-files.ts": {
-    "hash": "be68e65ab4dfa973",
+    "hash": "37c6d8afc2be3578",
     "lastmod": "2026-10-27"
   },
   "src/tools/registry.ts": {
-    "hash": "276dfc5d91f45a40",
+    "hash": "c57a4e6a5b170d8c",
     "lastmod": "2026-10-27"
   }
 }

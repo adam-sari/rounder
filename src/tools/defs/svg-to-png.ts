@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,23 @@ export default {
     { q: 'Can I convert SVG code I copied from a website or app?', a: 'Yes. Open "paste SVG code", paste it and add it to the list, or simply paste it anywhere on the page. Code copied from a web page often lacks the SVG namespace, which is added for you.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Size', effect: '1×, 2× (default) or 4× the SVG\'s own size, or an exact width or height in pixels (up to 16,384) with the proportions kept. An SVG with no size of its own is noted with the size used.' },
+      { name: 'Background', effect: 'Transparent (PNG and WebP), or a solid color of your choice. JPG always gets a color, since it has no transparency.' },
+      { name: 'Paste SVG code', effect: 'Turns markup copied from a design tool or a web page into a file in the list, no saving needed.' },
+    ],
+    results: [
+      { input: '64×64 SVG logo, 412 bytes', setting: '2×, transparent PNG', output: '128×128 PNG, 2.3 KB', note: '0.2 s' },
+      { input: 'The same SVG', setting: '4×, transparent PNG', output: '256×256 PNG, 7.3 KB', note: 'drawn from the vector, so it stays sharp' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'SVG', about: 'Vector: sharp at any size, but many apps, social sites and document editors won\'t take it.' },
+      { name: 'PNG', about: 'Pixels at the size you pick, transparency kept. Export at the largest size you\'ll need, because a PNG can\'t be enlarged cleanly later.' },
+      { name: 'What can\'t come along', about: 'Images the SVG links to and web fonts it loads from elsewhere; embed them in the SVG first, or text falls back to a system font.' },
+    ],
+  },
   related: ['png-to-svg', 'image-converter', 'favicon-generator', 'image-resizer'],
   next: ['image-compressor'],
 } satisfies Tool;

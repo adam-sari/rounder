@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { decodeImage, encodeCanvas } from '@/engines/image/client';
-  import { downloadBlob, withExtension, withSuffix } from '@/tools/lib/files';
+  import { downloadResult, withExtension, withSuffix } from '@/tools/lib/files';
   import { layoutBox, layoutCaption, lineX, type Align, type BoxLayout, type CaptionLayout, type Measure, type TextBox } from '@/tools/lib/meme-generator/layout';
 
   type Role = 'top' | 'bottom' | 'extra';
@@ -335,7 +335,7 @@
       // the browser's own PNG encoder is fast on huge images; JPG goes through mozjpeg for smaller files
       const blob = format === 'png' ? await toPng(canvas) : await encodeCanvas(canvas, { format: 'jpeg', quality: 90 });
       canvas.width = 0;
-      downloadBlob(blob, fileName);
+      downloadResult(blob, fileName);
     } catch {
       error = 'Something went wrong while saving. Try JPG, or a smaller image.';
     } finally {

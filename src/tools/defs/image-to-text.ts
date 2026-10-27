@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,23 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Languages', effect: 'Tesseract\'s trained data for each language you pick, downloaded once from jsDelivr (English is 3.9 MB) and cached. The tool starts with the languages your browser asks for.' },
+      { name: 'Show word boxes', effect: 'Outlines every word it read on the image, and marks words it is under 60% sure of so you know what to check.' },
+      { name: 'Join lines', effect: 'Turns line-by-line output into one line per paragraph and mends words split at line ends.' },
+      { name: 'Several images', effect: 'Each one is read in turn; "Copy all" and "Download all as .txt" join them in order.' },
+    ],
+    results: [
+      { input: 'Clean 300 dpi scan of a typed page (JPG, 1.5 MB, 951 words)', setting: 'English', output: '951 of 951 words right', note: '96% average confidence, 8.7 s including starting the engine' },
+      { input: '1920×1080 screenshot of a web page, PNG', setting: 'English', output: '156 words', note: '90% average confidence, 2.1 s' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'Works best on', about: 'Printed or on-screen text, straight on and in focus. Phone photos of documents work when they\'re sharp and evenly lit.' },
+      { name: 'Struggles with', about: 'Handwriting, stylized logos, text over busy pictures and very small print. Fix those by hand in the text box.' },
+    ],
+  },
   related: ['ocr-pdf', 'pdf-to-text', 'translator', 'alt-text-generator'],
   next: ['translator', 'grammar-checker'],
   flagship: { elsewhere: 'Daily limits, uploads and paid batch OCR', here: 'Unlimited images, free, never uploaded' },

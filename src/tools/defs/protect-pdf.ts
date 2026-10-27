@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,21 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Open password', effect: 'Encrypts the whole file with 256-bit AES through qpdf. Without it nobody can open the PDF, and there is no recovery.' },
+      { name: 'Strength meter', effect: 'Rates the password with zxcvbn and shows how long guessing would take at 10,000 tries a second, a rate an attacker with a stolen file could reach.' },
+      { name: 'Also restrict printing, copying and editing', effect: 'Sets the PDF permission flags you untick: print, copy text and images, edit pages, add comments, fill in forms. Readers are asked to respect them; not all do.' },
+      { name: 'Permissions password', effect: 'Only used with restrictions. Left blank, a random 32-character one is made, so nobody (you included) can lift the restrictions in Acrobat.' },
+    ],
+    results: [{ input: '20-page report, 2.3 MB', setting: 'Open password', output: '2.2 MB', note: 'qpdf also repacks the file while encrypting it, 0.3 s' }],
+    measured: MEASURED,
+    formats: [
+      { name: 'AES-256', about: 'The strongest encryption the PDF format offers, and the one current versions of Acrobat, browser PDF viewers and other PDF apps expect.' },
+      { name: 'Permissions', about: 'Flags, not encryption: they matter only to readers that honor them. Use an open password for anything private.' },
+    ],
+    limits: [LIMITS.gmail, LIMITS.outlook],
+  },
   related: ['unlock-pdf', 'file-encryptor', 'watermark-pdf', 'compress-pdf'],
   noAds: true,
   flagship: { elsewhere: 'Upload your file, often with a daily cap', here: 'Encrypted on your device, no limits' },

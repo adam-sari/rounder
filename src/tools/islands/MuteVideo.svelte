@@ -2,7 +2,7 @@
   import { onDestroy } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { downloadName, FALLBACK_DOWNLOAD_MB, formatBytes, isAbort, MediaError, preloadFallback, probe, transcode, type MediaInfo } from '@/engines/media';
-  import { downloadBlob, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, zipFiles } from '@/tools/lib/files';
   import { describeMedia, errorMessage, etaSeconds, formatSeconds, keepContainer, muteNeedsDecoder, rotatedPicture, sizeChange } from '@/tools/lib/mute-video/media';
 
   type Status = 'probing' | 'ready' | 'needs-decoder' | 'silent' | 'working' | 'done' | 'error';
@@ -147,10 +147,10 @@
   }
 
   async function downloadAll() {
-    if (done.length === 1) return downloadBlob(done[0].out!.blob, done[0].out!.name);
+    if (done.length === 1) return downloadResult(done[0].out!.blob, done[0].out!.name);
     zipping = true;
     try {
-      downloadBlob(await zipFiles(done.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), 'muted-videos.zip');
+      downloadResult(await zipFiles(done.map((i) => ({ name: i.out!.name, blob: i.out!.blob }))), 'muted-videos.zip');
     } catch (e) {
       notice = errorMessage(e);
     } finally {
@@ -227,7 +227,7 @@
               </span>
             </button>
             {#if item.out}
-              <button type="button" class="btn px-3! py-2!" onclick={() => downloadBlob(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
+              <button type="button" class="btn px-3! py-2!" onclick={() => downloadResult(item.out!.blob, item.out!.name)} aria-label={`Download ${item.out.name}`}>↓</button>
             {/if}
             <button type="button" class="btn px-3! py-2!" disabled={item.status === 'working'} onclick={() => remove(item)} aria-label={`Remove ${item.file.name}`}>✕</button>
             {#if item.status === 'working'}

@@ -36,3 +36,7 @@ export function buildIco(entries: IcoEntry[]): Uint8Array {
   });
   return out;
 }
+
+/** what goes in an .ico: browsers need 16–48; Windows shortcuts, the taskbar and Explorer's large views use up to 256 */
+export const ICO_SIZES = { favicon: [16, 32, 48], windows: [16, 24, 32, 48, 64, 128, 256] } as const;
+export type IcoSet = keyof typeof ICO_SIZES;

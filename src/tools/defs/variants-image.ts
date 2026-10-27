@@ -1,0 +1,55 @@
+import { filePrivacyFaq, type Tool } from '../types';
+
+export default [
+  {
+    slug: 'png-to-ico',
+    category: 'image',
+    name: 'PNG to ICO',
+    title: 'PNG to ICO Converter: favicon.ico or Windows icon up to 256 px',
+    h1: 'PNG to *ICO*',
+    description: 'Convert a PNG to an ICO file for a website favicon or a Windows icon, with every size from 16 to 256 pixels in one file. Transparency kept, nothing uploaded.',
+    tagline: 'One .ico file with every size inside, from 16 to 256 pixels.',
+    keywords: ['png to ico', 'convert png to ico', 'png to ico converter', 'png to favicon', 'ico file maker', 'windows icon from png', 'png to ico 256x256', 'jpg to ico'],
+    island: 'FaviconGenerator',
+    props: { output: 'ico' },
+    variantOf: 'favicon-generator',
+    steps: [
+      'Drop in a PNG. A square image with a transparent background works best.',
+      'Choose "website favicon" (16, 32 and 48 px) or "Windows icon" (16 to 256 px), and adjust the framing, shape or padding if you like.',
+      'Download the .ico. It keeps your file\'s name, so logo.png becomes logo.ico.',
+    ],
+    faq: [
+      { q: 'Website favicon or Windows icon?', a: 'Browsers only use the small sizes, so "website favicon" keeps the file light with 16, 32 and 48 px. Windows shows icons much larger on the desktop, in Explorer\'s large views and on high-resolution screens, so "Windows icon" adds 24, 64, 128 and 256 px for shortcuts, folders and programs.' },
+      { q: 'Is transparency kept?', a: 'Yes. Each size is stored as a PNG inside the ICO, see-through areas included. Turn on a background color only if you want a solid square.' },
+      { q: 'Will a small PNG look blurry?', a: 'Every size is drawn fresh from your PNG with a high-quality resize, so shrinking stays sharp. Enlarging can\'t add detail, though: for a crisp 256 px Windows icon, start from a PNG at least 256 pixels wide.' },
+      { q: 'Where do these ICO files work?', a: 'ICO files that store PNG images work in every current browser and in Windows since Vista. For a whole website, the favicon generator also makes the Apple touch and Android icons.' },
+      filePrivacyFaq,
+    ],
+    related: ['image-converter', 'image-resizer', 'png-to-svg', 'svg-to-png'],
+  },
+  {
+    slug: 'jpg-to-svg',
+    category: 'image',
+    name: 'JPG to SVG',
+    title: 'JPG to SVG Converter: vectorize logos, drawings & signatures',
+    h1: 'JPG to *SVG*',
+    description: 'Convert JPG images to SVG vectors in your browser. Trace logos, sketches and signatures into clean paths, with the white background removed. Free.',
+    tagline: 'Logos and line art from a JPG, traced into crisp, scalable paths.',
+    keywords: ['jpg to svg', 'jpeg to svg', 'convert jpg to svg', 'jpg to vector', 'jpg logo to vector', 'jpg to svg transparent', 'signature jpg to svg'],
+    island: 'PngToSvg',
+    props: { from: 'jpg' },
+    variantOf: 'png-to-svg',
+    steps: [
+      'Drop in a JPG. Logos, icons, drawings and signatures trace best.',
+      'Pick a preset and compare the trace side by side. "Remove background" is already on; turn it off to keep the background color.',
+      'Download the SVG or copy its code.',
+    ],
+    faq: [
+      { q: 'Why convert a JPG to SVG?', a: 'A JPG is a grid of pixels, so a logo turns blurry or blocky when you enlarge it. An SVG describes shapes instead, so it stays sharp at any size, from a favicon to a banner, and cutting machines, laser engravers and print shops can use it.' },
+      { q: 'Why is "Remove background" on?', a: 'JPGs can\'t be transparent, so a logo saved as a JPG nearly always sits on a white or colored box. Remove background clears the color touching the edges of the image, while the same color inside the design stays. Turn it off if the background is part of the design.' },
+      { q: 'Why are there specks around the edges?', a: 'JPG compression leaves faint blotches around sharp edges, and the tracer can turn them into tiny shapes. Raise blur by a step, use fewer colors or lower the detail to clean them up. A PNG of the same logo, if you have one, traces cleaner.' },
+      filePrivacyFaq,
+    ],
+    related: ['svg-to-png', 'background-remover', 'favicon-generator', 'image-converter'],
+  },
+] satisfies Tool[];

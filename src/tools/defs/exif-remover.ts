@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -44,5 +45,20 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Keep color profile (on)', effect: 'Leaves the ICC profile in place so colors look the same; it describes colors, not you. Turn it off to remove it as well.' },
+      { name: 'Keep rotation tag / rotate pixels', effect: 'Sideways phone photos need their rotation tag to show upright. "Keep rotation tag" writes back a tiny EXIF block holding only that; "rotate pixels" turns the photo upright and re-encodes it, leaving no EXIF at all.' },
+    ],
+    results: [
+      { input: '12 MP Samsung Galaxy phone photo, JPG, 4.0 MB', setting: 'Defaults', output: '36 KB of metadata removed', note: 'camera model, firmware version, shooting settings and dates gone; pixels untouched, 0.1 s' },
+      { input: '12 MP portrait whose EXIF held only a software name and a few basics, JPG, 3.0 MB', setting: 'Defaults', output: '1.1 KB of metadata removed', note: 'little to remove: check the "What\'s inside" list before assuming a photo is clean or dirty' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'JPG, PNG and WebP', about: 'Cleaned by rewriting the file around the compressed image data, so the picture is bit-for-bit the same.' },
+      { name: 'HEIC and AVIF', about: 'Re-encoded (HEIC as JPG) at high quality, which leaves no metadata but isn\'t lossless.' },
+    ],
+  },
   related: ['image-compressor', 'heic-to-jpg', 'blur-image', 'image-converter'],
 } satisfies Tool;

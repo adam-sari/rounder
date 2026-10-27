@@ -89,7 +89,7 @@ test.describe('images', () => {
       expect(type === 'image/png' ? isPng(out.buf) : isJpeg(out.buf)).toBe(true);
       // WebKit's canvas already writes compact PNGs; then the tool keeps the original, as it should
       expect(out.buf.length).toBeLessThanOrEqual(input.buffer.length);
-      if (out.buf.length === input.buffer.length) await expect(page.getByText('already optimal')).toBeVisible();
+      if (out.buf.length === input.buffer.length) await expect(page.locator('section[aria-label="Tool"]').getByText('already optimal')).toBeVisible();
       expect(errors).toEqual([]);
     });
   }

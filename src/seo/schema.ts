@@ -1,5 +1,6 @@
 import { SITE } from '@/site';
 import type { Faq } from '@/tools/types';
+import { aggregateRating, type Rating } from '@/seo/ratings';
 
 // JSON-LD builders. Pure (site URL in, plain objects out), so they are unit-tested.
 
@@ -36,7 +37,8 @@ export const website = (site: URL, description: string) => ({
   publisher: { '@id': orgId(site) },
 });
 
-export const webApplication = (site: URL, app: { name: string; url: string; description: string }) => ({
+/** rating: real visitor ratings only, and only once shownRating() lets the page show them too (src/seo/ratings.ts) */
+export const webApplication = (site: URL, { rating, ...app }: { name: string; url: string; description: string; rating?: Rating | null }) => ({
   '@context': ctx,
   '@type': 'WebApplication',
   ...app,
@@ -44,6 +46,7 @@ export const webApplication = (site: URL, app: { name: string; url: string; desc
   operatingSystem: 'Any (runs in the browser)',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   publisher: publisher(site),
+  ...(rating && { aggregateRating: aggregateRating(rating) }),
 });
 
 export const faqPage = (faq: Faq[]) => ({

@@ -4,7 +4,7 @@
   import PdfDrop, { type OpenedPdf } from '@/components/tool/PdfDrop.svelte';
   import PdfPageGrid from '@/components/tool/PdfPageGrid.svelte';
   import { assemblePdf, getPageSize, loadEditablePdf, loadPdfLib, openPdf, pageRefs, parsePageRanges, pdfName, PdfError, savePdf, type PageRef, type PdfDoc } from '@/engines/pdf';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { blankPdf, blankSize } from '@/tools/lib/organize-pdf/blank';
   import { createHistory, record, redo as redoStep, undo as undoStep, type History } from '@/tools/lib/organize-pdf/history';
   import { arrangeWithin, duplicatePages, insertAfter, insertionIndex, interleaveHalves, oddThenEven, removePages, reversePages, rotatePages, samePages } from '@/tools/lib/organize-pdf/ops';
@@ -326,7 +326,7 @@
       if (s !== session) return;
       const name = pdfName(main.name || 'document.pdf', copy.suffix);
       result = { blob, name, pages: snapshot, decrypted };
-      downloadBlob(blob, name);
+      downloadResult(blob, name);
     } catch (e) {
       if (s === session) error = e instanceof PdfError ? e.message : `Saving didn't work: ${(e as Error)?.message ?? e}`;
     } finally {
@@ -497,7 +497,7 @@
           <p class="text-sm done" role="status">
             <span class="tick" aria-hidden="true">✓</span>
             <span class="font-medium break-all">{result.name}</span>
-            <span class="mono">· {formatBytes(result.blob.size)} · <button type="button" class="link" onclick={() => downloadBlob(result!.blob, result!.name)}>download again</button></span>
+            <span class="mono">· {formatBytes(result.blob.size)} · <button type="button" class="link" onclick={() => downloadResult(result!.blob, result!.name)}>download again</button></span>
           </p>
           {#if result.decrypted}
             <p class="mono mt-1">The saved copy has no password. Add one with <a class="link" href="/protect-pdf">Protect PDF</a> if you need it.</p>

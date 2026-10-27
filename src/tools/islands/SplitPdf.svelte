@@ -3,7 +3,7 @@
   import PdfDrop, { type OpenedPdf } from '@/components/tool/PdfDrop.svelte';
   import PdfPageGrid from '@/components/tool/PdfPageGrid.svelte';
   import { formatPageRanges, isAbort, PageRangeError, pageRefs, parsePageRangeGroups, type PageRef } from '@/engines/pdf';
-  import { downloadBlob, formatBytes, uniqueNames } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, uniqueNames } from '@/tools/lib/files';
   import { everyN, groupLabel, halves, leftOut, outputName } from '@/tools/lib/split-pdf/plan';
   import { Splitter } from '@/tools/lib/split-pdf/client';
 
@@ -179,7 +179,7 @@
     zipping = true;
     try {
       zip ??= new Blob([(await splitter.zip(parts.map((p) => ({ name: p.name, data: p.blob })))) as Uint8Array<ArrayBuffer>], { type: 'application/zip' });
-      downloadBlob(zip, `${base}-split.zip`);
+      downloadResult(zip, `${base}-split.zip`);
     } catch (e) {
       if (!isAbort(e)) error = (e as Error).message;
     } finally {
@@ -325,7 +325,7 @@
           {#if parts.length > 1}
             <button type="button" class="btn btn-primary w-full" disabled={zipping} onclick={downloadAll}>{zipping ? 'Zipping…' : 'Download all (.zip)'}</button>
           {:else}
-            <button type="button" class="btn btn-primary w-full" onclick={() => downloadBlob(parts![0].blob, parts![0].name)}>Download PDF</button>
+            <button type="button" class="btn btn-primary w-full" onclick={() => downloadResult(parts![0].blob, parts![0].name)}>Download PDF</button>
           {/if}
           <ul class="parts">
             {#each parts as p, i (p.name)}
@@ -336,7 +336,7 @@
                   <span class="mono block">{plural(p.indices.length, 'page')} · {formatBytes(p.blob.size)}</span>
                   {#if p.over}<span class="mono block text-bad!">This page alone is over {limitMb} MB.</span>{/if}
                 </span>
-                <button type="button" class="btn icon" aria-label="Download {p.name}" title="Download" onclick={() => downloadBlob(p.blob, p.name)}>
+                <button type="button" class="btn icon" aria-label="Download {p.name}" title="Download" onclick={() => downloadResult(p.blob, p.name)}>
                   <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7.5L8 11l3.5-3.5M3 13.5h10" /></svg>
                 </button>
               </li>

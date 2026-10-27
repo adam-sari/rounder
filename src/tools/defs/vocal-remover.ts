@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -45,6 +46,22 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'The model', effect: 'Demucs (htdemucs) by Meta, a 172 MB download kept in the browser\'s cache. It splits the song into four stems: vocals, drums, bass and everything else, working through about 7.8-second slices that overlap by a quarter and are cross-faded.' },
+      { name: 'Mixer', effect: 'Mute, solo or turn down each stem and hear the mix live before you export. Quick mixes: full song, instrumental, acapella.' },
+      { name: 'Export', effect: 'Instrumental (karaoke), vocals (acapella), the mix as you hear it, or all four stems as a zip; MP3 at 256 kbps or WAV.' },
+      { name: 'Length and memory', effect: 'Songs up to 15 minutes. Splitting needs 1–2 GB of free memory for a few minutes, so phones and tablets usually run out; the tool says so before it starts.' },
+    ],
+    results: [
+      { input: '70-second recording of a choir with a band, MP3, 2.7 MB', setting: 'Graphics card (WebGPU), MP3 export', output: 'instrumental MP3, 2.1 MB', note: 'split in 21 s once the model was downloaded' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'Stems', about: 'Separate tracks for vocals, drums, bass and other instruments. AI separation leaves a little bleed between them, most with reverb-heavy or dense mixes.' },
+      { name: 'MP3 or WAV', about: 'MP3 256 kbps for listening and sharing; WAV for editing in a DAW without another round of compression.' },
+    ],
+  },
   related: ['audio-cutter', 'audio-noise-reduction', 'audio-to-text', 'voice-recorder'],
   next: ['audio-cutter', 'pitch-changer'],
   flagship: { elsewhere: 'Paid per minute of audio, with uploads and monthly caps', here: 'Unlimited songs, free: the AI runs on your own computer' },

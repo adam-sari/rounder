@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { flip } from 'svelte/animate';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import TrimTimeline from '@/components/tool/TrimTimeline.svelte';
   import {
@@ -24,6 +25,7 @@
     type TranscodeResult,
     type VideoCodec,
   } from '@/engines/media';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
   import { downloadBlob, formatBytes } from '@/tools/lib/files';
   import {
     clipLength,
@@ -121,6 +123,12 @@
   const musicReady = $derived(music?.status === 'ready' ? music : null);
   const canMerge = $derived(
     ready.length > 0 && ready.length === clips.length && !!target && !job && !!canWrite?.[format] && (audioMode !== 'music' || !!musicReady),
+  );
+  // low-end devices: warn about, or stop, a merge this device can't hold
+  const deviceFit = $derived(
+    ready.length && target
+      ? checkDevice('merge', { bytes: ready.reduce((s, c) => s + c.file.size, 0), seconds: total, width: target.width, height: target.height, count: ready.length })
+      : null,
   );
   const elapsed = $derived(job ? (now - job.startedAt) / 1000 : 0);
   const eta = $derived(job ? etaSeconds(elapsed, job.progress) : null);
@@ -224,7 +232,7 @@
   function fail(c: Item, e: unknown) {
     if (!alive(c) || isAbort(e)) return;
     c.status = 'error';
-    c.error = e instanceof MediaError ? e.message : "This file couldn't be read.";
+    c.error = deviceMessage('ffmpeg', e) ?? (e instanceof MediaError ? e.message : "This file couldn't be read.");
   }
 
   async function use(c: Item, src: Blob, info: MediaInfo) {
@@ -457,7 +465,7 @@
       message = 'Your merged video is ready.';
     } catch (e) {
       const err = e instanceof MediaError ? e : null;
-      if (!isAbort(e)) mergeError = friendlyError(err?.code, err?.message ?? String((e as Error)?.message ?? e));
+      if (!isAbort(e)) mergeError = deviceMessage('merge', e) ?? friendlyError(err?.code, err?.message ?? String((e as Error)?.message ?? e));
       else message = 'Merge cancelled.';
     } finally {
       job = null;
@@ -777,7 +785,7 @@
       </div>
     {:else}
       <div class="go">
-        <button bind:this={goBtn} type="button" class="btn btn-primary" disabled={!canMerge} onclick={merge}>
+        <button bind:this={goBtn} type="button" class="btn btn-primary" disabled={!canMerge || deviceFit?.level === 'block'} onclick={merge}>
           {ready.length > 1 ? `Merge ${plural(ready.length, 'clip')}` : 'Export video'}
         </button>
         <span class="mono">
@@ -797,6 +805,7 @@
         </span>
       </div>
     {/if}
+    {#if !job}<DeviceNote verdict={deviceFit} />{/if}
     {#if mergeError}
       <p class="error" role="alert">{mergeError}</p>
     {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { decodeImage, encodeCanvas, formatInfo, imageKind, outputFormatFor, processImage, type Rect } from '@/engines/image/client';
-  import { downloadBlob, formatBytes, withExtension, withSuffix } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, withExtension, withSuffix } from '@/tools/lib/files';
   import { dragRect, flipHorizontal, flipVertical, orientedSize, parseRatio, placeBox, resizeTo, toDisplay, toSource, turn, type Handle, type Orientation } from '@/tools/lib/crop-image/geometry';
 
   type Format = 'jpeg' | 'png' | 'webp';
@@ -214,7 +214,7 @@
         const crop = toSource(rect, image.width, image.height, o);
         ({ blob } = await processImage(image.file, { crop, rotate: o.rotate, flipX: o.flipX, flipY: o.flipY, encode }));
       }
-      downloadBlob(blob, name);
+      downloadResult(blob, name);
       saved = `${name} · ${formatBytes(blob.size)}`;
     } catch (e) {
       console.error(e);

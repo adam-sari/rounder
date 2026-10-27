@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,24 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Best · any subject', effect: 'BiRefNet lite, a 115 MB model downloaded once and cached. It finds people, pets and products with fine edges, but needs WebGPU: at its 1024×1024 working size it wants more memory than WebAssembly allows.' },
+      { name: 'Fast · people', effect: 'MODNet, a much smaller model made for portraits. Phones and browsers without WebGPU start with it; it isn\'t meant for objects.' },
+      { name: 'Background', effect: 'Transparent, a solid color, the original photo blurred (5–100), or an image of your own. "Soft shadow" adds a shadow under the subject; "crop to the subject" trims to it with a little space around.' },
+      { name: 'Touch up', effect: 'A brush that erases leftovers or brings back parts the model removed; the mask follows your strokes at full resolution.' },
+      { name: 'Save as', effect: 'PNG or WebP keep transparency. JPG is offered once there is a background, since it can\'t store transparency.' },
+    ],
+    results: [
+      { input: '12 MP portrait photo (3024×4032), JPG, 3.0 MB', setting: 'Best model on the graphics card, transparent PNG', output: '10 MB PNG at full 3024×4032', note: '12–18 s from dropping the photo (two runs), model already downloaded' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'PNG', about: 'Lossless with transparency, so a full-resolution cut-out is large (10 MB for 12 MP). Best for editing and design apps.' },
+      { name: 'WebP', about: 'Transparent too, and far smaller; good for websites and online stores.' },
+      { name: 'JPG', about: 'Only with a color, blur or image background. Smallest, opens everywhere.' },
+    ],
+  },
   related: ['image-upscaler', 'object-remover', 'passport-photo-maker', 'video-background-remover'],
   next: ['crop-image', 'image-upscaler'],
   flagship: { elsewhere: 'Paid credits for full-size downloads', here: 'Full resolution, unlimited, free' },

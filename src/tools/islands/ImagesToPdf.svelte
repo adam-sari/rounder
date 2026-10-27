@@ -1,32 +1,47 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import * as Comlink from 'comlink';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import ImagesToPdfGrid, { type ImageItem } from './ImagesToPdfGrid.svelte';
   import { decodeImage, encodeImage, imageKind, resizeImage, resolveSize, toDecodable } from '@/engines/image/client';
   import { pdfName } from '@/engines/pdf/lib';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { combinedName, hasTransparency, layoutPage, type Margin, type Orientation, type PageSizeOption, type Placement } from '@/tools/lib/jpg-to-pdf/layout';
   import type { ImagesPdfWorker } from '@/tools/lib/jpg-to-pdf/pdf.worker';
   import { zipBlobs } from '@/tools/lib/pdf-to-jpg/zip';
+  import { checkDevice } from '@/tools/lib/device-guard';
+  import { fitFileSize } from '@/tools/lib/image-resizer/fit-file-size';
+  import { KB, limitText, sizeText, targetFromHash, verdict } from '@/tools/lib/exact-size/target';
 
   const ACCEPT = 'image/*,.heic,.heif,.avif';
   const THUMB = 360;
   /** compressed photos are capped here: about 210 dpi across an A4 page */
   const COMPRESS_MAX = 2500;
 
+  // preset pages start from their own settings (png-to-pdf: pages shaped like each screenshot; heic-to-pdf: compressed;
+  // jpg-to-pdf-under-200kb: a size limit)
+  const preset: { size?: PageSizeOption; compress?: boolean; targetKb?: number } = $props();
+
   let items = $state<ImageItem[]>([]);
-  let size = $state<PageSizeOption>('A4');
+  let size = $state<PageSizeOption>(untrack(() => preset.size ?? 'A4'));
   let orientation = $state<Orientation>('auto');
   let margin = $state<Margin>('none');
   let placement = $state<Placement>('fit');
-  let compress = $state(false);
+  let compress = $state(untrack(() => preset.compress ?? false));
   let quality = $state(75);
   let output = $state<'one' | 'each'>('one');
+  let limitOn = $state(untrack(() => !!preset.targetKb));
+  let limitKb = $state<number | null>(untrack(() => preset.targetKb ?? 200));
 
   let errors = $state<string[]>([]);
-  let progress = $state.raw<{ done: number; total: number } | null>(null);
-  let result = $state.raw<{ key: string; files: { name: string; blob: Blob }[]; pages: number } | null>(null);
+  let progress = $state.raw<{ done: number; total: number; attempt?: number } | null>(null);
+  let result = $state.raw<{
+    key: string;
+    files: { name: string; blob: Blob }[];
+    pages: number;
+    /** size-limit mode: the limit, and what it took (null quality: the images went in as they were) */
+    target?: { bytes: number; quality: number | null; side: number };
+  } | null>(null);
   let zipping = $state(false);
   let picker = $state<HTMLInputElement>();
   let over = $state(false);
@@ -37,7 +52,15 @@
   const layout = (item: ImageItem) => (item.width && item.height ? layoutPage(item.width, item.height, opts) : null);
   const ready = $derived(items.length > 0 && items.every((i) => i.width));
   const each = $derived(output === 'each' && items.length > 1);
-  const jobKey = $derived(JSON.stringify([items.map((i) => i.id), opts, compress && quality, each]));
+  /** a size limit applies to the single combined PDF */
+  const target = $derived(limitOn && !each && limitKb && limitKb > 0 ? Math.round(limitKb * KB) : null);
+  const jobKey = $derived(JSON.stringify([items.map((i) => i.id), opts, compress && quality, each, target]));
+
+  // a size typed into the address (/jpg-to-pdf#300kb), which the exact-size hub links to
+  $effect(() => {
+    const kb = targetFromHash(location.hash);
+    if (kb) [limitOn, limitKb] = [true, kb];
+  });
 
   $effect(() => {
     if (result && result.key !== jobKey) result = null;
@@ -132,20 +155,21 @@
   }
 
   /** JPEGs and PNGs go in byte for byte unless they need turning or compressing */
-  async function embeddable(file: File, squeeze: number | null): Promise<Embeddable> {
+  async function embeddable(file: File, squeeze: number | null, side = COMPRESS_MAX): Promise<Embeddable> {
     if (squeeze === null) {
       const kind = await imageKind(file);
       if ((kind === 'jpeg' && ((await orientationOf(file)) ?? 1) === 1) || kind === 'png') {
         return { bytes: new Uint8Array(await file.arrayBuffer()), type: kind === 'jpeg' ? 'jpg' : 'png', original: true };
       }
     }
-    return reencode(file, squeeze);
+    return reencode(file, squeeze, side);
   }
 
-  async function reencode(file: File, squeeze: number | null): Promise<Embeddable> {
+  /** squeeze: JPEG quality, with photos capped at `side` pixels; null keeps full size at high quality */
+  async function reencode(file: File, squeeze: number | null, side = COMPRESS_MAX): Promise<Embeddable> {
     let img = await decodeImage(file);
-    if (squeeze !== null && Math.max(img.width, img.height) > COMPRESS_MAX) {
-      img = await resizeImage(img, resolveSize(img.width, img.height, { mode: 'fit', width: COMPRESS_MAX, height: COMPRESS_MAX }));
+    if (squeeze !== null && Math.max(img.width, img.height) > side) {
+      img = await resizeImage(img, resolveSize(img.width, img.height, { mode: 'fit', width: side, height: side }));
     }
     // graphics and anything see-through stay lossless; photos become high-quality JPEGs
     const kind = await imageKind(file);
@@ -156,11 +180,26 @@
 
   async function build() {
     if (!ready || progress) return;
+    // ── device guard (low-end devices): a set of images this device can't hold fails before any work starts ──
+    const fit = checkDevice('images', {
+      count: items.length,
+      bytes: items.reduce((n, i) => n + i.file.size, 0),
+      // compressed photos are re-encoded at most COMPRESS_MAX px wide, roughly 1 MB each
+      outBytes: compress ? items.length * 2 ** 20 : undefined,
+      width: Math.max(0, ...items.map((i) => i.width ?? 0)),
+      height: Math.max(0, ...items.map((i) => i.height ?? 0)),
+    });
+    if (fit.level === 'block') {
+      errors = [fit.message];
+      return;
+    }
+    // ── end device guard ──
     const list = [...items];
     const key = jobKey;
     const o = opts;
     const squeeze = compress ? quality : null;
     const separate = each;
+    const limit = target;
     const worker = new Worker(new URL('../lib/jpg-to-pdf/pdf.worker.ts', import.meta.url), { type: 'module', name: 'images-to-pdf' });
     const api = Comlink.wrap<ImagesPdfWorker>(worker);
     // a terminated or broken worker never answers, so every wait races this
@@ -177,22 +216,25 @@
 
     errors = [];
     result = null;
-    progress = { done: 0, total: list.length };
-    const files: { name: string; blob: Blob }[] = [];
-    const save = async (name: string) => files.push({ name, blob: new Blob([(await guard(api.save())) as Uint8Array<ArrayBuffer>], { type: 'application/pdf' }) });
-    try {
+    let attempt = 0;
+    // one full build; a size limit may take a few, each with smaller or lower-quality photos
+    const once = async (squeeze: number | null, side: number) => {
+      attempt++;
+      progress = { done: 0, total: list.length, attempt: limit ? attempt : undefined };
+      const files: { name: string; blob: Blob }[] = [];
+      const save = async (name: string) => files.push({ name, blob: new Blob([(await guard(api.save())) as Uint8Array<ArrayBuffer>], { type: 'application/pdf' }) });
       if (!separate) await guard(api.start(combinedName(list.map((i) => i.file.name)).replace(/\.pdf$/, '')));
       for (const [k, item] of list.entries()) {
         if (separate) await guard(api.start(item.file.name.replace(/\.[^.]+$/, '')));
         const page = layoutPage(item.width!, item.height!, o);
         try {
-          let img = await guard(embeddable(item.file, squeeze));
+          let img = await guard(embeddable(item.file, squeeze, side));
           try {
             await guard(api.add(Comlink.transfer(img.bytes, [img.bytes.buffer as ArrayBuffer]), img.type, page));
           } catch (e) {
             // pdf-lib can't take some JPEG/PNG variants as they are (e.g. odd PNG bit depths)
             if (!img.original || (e as Error).message !== 'embed') throw e;
-            img = await guard(reencode(item.file, squeeze));
+            img = await guard(reencode(item.file, squeeze, side));
             await guard(api.add(Comlink.transfer(img.bytes, [img.bytes.buffer as ArrayBuffer]), img.type, page));
           }
         } catch (e) {
@@ -201,10 +243,31 @@
           throw new Error(`${item.file.name} couldn't be added: ${why === 'embed' ? 'the image data looks damaged.' : why || 'unknown error.'}`);
         }
         if (separate) await save(pdfName(item.file.name));
-        progress = { done: k + 1, total: list.length };
+        progress = { done: k + 1, total: list.length, attempt: limit ? attempt : undefined };
       }
       if (!separate) await save(combinedName(list.map((i) => i.file.name)));
-      result = { key, files, pages: list.length };
+      return files;
+    };
+    try {
+      let files = await once(squeeze, COMPRESS_MAX);
+      let reached: { bytes: number; quality: number | null; side: number } | undefined;
+      if (limit) {
+        reached = { bytes: limit, quality: squeeze, side: COMPRESS_MAX };
+        if (files[0].blob.size > limit) {
+          // the same search the image resizer uses: best JPEG quality first, then smaller photos
+          const r = await fitFileSize(
+            limit,
+            async (q, scale) => {
+              const out = await once(q, Math.max(300, Math.round(COMPRESS_MAX * scale)));
+              return { files: out, size: out[0].blob.size };
+            },
+            { maxQuality: 85, minQuality: 45, maxSteps: 6, minScale: 0.12 },
+          );
+          files = r.out.files;
+          reached = { bytes: limit, quality: r.quality, side: Math.max(300, Math.round(COMPRESS_MAX * r.scale)) };
+        }
+      }
+      result = { key, files, pages: list.length, target: reached };
     } catch (e) {
       if (!cancelled) {
         const msg = (e as Error).message;
@@ -220,10 +283,10 @@
   async function download() {
     if (!result) return;
     const { files } = result;
-    if (files.length === 1) return downloadBlob(files[0].blob, files[0].name);
+    if (files.length === 1) return downloadResult(files[0].blob, files[0].name);
     zipping = true;
     try {
-      downloadBlob(await zipBlobs(files), pdfName(files[0].name, '-pdfs', 'zip'));
+      downloadResult(await zipBlobs(files), pdfName(files[0].name, '-pdfs', 'zip'));
     } catch {
       errors.push("The zip couldn't be made. Try downloading the PDFs one by one.");
     } finally {
@@ -326,6 +389,22 @@
           {/if}
         </div>
 
+        <div class="grid gap-3">
+          <label class="flex items-start gap-2 text-sm">
+            <input type="checkbox" bind:checked={limitOn} class="mt-1" />
+            <span>Keep the PDF under a size<span class="mono block">for upload forms with a limit</span></span>
+          </label>
+          {#if limitOn}
+            <label>
+              <span class="label">at most · KB</span>
+              <input class="field" type="number" min="1" step="any" inputmode="decimal" bind:value={limitKb} />
+            </label>
+            <p class="mono" class:text-bad={each}>
+              {#if each}a size limit needs "One PDF" output{:else if target}{limitText({ max: target })} · lowers photo quality, then size, only as far as needed{:else}enter a size above 0 KB{/if}
+            </p>
+          {/if}
+        </div>
+
         {#if items.length > 1}
           {@render seg('output', OUTPUTS, output, (v) => (output = v as 'one' | 'each'))}
         {/if}
@@ -335,6 +414,7 @@
         {#if progress}
           <div class="grid gap-2" role="status">
             <p class="mono">
+              {#if progress.attempt}try {progress.attempt} · {/if}
               {#if progress.done < progress.total}
                 Adding image <span class="text-chalk">{progress.done + 1}</span> of {progress.total}…
               {:else}
@@ -356,6 +436,19 @@
               </p>
             </div>
           </div>
+          {#if result.target}
+            {@const v = verdict(total, { max: result.target.bytes })}
+            <p class="mono" class:text-ok={v.ok} class:text-bad={!v.ok}>Result: {v.text}</p>
+            {#if result.target.quality !== null}
+              <p class="mono">photos at quality {result.target.quality}{result.target.side < COMPRESS_MAX ? `, at most ${result.target.side} px` : ''}</p>
+            {/if}
+            {#if !v.ok}
+              <p class="text-sm text-soft">
+                Even with small, low-quality photos, {result.pages} page{result.pages === 1 ? '' : 's'} come to {sizeText(total)}. Use fewer images, or split the PDF
+                into parts afterwards.
+              </p>
+            {/if}
+          {/if}
           <button type="button" class="btn btn-primary" disabled={zipping} onclick={download}>
             {zipping ? 'Zipping…' : result.files.length === 1 ? 'Download PDF' : 'Download all as .zip'}
           </button>

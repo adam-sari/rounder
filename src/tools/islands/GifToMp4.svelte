@@ -3,7 +3,7 @@
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { capabilities, downloadName, formatBytes, gifToVideo, type Capabilities, type QualityLevel } from '@/engines/media';
   import { isGif } from '@/engines/media/gif';
-  import { downloadBlob, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, zipFiles } from '@/tools/lib/files';
   import { describeSaving, gifStats, playsFor, REPEATS, savedPercent, type GifStats } from '@/tools/lib/gif-to-mp4/gif';
   import { eta, formatDuration } from '@/tools/lib/video-to-gif/plan';
   import { friendlyError } from '@/tools/lib/video-to-gif/errors';
@@ -174,7 +174,7 @@
   async function downloadAll() {
     zipping = true;
     try {
-      downloadBlob(await zipFiles(done.map((i) => ({ name: i.out.name, blob: i.out.blob }))), 'rounder-gif-videos.zip');
+      downloadResult(await zipFiles(done.map((i) => ({ name: i.out.name, blob: i.out.blob }))), 'rounder-gif-videos.zip');
     } finally {
       zipping = false;
     }
@@ -243,7 +243,7 @@
             </div>
             <div class="flex items-center gap-1">
               {#if item.out}
-                <button type="button" class="icon" title="Download" aria-label={`Download ${item.out.name}`} onclick={() => item.out && downloadBlob(item.out.blob, item.out.name)}>↓</button>
+                <button type="button" class="icon" title="Download" aria-label={`Download ${item.out.name}`} onclick={() => item.out && downloadResult(item.out.blob, item.out.name)}>↓</button>
               {/if}
               <button type="button" class="icon" title="Remove" aria-label={`Remove ${item.file.name}`} onclick={() => remove(item)}>✕</button>
             </div>
@@ -341,7 +341,7 @@
           {#if done.length > 1}
             <button type="button" class="btn btn-primary" disabled={zipping} onclick={downloadAll}>{zipping ? 'Zipping…' : `Download all ${done.length} (zip)`}</button>
           {:else}
-            <button type="button" class="btn btn-primary" onclick={() => downloadBlob(done[0].out.blob, done[0].out.name)}>Download {done[0].out.name}</button>
+            <button type="button" class="btn btn-primary" onclick={() => downloadResult(done[0].out.blob, done[0].out.name)}>Download {done[0].out.name}</button>
           {/if}
         {/if}
         <button type="button" class="btn" onclick={startOver}>Start over</button>

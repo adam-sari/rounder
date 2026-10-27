@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,21 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Languages', effect: 'Tesseract reads the scripts you pick; each language is a one-time download from jsDelivr (English is 3.9 MB) and is cached afterwards. Picking several helps mixed documents but slows reading a little.' },
+      { name: 'Pages that already have text', effect: 'Skipped and kept as they are. "Read those pages too" is only for pages whose text comes out garbled; they get a second text layer.' },
+      { name: 'How a page is read', effect: 'Each page is rendered at about 300 dpi in grayscale for Tesseract, two pages at a time on desktops with 6 or more cores.' },
+    ],
+    results: [
+      { input: '10-page letter-size color scan of typed text at 300 dpi, 15 MB, 9,717 words', setting: 'English', output: 'searchable PDF, 129 KB larger', note: '9,715 words read correctly; 54 s for the 10 pages' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'Searchable PDF', about: 'The scan stays byte for byte as it was. An invisible text layer is stamped on each page, word by word, the way OCRmyPDF does it, so you can search, select and copy.' },
+      { name: 'Text (.txt)', about: 'Just the words, page by page, for pasting elsewhere.' },
+    ],
+  },
   related: ['image-to-text', 'pdf-to-text', 'compress-pdf'],
   next: ['pdf-to-text', 'compress-pdf'],
   flagship: { elsewhere: 'Adobe Acrobat Pro subscription, or page limits online', here: 'Free, any number of pages, never uploaded' },

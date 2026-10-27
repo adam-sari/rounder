@@ -1,0 +1,154 @@
+---
+import Base from '@/layouts/Base.astro';
+import { toolBySlug, toolSource, type Tool } from '@/tools/registry';
+import { sizePresets } from '@/tools/lib/exact-size/pages';
+import { breadcrumbs, publisher } from '@/seo/schema';
+import { SITE } from '@/site';
+
+// The hub for every exact-size preset page: grouped by the tool underneath, each group with its main tool, plus a box
+// for sizes that have no page of their own (it opens the main tool with the size in the address hash).
+
+const presets = sizePresets();
+const groups: { title: string; main: string; intro: string; list: Tool[] }[] = [
+  { title: 'PDF', main: 'compress-pdf', intro: 'Keeps the sharpest photos that fit. Text and drawings stay crisp at every size.', list: [] },
+  { title: 'Images', main: 'image-resizer', intro: 'Best JPG quality first; the picture is made smaller in pixels only if it has to be.', list: [] },
+  { title: 'Images into one PDF', main: 'jpg-to-pdf', intro: 'Document photos combined into a single PDF under a size.', list: [] },
+  { title: 'Video', main: 'video-compressor', intro: 'Resolution and bitrate picked from the clip\'s length, checked after encoding.', list: [] },
+];
+// the application-form pages (src/tools/defs/india-*.ts) get a group of their own instead
+const forms = presets.filter((t) => toolSource[t.slug]?.includes('/defs/india-'));
+for (const t of presets) if (!forms.includes(t)) groups.find((g) => g.main === t.variantOf)?.list.push(t);
+
+const title = 'Compress to an Exact Size: PDF, Image & Video in KB or MB';
+const description = 'Every exact-size tool in one place: PDFs to 100 KB, photos to 20 KB, videos to 10 MB, form photo and signature sizes. Each result is checked, nothing uploaded.';
+const url = new URL('/compress-to-exact-size', Astro.site).href;
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Compress to an exact size',
+    url,
+    description,
+    hasPart: presets.map((t) => ({ '@type': 'WebPage', name: t.name, url: new URL(`/${t.slug}`, Astro.site).href })),
+    publisher: publisher(Astro.site!),
+  },
+  breadcrumbs([
+    { name: SITE.name, url: Astro.site!.href },
+    { name: 'Compress to an exact size', url },
+  ]),
+];
+---
+
+<Base title={title} description={description} schema={schema}>
+  <div class="wrap max-w-[1040px]!">
+    <nav class="mono mt-6" aria-label="Breadcrumb">
+      <a href="/" class="no-underline hover:text-chalk">index</a> / <span class="text-chalk">compress-to-exact-size</span>
+    </nav>
+    <header class="mt-6 max-w-2xl">
+      <h1 class="text-[clamp(44px,6vw,80px)] leading-[0.95]">Compress to an <em>exact size</em></h1>
+      <p class="mt-3 text-lg text-soft">
+        Upload forms and apps set hard limits: 100 KB for a certificate, 20–50 KB for a photo, 10 MB for a clip. These tools aim
+        under the number you need, check the file they made against it, and tell you plainly when a file can't get there.
+      </p>
+    </header>
+
+    <form id="any-size" class="card mt-10 grid gap-4 p-[clamp(16px,3vw,28px)] sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
+      <label>
+        <span class="label">a size without its own page</span>
+        <select name="tool" class="field">
+          {groups.map((g) => <option value={g.main}>{g.title}: {toolBySlug[g.main].name}</option>)}
+        </select>
+      </label>
+      <label>
+        <span class="label">under</span>
+        <input name="size" class="field w-28!" type="number" min="0.1" step="any" required value="150" inputmode="decimal" />
+      </label>
+      <label>
+        <span class="label">unit</span>
+        <select name="unit" class="field">
+          <option value="kb">KB</option>
+          <option value="mb">MB</option>
+        </select>
+      </label>
+      <button class="btn btn-primary" type="submit">Open the tool</button>
+    </form>
+
+    {groups.filter((g) => g.list.length).map((g) => (
+      <section class="mt-16">
+        <h2 class="text-4xl">{g.title}</h2>
+        <p class="mt-2 max-w-2xl text-soft">{g.intro}</p>
+        <p class="mt-5 flex flex-wrap gap-2">
+          {g.list.map((t) => <a href={`/${t.slug}`} class="chip">{t.name}</a>)}
+          <a href={`/${g.main}`} class="chip">{toolBySlug[g.main].name}: any size</a>
+        </p>
+      </section>
+    ))}
+
+    {forms.length > 0 && (
+      <section class="mt-16">
+        <h2 class="text-4xl">Application forms</h2>
+        <p class="mt-2 max-w-2xl text-soft">
+          Photo, signature and document sizes for online applications. Every notice sets its own numbers, so these start from
+          common examples and let you type yours.
+        </p>
+        <p class="mt-5 flex flex-wrap gap-2">
+          {forms.map((t) => <a href={`/${t.slug}`} class="chip">{t.name}</a>)}
+        </p>
+      </section>
+    )}
+
+    <section class="mt-20 grid gap-10 md:grid-cols-2">
+      <div>
+        <h2 class="text-4xl">How the target works</h2>
+        <ol class="mt-5 grid gap-4">
+          <li class="flex gap-4"><span class="mono pt-1">01</span><span class="text-soft">It starts with the best quality and checks whether the file already fits. If it does, nothing is lost.</span></li>
+          <li class="flex gap-4"><span class="mono pt-1">02</span><span class="text-soft">Otherwise it estimates from a sample (a few photos of a PDF, the length of a video) and compresses at the sharpest setting expected to fit.</span></li>
+          <li class="flex gap-4"><span class="mono pt-1">03</span><span class="text-soft">The finished file is measured. PDFs and photos that miss get another pass on their own; a video gets a one-click retry aimed lower. Every file ends with a result line: "✓ fits", or what stopped it.</span></li>
+        </ol>
+      </div>
+      <div>
+        <h2 class="text-4xl">KB, MB and honesty</h2>
+        <div class="mt-5 grid gap-4 text-soft">
+          <p>
+            Targets count 1 KB as 1,000 bytes and 1 MB as 1,000,000 bytes, the stricter way, so a file that fits here also fits a
+            form that counts 1,024.
+          </p>
+          <p>
+            Some files can't reach some sizes: text and fonts in a long PDF, or an hour of video in 10 MB. You still get the
+            smallest version, with the reason and the next best step (grayscale, a split, a shorter clip), never a file that
+            only claims to fit.
+          </p>
+          <p>Everything runs on your device. Your files are never uploaded.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<script>
+  // "under 150 KB" in the PDF tool → /compress-pdf#150kb; the tool reads the size from the hash
+  const form = document.getElementById('any-size') as HTMLFormElement | null;
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const size = Number(data.get('size'));
+    if (!(size > 0)) return;
+    location.href = `/${data.get('tool')}#${size}${data.get('unit')}`;
+  });
+</script>
+
+<style>
+  .chip {
+    padding: 4px 12px;
+    font-size: 14px;
+    color: var(--color-soft);
+    text-decoration: none;
+    border: 1px solid var(--color-line-2);
+    border-radius: 99px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .chip:hover {
+    color: var(--color-chalk);
+    border-color: var(--color-sun);
+  }
+</style>

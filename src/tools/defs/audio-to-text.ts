@@ -1,3 +1,4 @@
+import { MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,24 @@ export default {
     { q: 'Can it translate a recording into English?', a: 'Yes. Turn on "Translate into English" and Whisper writes English text whatever language is spoken. This works with the standard model; the accurate large-v3 turbo model was trained to transcribe only, so it writes the original language.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Standard model', effect: 'Whisper base: quick and good on clear speech in about 100 languages. Runs on the graphics card when WebGPU is available, otherwise on the processor.' },
+      { name: 'Accurate model', effect: 'Whisper large-v3 turbo: much better with accents, noise and names, but a far bigger download and it needs a capable graphics card, so it\'s offered on computers only.' },
+      { name: 'Spoken language', effect: 'Auto-detect, or name the language yourself, which helps with short or mixed clips.' },
+      { name: 'Translate to English', effect: 'Writes English text whatever language is spoken. Available with the Standard model.' },
+      { name: 'Timestamps', effect: 'Adds a [m:ss] time to each line of the text; SRT and VTT always carry timings for subtitles.' },
+    ],
+    results: [
+      { input: '2-minute recording of a 1962 speech, MP3, 1.8 MB', setting: 'Standard, auto language, on the graphics card', output: '254 words', note: '23.6 s including loading the downloaded model; it misheard one name and one phrase' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'TXT', about: 'Plain text, with or without times.' },
+      { name: 'SRT and VTT', about: 'Subtitle files with start and end times, for video players and editors (VTT is the web\'s version).' },
+      { name: 'JSON', about: 'Every word with its own start and end time, for developers.' },
+    ],
+  },
   related: ['subtitle-generator', 'voice-recorder', 'audio-cutter', 'audio-noise-reduction'],
   next: ['text-summarizer', 'translator'],
   flagship: { elsewhere: 'Free plans cap your minutes and upload your audio', here: 'No minute limits, transcribed on your device' },

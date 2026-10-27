@@ -25,7 +25,8 @@ const advisory = `${SITE.github}/security/advisories/new`;
     When you open a tool, your browser downloads the page and a small program (JavaScript and WebAssembly) from our site.
     When you drop a file in, the browser hands it to that program in memory. The work happens on your device, often in a
     background thread, and the result is built in memory too. "Download" saves it straight from your browser to your disk.
-    There is no upload step, no server that processes files, and no database. Rounder is a static website.
+    There is no upload step and no server that processes files. Rounder is a static website; its only server code
+    stores the optional <a href="/privacy#ratings">tool ratings</a>, and never sees a file.
   </p>
 
   <h2 id="check">Check it yourself</h2>
@@ -57,8 +58,13 @@ const advisory = `${SITE.github}/security/advisories/new`;
   <p>This is the complete list. If you find a request that isn't here, that's a bug, so please <a href="/contact">tell us</a>.</p>
   <ul>
     <li>
-      <strong>Rounder itself</strong> (roundertools.com, hosted on Cloudflare Pages): pages, program code, fonts and some small
+      <strong>Rounder itself</strong> (roundertools.com, hosted on Cloudflare): pages, program code, fonts and some small
       model files. Like any web host, Cloudflare sees basic request details such as your IP address and browser.
+    </li>
+    <li>
+      <strong>Ratings</strong> (roundertools.com/api): only when you send a rating after using a tool. It carries the tool's
+      name, the stars and your comment if you wrote one, never a file or what you typed into the tool.
+      <a href="/privacy#ratings">What's stored</a>.
     </li>
     <li>
       <strong>Cloudflare Web Analytics</strong> (cloudflareinsights.com): counts page views and measures load speed. It sets

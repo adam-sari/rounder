@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -22,6 +23,24 @@ export default {
     { q: 'Can I use the digital photo for an online application?', a: 'Yes. The digital download is a JPG at the exact pixel size of the printed photo at 300 dpi, for example 600 × 600 px for a 2×2 inch US photo. Online forms sometimes set their own file size limits, so check the upload rules on the form.' },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Document', effect: 'Sets the photo size and the head-size guide: 2×2 in for the US and Indian visas; 35×45 mm for the UK, Schengen, India, Australia and Japan; 50×70 mm for Canada; 33×48 mm for China. Each guide follows the rules its government publishes.' },
+      { name: 'Guide lines', effect: 'Top of head on the top line, chin in the yellow band, eyes in the green band. Zoom, drag and straighten (up to 20°) until they line up; the photo must cover the whole frame.' },
+      { name: 'Checks', effect: 'Reads the background in the corners beside your head and warns when it looks too dark or uneven. It doesn\'t replace the background.' },
+      { name: 'Paper', effect: 'Tiles as many photos as fit on 4×6 in, A4 or Letter at 300 dpi, saved as JPG or PNG for a photo kiosk or home printer.' },
+    ],
+    results: [
+      { input: '12 MP portrait photo (3024×4032), JPG, 3.0 MB', setting: 'US 2×2 in', output: '600×600 JPG, 171 KB', note: 'tagged 300 dpi; inside the 54 KB to 10 MB the US online renewal accepts' },
+      { input: 'The same photo', setting: 'US 2×2 in on a 4×6 in sheet', output: '1200×1800 JPG with 6 photos, 1.0 MB', note: 'packed edge to edge; prints at true size on 4×6 in paper' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'Single photo (JPG)', about: 'For online applications and print shops: exact pixel size at 300 dpi, JPG quality 92.' },
+      { name: 'Print sheet', about: 'Several copies on one sheet; print it at 100% (no "fit to page") so each photo comes out the right size.' },
+    ],
+    limits: [LIMITS.passport],
+  },
   related: ['crop-image', 'image-resizer', 'heic-to-jpg', 'image-compressor'],
   next: ['image-compressor', 'jpg-to-pdf'],
   flagship: { elsewhere: '$5–15 to download each photo', here: 'Free, unlimited and print-ready' },

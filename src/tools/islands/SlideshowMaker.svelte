@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import TrimTimeline from '@/components/tool/TrimTimeline.svelte';
   import { decodeImage, toDecodable } from '@/engines/image/client';
@@ -20,6 +21,7 @@
     writeWav,
     type Capabilities,
   } from '@/engines/media';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
   import { downloadBlob } from '@/tools/lib/files';
   import {
     aspects, errorText, fadeGain, fileBase, fitDurations, formatEta, frameState, MAX_SLIDE_SEC, MIN_SLIDE_SEC, outputSize, resolutions,
@@ -108,6 +110,8 @@
   const starts = $derived(slideStarts(durs));
   const size = $derived(outputSize(aspectId, short));
   const view = $derived(outputSize(aspectId, Math.round((PREVIEW * Math.min(size.w, size.h)) / Math.max(size.w, size.h))));
+  // low-end devices: every photo becomes a full-size frame kept in memory until the video is encoded
+  const deviceFit = $derived(items.length ? checkDevice('slideshow', { count: items.length, seconds: totalSec, width: size.w, height: size.h, tip: 'Try 720p, or fewer photos.' }) : null);
   const aspect = $derived(aspects.find((a) => a.id === aspectId)!);
   const selected = $derived(slides.find((s) => s.id === selectedId) ?? null);
   const musicUsed = $derived(Math.min(musicLen, totalSec));
@@ -501,7 +505,9 @@
     } catch (e) {
       if (!(e instanceof MediaError && e.code === 'aborted')) {
         console.error(e);
-        error = e instanceof MediaError ? errorText(e.code, e.message) : errorText(undefined, e instanceof Error ? e.message : String(e));
+        error =
+          deviceMessage('slideshow', e, 'Try 720p, or fewer photos.') ??
+          (e instanceof MediaError ? errorText(e.code, e.message) : errorText(undefined, e instanceof Error ? e.message : String(e)));
       }
     } finally {
       clearInterval(tickJob);
@@ -916,7 +922,8 @@
           <p class="mono">{problems.mp4 ? `MP4: ${problems.mp4}` : `WebM: ${problems.webm}`}</p>
         {/if}
         <p class="mono">{formatTime(totalSec, 1)} · {size.w} × {size.h} · 30 fps{music ? ' · with music' : ''}</p>
-        <button type="button" class="btn btn-primary" disabled={decoding > 0 || !!musicBusy || !!problems[format]} onclick={makeVideo}>Make video</button>
+        <DeviceNote verdict={deviceFit} />
+        <button type="button" class="btn btn-primary" disabled={decoding > 0 || !!musicBusy || !!problems[format] || deviceFit?.level === 'block'} onclick={makeVideo}>Make video</button>
         {#if error}<p class="text-bad text-sm" role="alert">{error}</p>{/if}
         <button type="button" class="btn" onclick={startOver}>Start over</button>
       </div>

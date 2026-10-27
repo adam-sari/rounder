@@ -1,15 +1,30 @@
-// Production hosting: a static-assets-only Worker (no server code). Asset requests are free and don't count
-// toward Workers request limits, and the custom domain gets its DNS record automatically.
-// Deploy with `npm run deploy` after `npm run build`.
+// Production hosting: a Worker whose static assets are the whole site. The only server code is the ratings API
+// (worker/index.ts), and it runs first for /api/* alone, so page and file requests are served from the assets for free
+// without invoking it (https://developers.cloudflare.com/workers/static-assets/binding/).
+// The custom domain gets its DNS record automatically. Deploy with `npm run deploy` after `npm run build`.
 {
   "name": "roundertools",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-10-20",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     // /merge-pdf serves merge-pdf.html, matching the canonical URLs (no .html, no trailing slash)
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
   },
+  // ratings for "Rate this tool": schema in migrations/, applied by `npm run deploy`
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "rounder-ratings",
+      "database_id": "740c12da-26eb-40c6-a7e0-91f6d1839814",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // just after midnight UTC: deletes the previous day's salt and voter hashes (worker/ratings.ts)
+  "triggers": { "crons": ["5 0 * * *"] },
   // no *.workers.dev copy of the site, so search engines only ever see roundertools.com
   "workers_dev": false,
   "preview_urls": false,

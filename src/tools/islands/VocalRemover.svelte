@@ -10,6 +10,7 @@
   import { formatMB } from '@/engines/ai/progress';
   import { modelWorker, proxy, transfer } from '@/engines/ai/worker-utils';
   import { decodeAudio, encodeAudio, MediaError, probe, type Peaks } from '@/engines/media';
+  import { deviceMessage, guard } from '@/tools/lib/device-guard';
   import { downloadBlob, zipFiles } from '@/tools/lib/files';
   import { formatClock, mediaErrorText } from '@/tools/lib/video-to-mp3/job';
   import type { DemucsWorker, LoadChoice } from '@/tools/lib/vocal-remover/demucs.worker';
@@ -103,6 +104,8 @@
 
   function errorText(err: unknown): string {
     if (err instanceof FileProblem) return err.message;
+    const device = deviceMessage('vocals', err);
+    if (device) return device;
     if (err instanceof MediaError) return err.code === 'aborted' ? '' : mediaErrorText(err);
     const e = toAiError(err);
     if (e.code === 'aborted') return '';
@@ -119,6 +122,8 @@
       const media = await probe(f, { signal: ctl.signal });
       if (media.readable && !media.audio) throw new FileProblem('This file has no sound to split.');
       if (media.durationSec > MAX_SECONDS) throw new FileProblem(TOO_LONG);
+      // low-end devices: the song and its four stems sit in memory as raw samples
+      guard('vocals', { bytes: f.size, seconds: media.durationSec || undefined });
       const pcm = await decodeAudio(f, {}, { signal: ctl.signal, onProgress: (p) => job && (job.progress = p), onStatus: (s) => job && (job.status = s) });
       const duration = (pcm.channels[0]?.length ?? 0) / pcm.sampleRate;
       if (!duration) throw new FileProblem('This file has no sound to split.');

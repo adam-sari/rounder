@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import {
     capabilities,
@@ -16,7 +17,8 @@
     type MediaInfo,
     type TranscodeResult,
   } from '@/engines/media';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import {
     AUDIO_OUTPUTS,
     QUALITIES,
@@ -178,7 +180,7 @@
     } catch (e) {
       if (!job.signal.aborted && !isAbort(e)) {
         console.error(e);
-        error = errorText(e, isAudioContainer(plan.options.container));
+        error = deviceMessage(undecodable ? 'ffmpeg' : 'video', e) ?? errorText(e, isAudioContainer(plan.options.container));
       }
       // a cancelled job settles late; by then a new job or file may own the UI
       if (ctrl === job) {
@@ -237,6 +239,20 @@
   );
   const needsDecoder = $derived(!!undecodable && !decoderReady);
   const blocked = $derived(ALL.filter((c) => !avail(c).ok).map((c) => `${containers[c].label}: ${avail(c).reason}`));
+  // low-end devices: warn about, or stop, a conversion this device can't hold
+  const deviceFit = $derived.by(() => {
+    if (!file || !info || !detailed) return null;
+    const v = audioOut ? null : info.video;
+    const k = v && effective.resolution ? effective.resolution / Math.min(v.displayWidth, v.displayHeight) : 1;
+    return checkDevice(undecodable ? 'ffmpeg' : 'video', {
+      bytes: file.size,
+      seconds: info.durationSec,
+      // sound only: WAV is about 190 KB a second, the compressed formats far less
+      outBytes: audioOut ? info.durationSec * (settings.container === 'wav' ? 192_000 : 40_000) : undefined,
+      width: v ? v.displayWidth * k : 0,
+      height: v ? v.displayHeight * k : 0,
+    });
+  });
   const hevcNote = $derived(!audioOut && plan?.videoCodec === 'hevc' && codecs.includes('avc') && settings.container !== 'mkv');
 
   // keep the chosen format valid once capabilities and the file's tracks are known
@@ -345,7 +361,7 @@
           {#if result.fast}<span class="mono text-sun">copied without re-encoding, no quality lost</span>{/if}
           {#each result.notes as note}<span class="mono">{note}</span>{/each}
         </div>
-        <button type="button" class="btn btn-primary" onclick={() => downloadBlob(result!.blob, result!.name)}>Download {containers[result.container].label}</button>
+        <button type="button" class="btn btn-primary" onclick={() => downloadResult(result!.blob, result!.name)}>Download {containers[result.container].label}</button>
         <button type="button" class="btn" onclick={backToSettings}>Try other settings</button>
         <button type="button" class="btn" onclick={reset}>Start over</button>
       </div>
@@ -442,6 +458,7 @@
         </div>
       {/if}
 
+      {#if phase === 'ready'}<DeviceNote verdict={deviceFit} />{/if}
       {#if file && needsDecoder && phase === 'ready'}
         <div class="plan">
           <span class="text-sm">{undecodable === 'file' ? `This browser can't read ${ext} files on its own.` : `This browser can't decode the ${undecodable} in this file on its own.`}</span>
@@ -451,7 +468,7 @@
           {decoderProgress === null ? `Download decoder (${FALLBACK_DOWNLOAD_MB} MB)` : `Downloading… ${Math.round(decoderProgress * 100)}%`}
         </button>
       {:else}
-        <button type="button" class="btn btn-primary" disabled={phase !== 'ready' || !plan || !avail(settings.container).ok} onclick={convert}>
+        <button type="button" class="btn btn-primary" disabled={phase !== 'ready' || !plan || !avail(settings.container).ok || deviceFit?.level === 'block'} onclick={convert}>
           Convert to {containers[settings.container].label}
         </button>
       {/if}

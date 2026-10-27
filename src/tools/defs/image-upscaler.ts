@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,24 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: '2× · quick', effect: 'Swin2SR lightweight, an 8.1 MB model. Doubles width and height; best on clean images such as screenshots, art and renders.' },
+      { name: '4× · photos', effect: 'Swin2SR real-world, a 54 MB model trained on real photos. Quadruples width and height and also cleans up blur, noise and JPEG blocks.' },
+      { name: 'Tiles', effect: 'The image is upscaled in overlapping tiles (256 or 192 px on a graphics card, depending on its buffer limit; 128 px on the processor) that are blended at the seams, so big images fit in memory and the progress bar is honest.' },
+      { name: 'Input size cap', effect: 'On a computer the result can be up to 6,000 px on its long side (3,000 px input at 2×, 1,500 px at 4×); phones get 4,096 px. Larger images are offered a shrink first.' },
+      { name: 'Save as', effect: 'JPG at quality 92 (default), lossless PNG, or WebP. Transparent areas are enlarged the ordinary way, since the model only sees color.' },
+    ],
+    results: [
+      { input: '640×480 photo, JPG, 69 KB', setting: '4× · photos, on the graphics card', output: '2560×1920 JPG, 1.0 MB', note: '14.7 s including loading the model' },
+      { input: '1000×750 photo, JPG, 213 KB', setting: '2× · quick, on the graphics card', output: '2000×1500 JPG, 942 KB', note: '13.3 s including loading the model' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'What AI upscaling does', about: 'It predicts plausible detail rather than recovering the real thing, so check faces, text and fine patterns before you use the result.' },
+    ],
+    limits: [LIMITS.gmail],
+  },
   related: ['background-remover', 'photo-colorizer', 'image-resizer', 'image-compressor'],
   next: ['image-compressor'],
   flagship: { elsewhere: '2× free, 4× behind credits or a watermark', here: '2× and 4×, unlimited, no watermark' },

@@ -1,9 +1,10 @@
 /// <reference lib="webworker" />
 import * as Comlink from 'comlink';
 import { PDFDocument, ParseSpeeds } from 'pdf-lib';
-import { optimizeImages, type Codec, type ImageStats } from './images';
+import { optimizeImages, sampleImages, type Codec, type ImageStats } from './images';
 import type { Pixels } from './pixels';
 import type { ImageOptions } from './settings';
+import type { ImageSample } from './target';
 
 /** the page's side of the conversation: JPEG encoding runs in the shared image engine */
 export interface Host {
@@ -11,7 +12,9 @@ export interface Host {
   progress(done: number, total: number): void;
 }
 
-export type ImagePassResult = { status: 'ok'; stats: ImageStats; bytes?: Uint8Array } | { status: 'encrypted' | 'unreadable' };
+type Unreadable = { status: 'encrypted' | 'unreadable' };
+export type ImagePassResult = { status: 'ok'; stats: ImageStats; bytes?: Uint8Array } | Unreadable;
+export type SampleResult = { status: 'ok'; sample: ImageSample } | Unreadable;
 
 type Source = ImageBitmap | OffscreenCanvas;
 
@@ -66,19 +69,30 @@ function codec(host: Host): Codec {
   };
 }
 
+async function open(bytes: Uint8Array): Promise<PDFDocument | Unreadable> {
+  try {
+    return await PDFDocument.load(bytes, { updateMetadata: false, parseSpeed: ParseSpeeds.Fastest });
+  } catch (e) {
+    return { status: (e as Error)?.name === 'EncryptedPDFError' || /encrypted/i.test((e as Error)?.message) ? 'encrypted' : 'unreadable' };
+  }
+}
+
 const api = {
   async run(bytes: Uint8Array, options: ImageOptions, host: Host): Promise<ImagePassResult> {
-    let doc: PDFDocument;
-    try {
-      doc = await PDFDocument.load(bytes, { updateMetadata: false, parseSpeed: ParseSpeeds.Fastest });
-    } catch (e) {
-      return { status: (e as Error)?.name === 'EncryptedPDFError' || /encrypted/i.test((e as Error)?.message) ? 'encrypted' : 'unreadable' };
-    }
+    const doc = await open(bytes);
+    if (!(doc instanceof PDFDocument)) return doc;
     const stats = await optimizeImages(doc, options, codec(host), (done, total) => host.progress(done, total));
     if (!stats.replaced) return { status: 'ok', stats };
     // qpdf packs object streams afterwards; form fields keep their own appearances
     const out = await doc.save({ useObjectStreams: false, objectsPerTick: Infinity, updateFieldAppearances: false });
     return Comlink.transfer({ status: 'ok' as const, stats, bytes: out }, [out.buffer as ArrayBuffer]);
+  },
+
+  /** tries each setting on a few images, for a target-size estimate; the file itself isn't changed */
+  async sample(bytes: Uint8Array, settings: ImageOptions[], host: Host): Promise<SampleResult> {
+    const doc = await open(bytes);
+    if (!(doc instanceof PDFDocument)) return doc;
+    return { status: 'ok', sample: await sampleImages(doc, settings, codec(host), 3, (done, total) => host.progress(done, total)) };
   },
 };
 

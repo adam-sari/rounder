@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import ArchiveTree from './ArchiveTree.svelte';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { buildTree, type TreeNode } from '@/tools/lib/unzip/tree';
   import { buildZip } from '@/tools/lib/zip-files/client';
   import { droppedFiles, inputFiles, type PickedFile } from '@/tools/lib/zip-files/folders';
@@ -127,7 +127,7 @@
     try {
       const entries = packing.map((f) => ({ blob: f.item!.picked.file, path: f.path, mtime: f.item!.picked.file.lastModified }));
       const blob = await buildZip(entries, level, (read) => (job!.done = read), ctrl.signal);
-      downloadBlob(blob, out);
+      downloadResult(blob, out);
       // files added or settings changed while zipping: the download is fine, but it no longer matches the page
       if (made.every((v, i) => v === [items, level, skipJunk][i])) result = { blob, name: out, before };
     } catch (e) {
@@ -270,7 +270,7 @@
               <span>{formatBytes(result.before)} → <span class="text-chalk">{formatBytes(result.blob.size)}</span></span>
               <span class={result.blob.size < result.before ? 'text-ok' : 'text-muted'}>{ratioLabel(result.before, result.blob.size)}</span>
             </p>
-            <button type="button" class="btn" onclick={() => downloadBlob(result!.blob, result!.name)}>Download again</button>
+            <button type="button" class="btn" onclick={() => downloadResult(result!.blob, result!.name)}>Download again</button>
           </div>
         {/if}
         {#if error}<p class="text-sm text-bad" role="alert">{error}</p>{/if}

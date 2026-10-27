@@ -2,7 +2,7 @@
   import { onDestroy, onMount, untrack } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { capabilities, containers, downloadName, formatBytes, formatTime, parseTime, toMediaError, transcode, type Capabilities, type Container, type Ctx2D } from '@/engines/media';
-  import { downloadBlob, withExtension } from '@/tools/lib/files';
+  import { downloadResult, withExtension } from '@/tools/lib/files';
   import { buildCues, longestLine, mergeCues, SHORT_CUES, splitCue, SUBTITLE_CUES, type TimedCue } from '@/tools/lib/subtitle-cues';
   import { captionAt, isValidCue, toSrt, toVtt, type Cue } from '@/tools/lib/subtitles/format';
   import { defaultStyle, drawCaption, fontCss, layoutCaption, type CaptionStyle, type Placement } from '@/tools/lib/subtitles/layout';
@@ -179,7 +179,7 @@
   function exportAs(kind: 'srt' | 'vtt') {
     const plain = cues.map(({ start, end, text }) => ({ start, end, text }));
     const text = kind === 'srt' ? toSrt(plain) : toVtt(plain);
-    downloadBlob(new Blob([text], { type: kind === 'srt' ? 'application/x-subrip' : 'text/vtt' }), withExtension(baseName, kind));
+    downloadResult(new Blob([text], { type: kind === 'srt' ? 'application/x-subrip' : 'text/vtt' }), withExtension(baseName, kind));
   }
 
   /** opens the full caption styler with these subtitles; the video has to be added there again */
@@ -416,7 +416,7 @@
           <video class="out" src={result.url} controls playsinline></video>
           <p class="mono">{formatBytes(job.file.size)} → {formatBytes(result.blob.size)} · no watermark</p>
           <div class="flex flex-wrap gap-2">
-            <button type="button" class="btn btn-primary" onclick={() => result && downloadBlob(result.blob, result.name)}>Download {result.name}</button>
+            <button type="button" class="btn btn-primary" onclick={() => result && downloadResult(result.blob, result.name)}>Download {result.name}</button>
             <button type="button" class="btn" onclick={clearResult}>Back to editing</button>
           </div>
         </div>

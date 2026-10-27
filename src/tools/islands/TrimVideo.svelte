@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import TrimTimeline from '@/components/tool/TrimTimeline.svelte';
   import {
@@ -23,7 +24,8 @@
     type Segment,
     type TranscodeResult,
   } from '@/engines/media';
-  import { downloadBlob } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage, type Job } from '@/tools/lib/device-guard';
+  import { downloadResult } from '@/tools/lib/files';
   import {
     copyBlocker,
     defaultContainer,
@@ -90,6 +92,22 @@
   const fps = $derived(info?.video?.fps || 30);
   const parts = $derived(keptParts(mode, start, end, cuts, duration, 0.5 / fps));
   const outLength = $derived(segmentsDuration(parts));
+  // low-end devices: the fallback decoder rewrites the whole file inside its 2 GB heap; an export keeps frames in flight
+  const decoderFit = $derived(file ? checkDevice('ffmpeg', { bytes: file.size, tip: 'Try a shorter recording, or trim it on a computer.' }) : null);
+  const exportJob: Job = 'video';
+  const deviceFit = $derived(
+    file && info?.video
+      ? checkDevice(exportJob, {
+          bytes: file.size,
+          // joined parts are cut to intermediates first, so two copies of the output are held at once
+          outBytes: duration ? ((parts.length > 1 ? 2 : 1) * file.size * outLength) / duration : undefined,
+          seconds: outLength,
+          width: info.video.displayWidth,
+          height: info.video.displayHeight,
+          tip: 'Try Smaller quality, a shorter part or fewer cuts.',
+        })
+      : null,
+  );
   /** why the original stream can't be kept as is ('' = it can) */
   const copyBlock = $derived(
     parts.length !== 1 ? 'joining parts needs a re-encode' : info?.video ? copyBlocker(info.video.codec, info.video.rotation, container) : '',
@@ -149,7 +167,7 @@
     } catch (e) {
       if (phase !== 'converting') return;
       phase = 'needs-decoder';
-      if (!isAbort(e)) fail(e);
+      if (!isAbort(e)) fail(e, 'ffmpeg');
     } finally {
       controller = null;
     }
@@ -208,7 +226,7 @@
     } catch (e) {
       if (phase !== 'working') return;
       phase = 'edit';
-      if (!isAbort(e)) fail(e);
+      if (!isAbort(e)) fail(e, exportJob);
     } finally {
       controller = null;
     }
@@ -216,9 +234,10 @@
 
   const cancel = () => controller?.abort();
 
-  function fail(e: unknown) {
+  /** `job` turns running out of memory into advice for that step */
+  function fail(e: unknown, job?: Job) {
     const err = e as Partial<MediaError>;
-    error = friendlyError(err?.code, err?.message ?? '');
+    error = (job && deviceMessage(job, e)) || friendlyError(err?.code, err?.message ?? '');
   }
 
   function backToEdit() {
@@ -245,7 +264,7 @@
 
   function save() {
     if (!file || !result) return;
-    downloadBlob(result.blob, downloadName(file.name, result.container, mode === 'trim' ? '-trimmed' : '-cut'));
+    downloadResult(result.blob, downloadName(file.name, result.container, mode === 'trim' ? '-trimmed' : '-cut'));
   }
 
   // ---------------------------------------------------------------- precision controls
@@ -387,8 +406,9 @@
     {#if phase === 'converting'}
       {@render meter('Preparing your video')}
     {:else}
+      <DeviceNote verdict={decoderFit} />
       <div class="flex flex-wrap gap-3">
-        <button type="button" class="btn btn-primary" onclick={convert}>Download decoder ({FALLBACK_DOWNLOAD_MB} MB) & open</button>
+        <button type="button" class="btn btn-primary" onclick={convert} disabled={decoderFit?.level === 'block'}>Download decoder ({FALLBACK_DOWNLOAD_MB} MB) & open</button>
         <button type="button" class="btn" onclick={reset}>Choose another file</button>
       </div>
     {/if}
@@ -509,10 +529,11 @@
             {#if mode === 'segments'}· {parts.length} {parts.length === 1 ? 'part' : 'parts'}{parts.length > 1 ? ' joined' : ''}{/if}
             · {containers[container].label}
           </p>
-          <button type="button" class="btn btn-primary" onclick={run} disabled={!parts.length || outLength < MIN}>
+          <button type="button" class="btn btn-primary" onclick={run} disabled={!parts.length || outLength < MIN || deviceFit?.level === 'block'}>
             {mode === 'trim' ? 'Trim video' : 'Cut & export'}
           </button>
         </div>
+        <DeviceNote verdict={deviceFit} />
       {/if}
       {#if error}<p class="text-sm text-bad" role="alert">{error}</p>{/if}
     </section>

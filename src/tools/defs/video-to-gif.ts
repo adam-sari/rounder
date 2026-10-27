@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,26 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Range', effect: 'Starts as the first 5 seconds; drag the handles or type a length. Past 15 seconds the tool warns that the GIF will be big.' },
+      { name: 'Width and frame rate', effect: '240–800 px wide (default 480, never wider than the video) and 5–30 frames a second (default 12). Lowering either cuts the file size.' },
+      { name: 'Speed', effect: '0.5× to 3×. Faster playback packs more action into fewer frames.' },
+      { name: 'Colors and dithering', effect: 'A GIF frame holds at most 256 colors: 256, 128, 64 or 32 per frame. Dithering (pattern or smooth) hides banding in gradients but adds noise that can make the file bigger.' },
+      { name: 'Loop and caption', effect: 'Play forever, once or 3 times; optional caption text at the top or bottom.' },
+      { name: 'MP4 or WebM instead', effect: 'Makes a "GIF-like" short video: same range, size and speed, at a fraction of the bytes, for places that autoplay video.' },
+    ],
+    results: [
+      { input: '1080p phone-style clip, 42 MB', setting: 'Defaults: first 5 s, 480 px, 12 fps, 256 colors', output: '480×270 GIF, 2.3 MB', note: '60 frames, 4.0 s' },
+      { input: 'That 2.3 MB GIF', setting: 'GIF to MP4, balanced', output: '628 KB MP4', note: '73% smaller, same frames' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'GIF', about: 'Plays anywhere, including email and old chat apps, but it stores up to 256 colors per frame and compresses poorly, so a few seconds of real footage runs into megabytes.' },
+      { name: 'MP4 and WebM', about: 'Proper video codecs: full color and far smaller.' },
+    ],
+    limits: [LIMITS.discord, LIMITS.gmail],
+  },
   related: ['gif-to-mp4', 'trim-video', 'video-frame-extractor', 'meme-generator'],
   flagship: { elsewhere: 'Upload size caps, watermarks or a sign-up', here: 'Any length, no watermark, nothing uploaded' },
 } satisfies Tool;

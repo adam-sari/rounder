@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 type Copy = Pick<Tool, 'title' | 'description' | 'tagline' | 'keywords' | 'steps' | 'faq' | 'related' | 'flagship'>;
@@ -43,6 +44,26 @@ export default [
       { q: 'Is there a file size limit?', a: 'Not from us: nothing is uploaded, so there\'s no upload cap or daily limit. Very long or 4K videos depend on your device\'s memory and speed, and a lower resolution helps if a conversion struggles.' },
       filePrivacyFaq,
     ],
+    notes: {
+      settings: [
+        { name: 'Output format', effect: 'MP4, WebM, MOV or MKV for video; MP3, M4A or WAV for just the sound. Formats your browser can\'t write are greyed out with the reason.' },
+        { name: 'Codec (auto)', effect: 'Auto keeps the video as it is when it already suits the new container (H.264 or HEVC into MP4 or MOV; VP9, AV1 or VP8 into WebM) and otherwise picks the best codec your browser can encode.' },
+        { name: 'Quality (original)', effect: '"original" copies streams untouched when it can, and when it must re-encode it follows the source\'s own bitrate. High, balanced and small trade size for detail.' },
+        { name: 'Resolution', effect: 'Keep the original, or step down to 1440p, 1080p, 720p, 480p or 360p (the short side, so portrait videos shrink by width).' },
+        { name: 'Keep audio', effect: 'Copies the sound when the new container takes it as is, otherwise re-encodes it; untick for a silent video.' },
+      ],
+      results: [
+        { input: '23-second 1080p H.264 video in a MOV file, 42 MB', setting: 'MP4, defaults', output: '42 MB MP4', note: 'copied without re-encoding, 0.6–1.0 s' },
+        { input: '23-second 1080p H.264 MP4, 42 MB', setting: 'WebM, defaults', output: '42 MB WebM (VP9)', note: 're-encoded at the source\'s bitrate, 9.0–15.4 s' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'MP4', about: 'The format nearly everything plays. Most phone videos are already H.264 or HEVC inside, so MOV or MKV to MP4 is usually a quick copy.' },
+        { name: 'WebM', about: 'The web\'s open format (VP9 or AV1 video, Opus audio). Converting to it means re-encoding, so it takes longer.' },
+        { name: 'MOV and MKV', about: 'Containers for Apple apps and for media players. MKV holds almost any codec; MOV suits Final Cut and iMovie.' },
+      ],
+      limits: [LIMITS.gmail, LIMITS.discord],
+    },
     related: ['video-compressor', 'video-to-mp3', 'trim-video', 'resize-video'],
     next: ['video-compressor', 'trim-video'],
     flagship: { elsewhere: 'Upload size caps, daily limits or watermarks', here: 'Any size, no limits, no watermark, nothing uploaded' },

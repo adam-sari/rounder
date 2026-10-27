@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default [
@@ -24,6 +25,29 @@ export default [
       { q: 'Is there a page limit?', a: 'No. Pages are converted one at a time on your device, so a 300-page PDF works too. It just takes longer, and you can cancel and keep the pages already done.' },
       filePrivacyFaq,
     ],
+    notes: {
+      settings: [
+        { name: 'Resolution', effect: '72 dpi is screen size, 150 (default) is sharp on screen, 300 is print quality. "Custom" takes 36 to 1200 dpi; "by width" makes every page the same pixel width.' },
+        { name: 'Quality (40–100, default 90)', effect: 'JPG and WebP compression. PNG has no quality setting because it is lossless.' },
+        { name: 'Transparent background', effect: 'PNG and WebP only: pages render without the white paper behind them.' },
+        { name: 'Pages', effect: 'All pages, or a selection typed as ranges ("1-3, 5, 8-") or clicked on the thumbnails.' },
+      ],
+      results: [
+        { input: '20-page report with photos and charts, 2.3 MB', setting: 'JPG, 150 dpi, quality 90 (defaults)', output: '20 images of 1240×1753, 10 MB zip', note: '2.6 s' },
+        { input: '20-page report with photos and charts, 2.3 MB', setting: 'JPG, 300 dpi', output: '26 MB zip', note: 'twice the pixels each way, 8.7 s' },
+        { input: '20-page report with photos and charts, 2.3 MB', setting: 'PNG, 150 dpi', output: '12 MB zip', note: '2.5 s' },
+      ],
+      measured: MEASURED,
+      formats: [
+        { name: 'JPG', about: 'Small and accepted everywhere; the right pick for pages with photos.' },
+        { name: 'PNG', about: 'Lossless, so text edges stay perfectly clean. Bigger for photo-heavy pages.' },
+        { name: 'WebP', about: 'Smaller than JPG at a similar look, if the place you upload to accepts it.' },
+      ],
+      limits: [
+        { where: 'Browser canvas', limit: 'pages are drawn at most 16,384 px on a side and 120 megapixels (16.7 megapixels on iPhone and iPad); a bigger request is scaled down and marked' },
+        LIMITS.gmail,
+      ],
+    },
     related: ['jpg-to-pdf', 'extract-images-from-pdf', 'split-pdf', 'compress-pdf'],
     next: ['image-compressor', 'image-resizer'],
     flagship: { elsewhere: 'Daily task limits and upload size caps', here: 'Any number of pages, up to 1200 dpi' },

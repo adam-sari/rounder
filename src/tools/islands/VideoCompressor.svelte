@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import {
     capabilities,
@@ -16,13 +17,15 @@
     type MediaInfo,
     type VideoCodec,
   } from '@/engines/media';
-  import { downloadBlob, formatBytes, zipFiles } from '@/tools/lib/files';
+  import { downloadResult, formatBytes, zipFiles } from '@/tools/lib/files';
   import {
     codecInfo,
     errorText,
     etaSeconds,
     MB,
+    overReason,
     planCompression,
+    retryAimMB,
     shortDuration,
     targetPresets,
     type CodecChoice,
@@ -32,6 +35,11 @@
     type Resolution,
     type Settings,
   } from '@/tools/lib/video-compressor/plan';
+  import { targetFromHash, verdict } from '@/tools/lib/exact-size/target';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+
+  // targetMB: preset pages (compress-video-to-10mb…) open at that target size
+  let { targetMB: presetMB }: { targetMB?: number } = $props();
 
   interface Result {
     blob: Blob;
@@ -63,12 +71,15 @@
     result?: Result;
     error?: string;
     ctrl?: AbortController;
+    /** a lower aim for another try after a result came out over the target, valid for these settings only */
+    aim?: { key: string; mb: number };
   }
 
   // settings
   let mode = $state<Mode>('target');
-  let targetChoice = $state<number | 'custom'>(10);
-  let customMB = $state<number | null>(30);
+  const startMB = untrack(() => presetMB);
+  let targetChoice = $state<number | 'custom'>(!startMB ? 10 : targetPresets.some((t) => t.mb === startMB) ? startMB : 'custom');
+  let customMB = $state<number | null>(startMB ?? 30);
   let preset = $state<Preset>('balanced');
   let resolution = $state<Resolution>('auto');
   let fps = $state<FpsCap>('original');
@@ -106,6 +117,12 @@
   // extensions too: files with no MIME type (common for .mov/.mkv) would otherwise be rejected
   const accept = 'video/*,.mp4,.mov,.webm,.mkv,.avi,.wmv,.flv,.m4v,.3gp,.mts,.m2ts,.mpg,.mpeg,.vob,.ogv';
   const canEncode = (c: CodecChoice) => c === 'avc' || !!encodable?.includes(c);
+
+  // a size typed into the address (/video-compressor#15mb), which the exact-size hub links to
+  $effect(() => {
+    const kb = targetFromHash(location.hash);
+    if (kb) [mode, targetChoice, customMB] = ['target', 'custom', kb / 1000];
+  });
 
   $effect(() => {
     capabilities().then(
@@ -183,8 +200,23 @@
   }
 
   async function compress(it: Item) {
-    const plan = planCompression(it.info!, settings);
+    // ── device guard (low-end devices): stop before a job this device can't hold ──
+    const fit = checkDevice(it.decoder ? 'ffmpeg' : 'video', {
+      bytes: it.file.size,
+      outBytes: settings.mode === 'target' ? settings.targetMB * MB : undefined,
+      seconds: it.info?.durationSec,
+      width: it.info?.video?.displayWidth,
+      height: it.info?.video?.displayHeight,
+    });
+    if (fit.level === 'block') {
+      Object.assign(it, { status: 'error', error: fit.message });
+      return;
+    }
+    // ── end device guard ──
     const key = settingsKey;
+    // another try after an overshoot aims lower, but the result still counts against the real target
+    const aimMB = settings.mode === 'target' && it.aim?.key === key ? it.aim.mb : undefined;
+    const plan = planCompression(it.info!, aimMB ? { ...settings, targetMB: aimMB } : settings);
     const startedAt = Date.now();
     Object.assign(it, { status: 'working', progress: 0, stage: 'Starting…', startedAt, error: undefined, ctrl: new AbortController() });
     selected = it.id;
@@ -210,11 +242,20 @@
       else {
         console.error(e);
         it.status = 'error';
-        it.error = errorText((e as MediaError).code, (e as Error).message);
+        it.error = deviceMessage(it.decoder ? 'ffmpeg' : 'video', e) ?? errorText((e as MediaError).code, (e as Error).message);
       }
     } finally {
       it.ctrl = undefined;
     }
+  }
+
+  // compresses one video again, aiming lower by as much as the last result overshot
+  function retryLower(it: Item) {
+    const r = it.result!;
+    const aimed = it.aim?.key === settingsKey ? it.aim.mb : targetMB;
+    it.aim = { key: settingsKey, mb: retryAimMB(targetMB, aimed, r.blob.size) };
+    it.result = { ...r, key: '' };
+    void compressAll();
   }
 
   function cancel() {
@@ -237,10 +278,10 @@
 
   async function downloadAll() {
     const ready = items.filter((i) => i.result);
-    if (ready.length === 1) return downloadBlob(ready[0].result!.blob, ready[0].result!.name);
+    if (ready.length === 1) return downloadResult(ready[0].result!.blob, ready[0].result!.name);
     zipping = true;
     try {
-      downloadBlob(await zipFiles(ready.map((i) => ({ name: i.result!.name, blob: i.result!.blob }))), 'compressed-videos.zip');
+      downloadResult(await zipFiles(ready.map((i) => ({ name: i.result!.name, blob: i.result!.blob }))), 'compressed-videos.zip');
     } finally {
       zipping = false;
     }
@@ -359,11 +400,16 @@
             </div>
           {:else if current.status === 'done' && r}
             {#if r.kept}
+              {#if r.kept === 'fits' && r.limitMB}<p class="mono text-ok">Result: {verdict(current.file.size, { max: r.limitMB * MB }).text}</p>{/if}
               <p class="kept text-sm">
                 {r.kept === 'fits'
                   ? `Already under ${r.limitMB} MB, so the original is kept as is.`
                   : 'Compressing made this one bigger, so you get the original back, untouched.'}
               </p>
+              {#if r.kept === 'bigger' && mode === 'target' && r.key === settingsKey}
+                {@const v = verdict(current.file.size, { max: targetMB * MB })}
+                {#if !v.ok}<p class="mono text-bad">Result: {v.text} · trim the clip or pick a bigger target</p>{/if}
+              {/if}
             {:else}
               {@const ratio = Math.max(0.01, r.blob.size / current.file.size)}
               <div class="done">
@@ -379,12 +425,18 @@
                   </div>
                 </div>
               </div>
-              {#if mode === 'target' && r.blob.size > targetMB * MB && r.key === settingsKey}
-                <p class="mono text-bad">Came out over {targetMB} MB. Try a lower resolution, a shorter clip or a slightly smaller target.</p>
+              {#if mode === 'target' && r.key === settingsKey}
+                {@const v = verdict(r.blob.size, { max: targetMB * MB })}
+                <p class="mono" class:text-ok={v.ok} class:text-bad={!v.ok}>Result: {v.text}</p>
+                {#if !v.ok && current.info}
+                  {@const plan = planCompression(current.info, settings)}
+                  <p class="text-sm text-soft">{overReason(plan, current.info.durationSec, targetMB)}</p>
+                  <button type="button" class="btn justify-self-start" disabled={running} onclick={() => retryLower(current!)}>Try again, aiming lower</button>
+                {/if}
               {/if}
               {#each r.notes as note}<p class="mono">{note}</p>{/each}
             {/if}
-            <button type="button" class="btn btn-primary justify-self-start" onclick={() => downloadBlob(r.blob, r.name)}>Download {r.name}</button>
+            <button type="button" class="btn btn-primary justify-self-start" onclick={() => downloadResult(r.blob, r.name)}>Download {r.name}</button>
           {:else if current.error}
             <p class="text-sm text-bad" role="alert">{current.error}</p>
           {/if}
@@ -425,7 +477,7 @@
               </p>
             </div>
             {#if it.result}
-              <button type="button" class="btn px-3! py-2!" onclick={() => downloadBlob(it.result!.blob, it.result!.name)} aria-label={`Download ${it.result.name}`}>↓</button>
+              <button type="button" class="btn px-3! py-2!" onclick={() => downloadResult(it.result!.blob, it.result!.name)} aria-label={`Download ${it.result.name}`}>↓</button>
             {/if}
             <button type="button" class="btn px-3! py-2!" onclick={() => remove(it)} aria-label={`Remove ${it.file.name}`}>✕</button>
           </li>

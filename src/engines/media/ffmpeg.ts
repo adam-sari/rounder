@@ -144,6 +144,9 @@ async function runFfmpeg(
       // a wasm trap (e.g. "memory access out of bounds") leaves the instance unusable: drop it
       crashed = true;
       abort();
+      // its heap stops at 2 GB, so a big file ends in "Aborted(OOM)" or a trap: say memory, not a broken file
+      if (e instanceof RangeError || FF_OOM.test(String((e as Error)?.message ?? e)))
+        throw new MediaError('out-of-memory', 'The fallback decoder ran out of memory on this file. Try a shorter clip or a smaller output size.', { cause: e });
       throw new MediaError('ffmpeg-failed', 'The fallback decoder crashed on this file.', { cause: e });
     } finally {
       ctl.signal?.removeEventListener('abort', abort);
@@ -158,7 +161,11 @@ async function runFfmpeg(
   });
 }
 
+// ffmpeg-core's exec() swallows "Aborted(OOM)" and only logs it, so the log is checked too (it never names the input file)
+const FF_OOM = /Aborted\(OOM\)|out of memory|memory access out of bounds|cannot enlarge memory|cannot allocate memory|allocation failed/i;
+
 function failure(log: string): MediaError {
+  if (FF_OOM.test(log)) return new MediaError('out-of-memory', 'The fallback decoder ran out of memory on this file. Try a shorter clip or a smaller output size.');
   const tail = log.split('\n').filter((l) => /error|invalid|unsupported|not found|could not/i.test(l)).slice(-2).join(' ');
   return new MediaError('ffmpeg-failed', tail ? `The fallback decoder failed: ${tail}` : 'The fallback decoder could not process this file.');
 }

@@ -1,3 +1,4 @@
+import { LIMITS } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,19 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Draw', effect: 'Ink follows your pen: a stylus that reports pressure sets the line width, otherwise quick strokes run thinner, like a fountain pen.' },
+      { name: 'Type', effect: 'Your name in one of four handwriting fonts (Caveat, Dancing Script, Homemade Apple, Sacramento), loaded from this site, not a font service.' },
+      { name: 'Upload', effect: 'A photo of your signature on paper. "Remove the white background" makes everything lighter than the cut-off (210 by default) transparent, with a soft edge so the ink stays clean.' },
+      { name: 'Remember on this device', effect: 'Keeps up to four signatures and four sets of initials in this browser\'s storage. Off by default.' },
+    ],
+    formats: [
+      { name: 'What lands in the PDF', about: 'The signature is embedded as an image; names, dates and check marks are real PDF text and shapes. The original pages are left untouched underneath.' },
+      { name: 'Electronic vs digital signature', about: 'This is a visible electronic signature. It carries no certificate, so a PDF reader won\'t show it in a signature panel.' },
+    ],
+    limits: [LIMITS.gmail, LIMITS.outlook],
+  },
   related: ['edit-pdf', 'fill-pdf-form', 'merge-pdf', 'protect-pdf'],
   next: ['protect-pdf', 'compress-pdf'],
   flagship: { elsewhere: 'An account first, and only a few free signatures', here: 'Sign as many PDFs as you like, no account' },

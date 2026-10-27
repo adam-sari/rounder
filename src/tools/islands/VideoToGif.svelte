@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount, untrack } from 'svelte';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import TrimTimeline from '@/components/tool/TrimTimeline.svelte';
   import {
@@ -18,7 +19,8 @@
     type MediaInfo,
     type VideoCodec,
   } from '@/engines/media';
-  import { downloadBlob } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+  import { downloadResult } from '@/tools/lib/files';
   import { layoutBox, type Measure } from '@/tools/lib/meme-generator/layout';
   import { gifWorker, transfer } from '@/tools/lib/video-to-gif/client';
   import { friendlyError } from '@/tools/lib/video-to-gif/errors';
@@ -59,6 +61,8 @@
   const palettes = [256, 128, 64, 32];
   const dithers: [Dither, string][] = [['none', 'off'], ['pattern', 'pattern'], ['diffuse', 'smooth']];
   const loops: [number, string][] = [[0, 'forever'], [1, 'once'], [3, '3 times']];
+  // from (e.g. 'MOV' on /mov-to-gif) only names the format in the drop area; every video still opens
+  let { from }: { from?: string } = $props();
   const accept = 'video/*,.mp4,.m4v,.mov,.webm,.mkv,.avi,.wmv,.flv,.3gp,.mpg,.mpeg,.ts,.ogv';
 
   let file = $state.raw<File | null>(null);
@@ -123,6 +127,13 @@
   const bitrate = $derived(loopBitrate(videoSize.width, videoSize.height, fps));
   const videoEstimate = $derived(estimateVideoBytes(bitrate, seconds));
   const estimate = $derived(format === 'gif' ? gifEstimate : videoEstimate);
+  // low-end devices: warn about, or stop, an export this device can't hold
+  const decoderFit = $derived(file ? checkDevice('ffmpeg', { bytes: file.size, tip: 'Try a shorter recording, or convert it to MP4 on a computer first.' }) : null);
+  const deviceFit = $derived(
+    format === 'gif'
+      ? checkDevice('gif', { count: frameCount, seconds, width: gifSize.width, height: gifSize.height, outBytes: gifEstimate ?? undefined })
+      : checkDevice('video', { seconds, width: videoSize.width, height: videoSize.height, outBytes: videoEstimate }),
+  );
   const long = $derived(end - start > LONG_GIF_SEC);
   const elapsed = $derived(Math.max(0, now - startedAt));
   const remaining = $derived(eta(progress, elapsed));
@@ -223,7 +234,7 @@
       if (id === opens) ready(out.file, out.info);
     } catch (e) {
       if (id !== opens) return;
-      const msg = friendlyError(e);
+      const msg = deviceMessage('ffmpeg', e) ?? friendlyError(e);
       // a converted file with no picture can't be retried; anything else can
       phase = (e as MediaError)?.code === 'no-tracks' ? 'empty' : 'needs-decoder';
       if (phase === 'empty') file = null;
@@ -462,7 +473,9 @@
       job = 'done';
     } catch (e) {
       job = 'idle';
-      error = friendlyError(e) ?? '';
+      // null means cancelled
+      const msg = friendlyError(e);
+      error = (msg && deviceMessage(target === 'gif' ? 'gif' : 'video', e)) || (msg ?? '');
     } finally {
       clearInterval(ticker);
       if (controller === ctrl) controller = null;
@@ -494,7 +507,7 @@
       <p class="mono">{file?.name}</p>
     </div>
   {:else}
-    <Dropzone {accept} title="Drop a video to make a GIF" hint="MP4, MOV, WebM, MKV, AVI and more" onfiles={open} />
+    <Dropzone {accept} title={from ? `Drop your ${from} to make a GIF` : 'Drop a video to make a GIF'} hint="MP4, MOV, WebM, MKV, AVI and more" onfiles={open} />
   {/if}
   {#if error}<p class="mt-3 text-sm text-bad" role="alert">{error}</p>{/if}
 {:else if phase === 'needs-decoder' || phase === 'decoding'}
@@ -515,8 +528,9 @@
       </div>
       <div><button type="button" class="btn" onclick={reset}>Cancel</button></div>
     {:else}
+      <DeviceNote verdict={decoderFit} />
       <div class="flex flex-wrap gap-3">
-        <button type="button" class="btn btn-primary" onclick={useDecoder}>Download decoder ({FALLBACK_DOWNLOAD_MB} MB) & continue</button>
+        <button type="button" class="btn btn-primary" onclick={useDecoder} disabled={decoderFit?.level === 'block'}>Download decoder ({FALLBACK_DOWNLOAD_MB} MB) & continue</button>
         <button type="button" class="btn" onclick={reset}>Choose another file</button>
       </div>
     {/if}
@@ -668,8 +682,9 @@
         {#if format !== 'gif' && gifEstimate}
           <p class="mono">as a GIF it would be ≈ {formatBytes(gifEstimate)}, {pctSmaller(videoEstimate, gifEstimate) > 0 ? `so this is about ${pctSmaller(videoEstimate, gifEstimate)}% smaller` : 'about the same'}</p>
         {/if}
+        <DeviceNote verdict={deviceFit} />
         <div class="flex flex-wrap gap-3">
-          <button type="button" class="btn btn-primary" onclick={() => make()} disabled={!!formats.find((f) => f.id === format)?.reason}>
+          <button type="button" class="btn btn-primary" onclick={() => make()} disabled={!!formats.find((f) => f.id === format)?.reason || deviceFit.level === 'block'}>
             Make {format === 'gif' ? 'GIF' : format === 'mp4' ? 'MP4' : 'WebM'}
           </button>
           <button type="button" class="btn" onclick={reset}>Choose another video</button>
@@ -701,7 +716,7 @@
         </p>
       {/if}
       <div class="flex flex-wrap gap-3">
-        <button type="button" class="btn btn-primary" onclick={() => result && downloadBlob(result.blob, result.name)}>Download {result.name}</button>
+        <button type="button" class="btn btn-primary" onclick={() => result && downloadResult(result.blob, result.name)}>Download {result.name}</button>
         <button type="button" class="btn" onclick={adjust}>Change settings</button>
         <button type="button" class="btn" onclick={reset}>Start over</button>
       </div>

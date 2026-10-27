@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { flip } from 'svelte/animate';
+  import DeviceNote from '@/components/tool/DeviceNote.svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import PdfPageGrid from '@/components/tool/PdfPageGrid.svelte';
   import PdfPasswordPrompt from '@/components/tool/PdfPasswordPrompt.svelte';
   import { getThumbnail, isAbort, openPdf, pageRefs, pdfName, PdfPasswordError, type PageRef, type PdfDoc } from '@/engines/pdf';
-  import { downloadBlob, formatBytes } from '@/tools/lib/files';
+  import { checkDevice, deviceMessage } from '@/tools/lib/device-guard';
+  import { downloadResult, formatBytes } from '@/tools/lib/files';
   import { disposeHelper, imageAsPdf, mergePdfs, type Progress } from '@/tools/lib/merge-pdf/client';
   import { baseName, compareNames, groupByFile, outputFileName } from '@/tools/lib/merge-pdf/order';
 
@@ -52,6 +54,8 @@
   const counts = $derived(pages.reduce((m, p) => m.set(p.doc.id, (m.get(p.doc.id) ?? 0) + 1), new Map<string, number>()));
   const docOrder = $derived([...new Set(pages.map((p) => p.doc.id))]);
   const used = $derived(ready.filter((s) => counts.has(s.doc!.id)));
+  // low-end devices: every file is parsed into memory and the merged copy is written next to them
+  const deviceFit = $derived(used.length ? checkDevice('pdf', { bytes: used.reduce((n, s) => n + s.file.size, 0), count: pages.length, tip: 'Try merging fewer or smaller files at a time.' }) : null);
   const opening = $derived(sources.length > ready.length);
   const firstFile = $derived((pages.length && byDoc.get(pages[0].doc.id)?.file.name) || sources[0]?.file.name || 'merged');
   const fallbackName = $derived(pdfName(firstFile, '-merged'));
@@ -339,7 +343,7 @@
       await tick();
       downloadBtn?.focus();
     } catch (e) {
-      if (!isAbort(e)) mergeError = (e as Error).message;
+      if (!isAbort(e)) mergeError = deviceMessage('pdf', e, 'Try merging fewer or smaller files at a time.') ?? (e as Error).message;
     } finally {
       progress = null;
       ctrl = undefined;
@@ -527,11 +531,11 @@
           <p class="font-serif text-[26px] leading-tight">Merged, all in one</p>
           <p class="mono break-all">{done.name} · {plural(done.pages, 'page')} · {formatBytes(done.blob.size)}</p>
         </div>
-        <button type="button" class="btn btn-primary" bind:this={downloadBtn} onclick={() => downloadBlob(done.blob, done.name)}>Download PDF</button>
+        <button type="button" class="btn btn-primary" bind:this={downloadBtn} onclick={() => downloadResult(done.blob, done.name)}>Download PDF</button>
       </div>
     {:else}
       <div class="go">
-        <button type="button" class="btn btn-primary" disabled={!pages.length || opening} onclick={merge}>
+        <button type="button" class="btn btn-primary" disabled={!pages.length || opening || deviceFit?.level === 'block'} onclick={merge}>
           {used.length > 1 ? `Merge ${used.length} files` : 'Save as PDF'}
         </button>
         <span class="mono">
@@ -545,6 +549,7 @@
         </span>
       </div>
     {/if}
+    {#if !progress && !result}<DeviceNote verdict={deviceFit} />{/if}
     {#if mergeError}
       <p class="error" role="alert">{mergeError}</p>
     {/if}

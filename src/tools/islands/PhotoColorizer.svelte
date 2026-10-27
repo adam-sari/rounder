@@ -8,6 +8,7 @@
   import { MODELS, type Device, type ModelSpec } from '@/engines/ai/models';
   import { modelWorker, proxy, transfer } from '@/engines/ai/worker-utils';
   import { decodeImage, encodeImage, formatInfo, resizeImage } from '@/engines/image/client';
+  import { deviceMessage, guard } from '@/tools/lib/device-guard';
   import { downloadBlob, withExtension, withSuffix, zipFiles } from '@/tools/lib/files';
   import type { ColorizeWorker } from '@/tools/lib/photo-colorizer/colorize.worker';
   import { isOpaque, MODEL_SIZE } from '@/tools/lib/photo-colorizer/lab';
@@ -105,6 +106,8 @@
     item.status = 'working';
     try {
       const full = await decodeImage(item.file);
+      // low-end devices: saving works at full size, so stop here on a photo this device can't hold
+      guard('image-ai', { width: full.width, height: full.height });
       const fit = Math.min(1, PREVIEW_MAX / Math.max(full.width, full.height));
       const [preview, small] = await Promise.all([
         fit < 1 ? resizeImage(full, { width: Math.max(1, Math.round(full.width * fit)), height: Math.max(1, Math.round(full.height * fit)) }) : full,
@@ -124,7 +127,7 @@
     } catch (err) {
       if (signal.aborted) return;
       item.status = 'error';
-      item.error = item.before ? problem(err) : "Couldn't open this image. Try a JPG, PNG, WebP or HEIC file.";
+      item.error = deviceMessage('image-ai', err) ?? (item.before ? problem(err) : "Couldn't open this image. Try a JPG, PNG, WebP or HEIC file.");
     }
   }
 

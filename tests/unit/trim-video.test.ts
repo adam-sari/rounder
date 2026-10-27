@@ -156,9 +156,12 @@ describe('quality', () => {
   it('copy means no video options', () => {
     expect(videoQuality('copy', { codec: 'avc', width: 1920, height: 1080, bitrate: 8e6 }, 'avc')).toBeNull();
   });
-  it('keeps the quality level for rich sources', () => {
-    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 20e6 }, 'avc')).toEqual({ quality: 'very-high' });
-    expect(videoQuality('high', { codec: 'avc', width: 1920, height: 1080, bitrate: null }, 'avc')).toEqual({ quality: 'high' });
+  it("uses the level's bitrate for rich or unknown sources, never a bare (unbounded) quality level", () => {
+    const best = estimateVideoBitrate('avc', 1920, 1080, 'very-high');
+    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 20e6 }, 'avc')).toEqual({ bitrate: best });
+    expect(videoQuality('high', { codec: 'avc', width: 1920, height: 1080, bitrate: null }, 'avc')).toEqual({ bitrate: estimateVideoBitrate('avc', 1920, 1080, 'high') });
+    // the measured case: a 16 Mbps phone clip stays under its own bitrate at Best
+    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 16e6 }, 'avc')!.bitrate).toBeLessThan(16e6);
   });
   it('caps lean sources near their own bitrate, scaled for codec efficiency', () => {
     expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 2e6 }, 'avc')).toEqual({ bitrate: 2_300_000 });

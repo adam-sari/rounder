@@ -1,3 +1,4 @@
+import { LIMITS, MEASURED } from '../lib/notes';
 import { filePrivacyFaq, type Tool } from '../types';
 
 export default {
@@ -34,6 +35,23 @@ export default {
     },
     filePrivacyFaq,
   ],
+  notes: {
+    settings: [
+      { name: 'Files / Pages view', effect: 'Files moves whole documents; Pages shows every page with a stripe in its file\'s color, so you can move, turn or drop single pages.' },
+      { name: 'Bookmark each file (on)', effect: 'Adds one bookmark per source file, named after it, pointing at the page where that file starts.' },
+      { name: 'Keep the first PDF\'s details (on)', effect: 'Copies the title, author and creation date from the first PDF in the list. Off, the merged file starts with blank details.' },
+      { name: 'File name', effect: 'Left empty, the name comes from the first file, e.g. report-merged.pdf.' },
+    ],
+    results: [
+      { input: 'A 20-page report (2.3 MB), a 10-page scan (15 MB) and a 50-page text PDF (21 KB)', setting: 'Defaults', output: '80 pages, 17 MB', note: 'merged in 0.3 s once the files were open' },
+    ],
+    measured: MEASURED,
+    formats: [
+      { name: 'PDF pages', about: 'Copied over as they are, text and all; nothing is re-rendered, so merging never lowers quality.' },
+      { name: 'Images', about: 'JPG and PNG go in byte for byte as one page each; WebP, HEIC, AVIF and GIF are converted first.' },
+    ],
+    limits: [LIMITS.gmail, LIMITS.outlook, LIMITS.yahoo],
+  },
   related: ['split-pdf', 'organize-pdf', 'compress-pdf', 'jpg-to-pdf'],
   next: ['compress-pdf', 'add-page-numbers-to-pdf', 'protect-pdf'],
   flagship: { elsewhere: 'File and size caps, sign-up for more', here: 'Unlimited files, no size cap' },
