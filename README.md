@@ -34,17 +34,22 @@ device, so files are never uploaded and hosting is a static site.
 
 Engine test pages live under `/dev/` (for example `/dev/media-lab`, `/dev/ai-lab`). They are dropped from production builds.
 
-## Deploying to Cloudflare Pages
+## Deploying (Cloudflare)
 
-- **Build command:** `npm run build`
-- **Output directory:** `dist`
-- **Environment variable:** `NODE_VERSION=22`
+Production runs as a static-assets-only Cloudflare Worker (`wrangler.jsonc`): no server code, asset requests are
+free and unmetered, and the custom domain's DNS record is created on deploy.
 
-`public/_headers` sets security and cache headers. Cloudflare Pages rejects files over 25 MB, so the vendor
-scripts split large wasm files into parts that are joined again in the browser and checked against a SHA-256.
+```sh
+npm run build     # also runs the vendor step
+npm run deploy    # wrangler: the site on roundertools.com, plus workers/www-redirect (www → apex, 301)
+```
 
-The site sends no COOP/COEP headers on purpose, so that ad iframes keep working. Tools therefore avoid
-SharedArrayBuffer, and onnxruntime runs single-threaded on WASM.
+`.env.production` holds the public build settings (AdSense publisher id, analytics token). Self-hosters can delete
+it to build without ads or analytics. There is no `*.workers.dev` copy of the site, so only roundertools.com is
+indexed. `public/_headers` sets security and cache headers.
+
+Large wasm files are split into parts under 25 MB that are joined again in the browser and checked against a SHA-256,
+so the site also fits Cloudflare Pages if you prefer it (build output `dist`, `NODE_VERSION=22`).
 
 ## Network use
 

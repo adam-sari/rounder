@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "check": "astro check && svelte-check --threshold warning --incremental",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "deploy": "npx wrangler@4 deploy && npx wrangler@4 deploy -c workers/www-redirect/wrangler.jsonc"
   },
   "dependencies": {
     "@astrojs/svelte": "^9.0.1",

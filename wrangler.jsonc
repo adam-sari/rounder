@@ -1,0 +1,17 @@
+// Production hosting: a static-assets-only Worker (no server code). Asset requests are free and don't count
+// toward Workers request limits, and the custom domain gets its DNS record automatically.
+// Deploy with `npm run deploy` after `npm run build`.
+{
+  "name": "roundertools",
+  "compatibility_date": "2026-10-20",
+  "assets": {
+    "directory": "./dist",
+    // /merge-pdf serves merge-pdf.html, matching the canonical URLs (no .html, no trailing slash)
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // no *.workers.dev copy of the site, so search engines only ever see roundertools.com
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "roundertools.com", "custom_domain": true }]
+}
