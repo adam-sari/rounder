@@ -46,5 +46,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['audio-cutter', 'audio-noise-reduction', 'audio-to-text', 'voice-recorder'],
+  next: ['audio-cutter', 'pitch-changer'],
   flagship: { elsewhere: 'Paid per minute of audio, with uploads and monthly caps', here: 'Unlimited songs, free: the AI runs on your own computer' },
 } satisfies Tool;

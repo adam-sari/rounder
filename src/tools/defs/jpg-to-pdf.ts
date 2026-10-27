@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['pdf-to-jpg', 'merge-pdf', 'compress-pdf', 'heic-to-jpg'],
+  next: ['merge-pdf', 'compress-pdf'],
   flagship: { elsewhere: 'Daily task limits and upload size caps', here: 'Any number of images, built on your device' },
 } satisfies Tool;

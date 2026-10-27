@@ -35,5 +35,7 @@ export default {
     filePrivacyFaq,
   ],
   related: ['protect-pdf', 'edit-pdf', 'exif-remover'],
+  next: ['protect-pdf', 'compress-pdf'],
+  noAds: true,
   flagship: { elsewhere: 'A paid Acrobat Pro feature', here: 'True redaction, free' },
 } satisfies Tool;

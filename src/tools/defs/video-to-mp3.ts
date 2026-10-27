@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['audio-converter', 'audio-to-text', 'audio-cutter', 'mute-video'],
+  next: ['audio-cutter', 'audio-to-text'],
   flagship: { elsewhere: 'Upload size caps and daily conversion limits', here: 'No size cap, no upload, whole batches at once' },
 } satisfies Tool;

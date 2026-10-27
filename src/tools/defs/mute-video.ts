@@ -23,4 +23,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['add-audio-to-video', 'video-to-mp3', 'video-compressor', 'trim-video'],
+  next: ['add-audio-to-video'],
 } satisfies Tool;

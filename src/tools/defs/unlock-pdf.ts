@@ -31,5 +31,7 @@ export default {
     filePrivacyFaq,
   ],
   related: ['protect-pdf', 'merge-pdf', 'compress-pdf', 'pdf-to-text'],
+  next: ['edit-pdf', 'compress-pdf'],
+  noAds: true,
   flagship: { elsewhere: 'Upload your file, often with a daily cap', here: 'Unlocked on your device, no limits' },
 } satisfies Tool;

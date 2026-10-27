@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-compressor', 'crop-image', 'image-converter', 'passport-photo-maker'],
+  next: ['image-compressor', 'crop-image'],
   flagship: { elsewhere: 'Batch caps and uploads to a server', here: 'Unlimited files, resized on your device' },
 } satisfies Tool;

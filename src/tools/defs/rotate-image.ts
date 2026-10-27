@@ -23,4 +23,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['crop-image', 'image-resizer', 'image-converter', 'exif-remover'],
+  next: ['crop-image', 'image-compressor'],
 } satisfies Tool;

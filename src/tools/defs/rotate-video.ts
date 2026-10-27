@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['crop-video', 'video-converter', 'resize-video', 'trim-video'],
+  next: ['video-compressor'],
   flagship: { elsewhere: 'Watermarks and upload size caps on free plans', here: 'No watermark, no size cap, no upload' },
 } satisfies Tool;

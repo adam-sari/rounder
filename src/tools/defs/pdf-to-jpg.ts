@@ -25,6 +25,7 @@ export default [
       filePrivacyFaq,
     ],
     related: ['jpg-to-pdf', 'extract-images-from-pdf', 'split-pdf', 'compress-pdf'],
+    next: ['image-compressor', 'image-resizer'],
     flagship: { elsewhere: 'Daily task limits and upload size caps', here: 'Any number of pages, up to 1200 dpi' },
   },
   {

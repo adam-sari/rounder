@@ -1,0 +1,74 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
+import { tools } from '@/tools/registry';
+
+// TODO(owner): set SITE.owner.name in src/site.ts to put a name on this page; it reads fine without one
+const owner = SITE.owner.name;
+const toolCount = tools.filter((t) => !t.variantOf).length;
+---
+
+<Prose
+  title="About Rounder: who makes it, and why"
+  description="Rounder is a free, open-source workshop of browser tools, made by one independent developer fed up with fake download buttons. Why it exists and how it's built."
+  heading="About <em>rounder</em>"
+>
+  <p>
+    Rounder is a workshop of {toolCount} free tools for video, images, PDFs, text and everyday jobs. Every one of them runs in
+    your browser, so your files never leave your device. No sign-ups, no watermarks, no daily limits.
+  </p>
+  <p>
+    {owner ? <>It's made by <strong>{owner}</strong>, one independent developer.</> : <>It's made by one independent developer.</>}
+    No company, no investors, no growth team.
+  </p>
+
+  <h2>Why it exists</h2>
+  <p>
+    Rounder started in the middle of editing a video montage. I needed a few small jobs done: trim a clip, convert a format,
+    shrink a file so it could be sent. Every site I tried was the same: upload your file to a stranger's server, wait in a
+    queue, dodge three fake "Download" buttons, then hit a sign-up wall, a watermark or a "premium" limit right before the
+    file I actually needed.
+  </p>
+  <p>
+    Browsers can do almost all of this work themselves now, on your own device, for free. So I started building the tools
+    I wished existed, then kept going. Rounder is the result: the tool, done properly, and nothing in the way.
+  </p>
+
+  <h2>How it's built</h2>
+  <ul>
+    <li><strong>Everything runs locally.</strong> Tools use WebAssembly, Web Workers, WebCodecs and WebGPU to do the heavy work on your device. There's no server that processes files, and no database.</li>
+    <li><strong>On the shoulders of open source.</strong> The engines are well-known libraries such as PDF.js, pdf-lib, FFmpeg and ONNX Runtime, and AI models released openly by researchers. They're all on the <a href="/credits">credits page</a>.</li>
+    <li><strong>Tested in real browsers.</strong> Automated tests open every page in Chrome, Firefox and Safari's engine, at desktop and phone sizes, and run real files through the tools.</li>
+    <li><strong>Simple hosting.</strong> The site is a set of static files on Cloudflare Pages. <a href="/security">Here's every network request it makes.</a></li>
+  </ul>
+
+  <h2>Built with AI help</h2>
+  <p>
+    I build Rounder with AI coding assistants, mainly Anthropic's Claude, which write a large share of the code and help draft
+    the pages. I decide what each tool should do, review the work, test the tools and fix what's wrong, and I'm responsible for
+    everything on the site. If something is broken or wrong, that's on me, and I'd like to <a href="/contact">hear about it</a>.
+  </p>
+  <p>
+    That's separate from the AI <em>tools</em> on the site, like the background remover or the transcriber. Those run open
+    models on your own device, and nothing you give them is used to train anything.
+  </p>
+
+  <h2>Open source</h2>
+  <p>
+    The whole site is open source under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="noopener">AGPL-3.0</a>.
+    You can read the code at <a href={SITE.github}>{SITE.github.replace('https://', '')}</a>, check that it does what this
+    site says, suggest a tool, fix a bug or run your own copy.
+  </p>
+
+  <h2>How it stays free</h2>
+  <p>
+    A few polite ads from Google pay for the domain and the time. The tools that handle passwords, keys and private documents
+    have no ads at all. <a href="/why-free">More on why it's free.</a>
+  </p>
+
+  <h2>Say hello</h2>
+  <p>
+    Questions, bug reports and tool ideas are all welcome: email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or see the
+    <a href="/contact">contact page</a>. Writing about Rounder? There's a <a href="/press">press kit</a>.
+  </p>
+</Prose>

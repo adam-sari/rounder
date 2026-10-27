@@ -23,4 +23,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-resizer', 'rotate-image', 'passport-photo-maker', 'instagram-grid-maker'],
+  next: ['image-resizer', 'image-compressor'],
 } satisfies Tool;

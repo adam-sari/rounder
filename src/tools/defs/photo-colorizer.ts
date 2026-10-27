@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-upscaler', 'object-remover', 'background-remover', 'image-compressor'],
+  next: ['image-upscaler', 'image-compressor'],
   flagship: { elsewhere: 'A few free photos, then a subscription', here: 'Unlimited photos, full size, no watermark' },
 } satisfies Tool;

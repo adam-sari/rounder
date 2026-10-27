@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['split-pdf', 'organize-pdf', 'compress-pdf', 'jpg-to-pdf'],
+  next: ['compress-pdf', 'add-page-numbers-to-pdf', 'protect-pdf'],
   flagship: { elsewhere: 'File and size caps, sign-up for more', here: 'Unlimited files, no size cap' },
 } satisfies Tool;

@@ -22,6 +22,8 @@ for (const url of pages(DIST)) {
     const errors = trackErrors(page);
     const res = await page.goto(url);
     expect(res?.status()).toBe(200);
+    // the canonical is the clean URL the sitemaps list, never the .html file the static build writes
+    expect(await page.locator('link[rel=canonical]').getAttribute('href')).toBe(new URL(url, 'https://roundertools.com').href);
     await waitForTool(page);
     // give effects that run right after mount a moment to throw
     await page.waitForTimeout(300);

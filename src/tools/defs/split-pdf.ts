@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['merge-pdf', 'organize-pdf', 'delete-pdf-pages', 'compress-pdf'],
+  next: ['compress-pdf', 'merge-pdf'],
   flagship: { elsewhere: 'Daily task limits and upload size caps', here: 'Unlimited splits, any file size' },
 } satisfies Tool;

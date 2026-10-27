@@ -23,4 +23,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['png-to-svg', 'image-converter', 'favicon-generator', 'image-resizer'],
+  next: ['image-compressor'],
 } satisfies Tool;

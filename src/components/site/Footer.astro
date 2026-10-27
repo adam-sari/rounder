@@ -1,5 +1,21 @@
 ---
 import { categories, categoryPath } from '@/tools/categories';
+import { toolsIn } from '@/tools/registry';
+import { SITE } from '@/site';
+
+const liveCategories = categories.filter((c) => toolsIn(c.id).length > 0);
+// trust pages are linked once they exist, so the footer never points at a missing page
+const pages = new Set(Object.keys(import.meta.glob('/src/pages/*.astro')).map((p) => p.slice('/src/pages/'.length, -'.astro'.length)));
+const about = [
+  ['about', 'About'],
+  ['why-free', "Why it's free"],
+  ['security', 'Security'],
+  ['privacy', 'Privacy'],
+  ['terms', 'Terms'],
+  ['contact', 'Contact'],
+  ['press', 'Press'],
+  ['credits', 'Credits'],
+].filter(([slug]) => pages.has(slug));
 ---
 
 <footer class="wrap mt-32 pb-16">
@@ -13,18 +29,40 @@ import { categories, categoryPath } from '@/tools/categories';
     <nav aria-label="Categories">
       <p class="mono mb-3">categories</p>
       <ul class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-soft">
-        {categories.map((c) => <li><a href={categoryPath(c.id)} class="no-underline hover:text-chalk">{c.name}</a></li>)}
+        {liveCategories.map((c) => <li><a href={categoryPath(c.id)} class="no-underline hover:text-chalk">{c.name}</a></li>)}
       </ul>
     </nav>
     <nav aria-label="About">
       <p class="mono mb-3">about</p>
       <ul class="grid gap-1.5 text-soft">
-        <li><a href="/why-free" class="no-underline hover:text-chalk">Why it's free</a></li>
-        <li><a href="/privacy" class="no-underline hover:text-chalk">Privacy</a></li>
-        <li><a href="/terms" class="no-underline hover:text-chalk">Terms</a></li>
-        <li><a href="/credits" class="no-underline hover:text-chalk">Credits</a></li>
+        {about.map(([slug, label]) => <li><a href={`/${slug}`} class="no-underline hover:text-chalk">{label}</a></li>)}
+        {/* the AGPL asks a network service to offer its source; this is where */}
+        {SITE.github && <li><a href={SITE.github} class="no-underline hover:text-chalk">Source code</a></li>}
+        <li hidden data-consent-settings>
+          <button type="button" class="cursor-pointer text-left hover:text-chalk">Privacy &amp; cookie settings</button>
+        </li>
       </ul>
     </nav>
   </div>
   <p class="mono mt-10">© {new Date().getFullYear()} rounder · roundertools.com</p>
 </footer>
+
+<script is:inline>
+  // Google's consent message (part of the ad tag) can be reopened from here. The link appears only once that
+  // message is running and GDPR applies to this visitor (EEA, UK, Switzerland), as in Google's Privacy & messaging
+  // API example, so pages without ads, and visitors who were never asked, don't see a link that does nothing.
+  window.googlefc = window.googlefc || {};
+  googlefc.callbackQueue = googlefc.callbackQueue || [];
+  googlefc.callbackQueue.push({
+    CONSENT_DATA_READY: () => {
+      if (typeof window.__tcfapi !== 'function') return;
+      window.__tcfapi('addEventListener', 2, (tcData, success) => {
+        const show = !!(success && tcData && tcData.gdprApplies);
+        document.querySelectorAll('[data-consent-settings]').forEach((el) => (el.hidden = !show));
+      });
+    },
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest?.('[data-consent-settings] button')) googlefc.callbackQueue.push(() => googlefc.showRevocationMessage());
+  });
+</script>

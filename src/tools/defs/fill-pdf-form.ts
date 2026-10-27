@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['sign-pdf', 'edit-pdf', 'merge-pdf', 'protect-pdf'],
+  next: ['sign-pdf', 'protect-pdf'],
   flagship: { elsewhere: 'A few free forms a day, then a subscription', here: 'Fill as many forms as you like' },
 } satisfies Tool;

@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-converter', 'image-resizer', 'heic-to-jpg'],
+  next: ['image-resizer', 'exif-remover'],
   flagship: { elsewhere: '20 images a day, 5 MB each', here: 'Unlimited images, any size' },
 } satisfies Tool;

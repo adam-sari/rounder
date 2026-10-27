@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['video-to-gif', 'video-compressor', 'video-converter', 'image-compressor'],
+  next: ['video-compressor'],
   flagship: { elsewhere: 'One GIF at a time, uploaded to a server', here: 'Whole batches, converted on your device' },
 } satisfies Tool;

@@ -46,5 +46,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['audio-normalizer', 'voice-recorder', 'audio-cutter', 'add-audio-to-video'],
+  next: ['audio-normalizer', 'audio-to-text'],
   flagship: { elsewhere: 'Daily limits, sign-ups and uploads to someone else\'s server', here: 'Unlimited and private: the noise model runs on your device' },
 } satisfies Tool;

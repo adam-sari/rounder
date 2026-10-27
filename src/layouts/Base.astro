@@ -3,6 +3,8 @@ import '@/styles/global.css';
 import Header from '@/components/site/Header.astro';
 import Footer from '@/components/site/Footer.astro';
 import CommandPalette from '@/components/site/CommandPalette.svelte';
+import { SITE } from '@/site';
+import { jsonLd } from '@/seo/schema';
 
 interface Props {
   title: string;
@@ -12,13 +14,26 @@ interface Props {
   noindex?: boolean;
   /** share card path, see src/pages/og */
   ogImage?: string;
+  /**
+   * the page may carry ads: only tool, category and home pages. Never privacy (the consent message links to it),
+   * legal or about pages, 404, offline or the privacy-critical tools.
+   */
+  ads?: boolean;
 }
 
-const { title, description, schema = [], noindex = false, ogImage = '/og/home.png' } = Astro.props;
+const { title, description, schema = [], noindex = false, ogImage = '/og/home.png', ads = false } = Astro.props;
 const ogUrl = new URL(ogImage, Astro.site).href;
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
+// with build.format 'file', Astro.url.pathname ends in .html at build time ("/merge-pdf.html", "/index.html");
+// the canonical is the clean URL Cloudflare serves and the sitemaps list ("/merge-pdf", "/")
+const canonical = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/(^|\/)index$/, '$1'), Astro.site).href;
 const fullTitle = title.includes('Rounder') ? title : `${title} · Rounder`;
-
+// the account meta tag is enough for AdSense to review the site; the ad tag itself waits for approval
+const adsAccount = ads && SITE.adsenseClient;
+// the ad tag (which also shows Google's consent message) loads at idle or on first interaction, so it never
+// competes with the tool for the first paint
+const adsTag = adsAccount && SITE.adsLive;
+// Cloudflare Web Analytics (cookieless), added by hand so it isn't the auto-injected variant that skips EU visitors
+const cfBeacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN as string | undefined;
 ---
 
 <!doctype html>
@@ -35,7 +50,7 @@ const fullTitle = title.includes('Rounder') ? title : `${title} · Rounder`;
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Rounder" />
+    <meta property="og:site_name" content={SITE.alternateName} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -44,7 +59,8 @@ const fullTitle = title.includes('Rounder') ? title : `${title} · Rounder`;
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogUrl} />
-    {schema.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+    {adsAccount && <meta name="google-adsense-account" content={SITE.adsenseClient} />}
+    {schema.map((s) => <script type="application/ld+json" set:html={jsonLd(s)} />)}
   </head>
   <body>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 btn">Skip to content</a>
@@ -55,5 +71,23 @@ const fullTitle = title.includes('Rounder') ? title : `${title} · Rounder`;
     <Footer />
     <CommandPalette client:idle />
     {import.meta.env.PROD && <script is:inline>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));</script>}
+    {adsTag && (
+      <script is:inline define:vars={{ client: SITE.adsenseClient }}>
+        let started = false;
+        const start = () => {
+          if (started) return;
+          started = true;
+          const s = document.createElement('script');
+          s.async = true;
+          s.crossOrigin = 'anonymous';
+          s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`;
+          document.head.append(s);
+        };
+        for (const type of ['pointerdown', 'keydown', 'scroll']) addEventListener(type, start, { once: true, passive: true });
+        const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 2000));
+        addEventListener('load', () => idle(start, { timeout: 4000 }));
+      </script>
+    )}
+    {cfBeacon && <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: cfBeacon })} />}
   </body>
 </html>

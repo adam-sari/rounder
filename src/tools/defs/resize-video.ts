@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['crop-video', 'video-compressor', 'video-converter', 'trim-video'],
+  next: ['video-compressor'],
   flagship: { elsewhere: 'Watermarks, or 1080p only on paid plans', here: 'Full 1080p, no watermark, no sign-up' },
 } satisfies Tool;

@@ -1,10 +1,11 @@
 ---
 import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
 ---
 
 <Prose
   title="Why Rounder is free (and how it stays that way)"
-  description="Rounder's tools run in your browser instead of on our servers, which is why they can be free, unlimited and private."
+  description="Rounder's tools run in your browser instead of on our servers, which is why they can be free, unlimited and private. Here's how light ads pay the bills."
   heading="Why it's <em>free</em>"
 >
   <p>
@@ -29,8 +30,14 @@ import Prose from '@/layouts/Prose.astro';
   <h2>So how do we pay the bills?</h2>
   <p>
     Hosting a website whose tools run on your device costs almost nothing. The few costs we have are covered by a small number
-    of polite ads. That means no pop-ups, no fake download buttons and no autoplaying video. If an ad on Rounder ever
-    looks like a button, that's a bug, and we want to hear about it.
+    of polite ads from Google. That means no pop-ups, no fake download buttons and no ads that play sound on their own, and ads are never
+    placed inside a tool or next to a download button. If an ad on Rounder ever looks like a button, that's a bug, and we want
+    to hear about it: <a href={`mailto:${SITE.email}?subject=Ad%20report`}>send us the page and a screenshot</a>.
+  </p>
+  <p>
+    Some tools carry no ads at all: the ones that handle passwords, keys and documents you're protecting, like the
+    <a href="/file-encryptor">file encryptor</a> and <a href="/redact-pdf">Redact PDF</a>.
+    <a href="/security#ad-free">Here's the full list, and why.</a>
   </p>
 
   <h2>What you'll never see here</h2>
@@ -40,4 +47,10 @@ import Prose from '@/layouts/Prose.astro';
     <li>Daily limits or "upgrade to premium"</li>
     <li>Fake download buttons or redirect chains</li>
   </ul>
+
+  <h2>Open source, so it can't quietly change</h2>
+  <p>
+    All of Rounder's code is <a href={SITE.github}>public under the AGPL-3.0</a>. Anyone can check that the tools work the way
+    we say, and if Rounder ever went the way of the sites above, anyone could run their own copy.
+  </p>
 </Prose>

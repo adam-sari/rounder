@@ -28,6 +28,10 @@ export interface Tool {
   steps: string[];
   faq: Faq[];
   related?: string[];
+  /** where to go once this tool is done, in order (e.g. compress → protect): a "Next step" line under the tool */
+  next?: string[];
+  /** privacy-critical tools (passwords, encryption, redaction) carry no ad code at all */
+  noAds?: boolean;
   /** paid or limited on other sites; shown as a flagship */
   flagship?: { elsewhere: string; here: string };
   /**
@@ -39,7 +43,7 @@ export interface Tool {
 
 export const privacyFaq: Faq = {
   q: 'Is my data uploaded anywhere?',
-  a: 'No. This tool runs entirely in your browser. Nothing you type or drop in is sent to a server, so it even works offline once the page has loaded.',
+  a: "No. This tool runs entirely in your browser, and Rounder never sends what you type or drop in to a server, ours or anyone else's. Once the page has loaded, along with any AI model the tool uses, it even works offline.",
 };
 
 export const filePrivacyFaq: Faq = {

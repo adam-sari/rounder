@@ -46,6 +46,7 @@ export default [
       filePrivacyFaq,
     ],
     related: ['audio-cutter', 'audio-joiner', 'video-to-mp3', 'volume-booster'],
+    next: ['audio-cutter', 'audio-normalizer'],
     flagship: { elsewhere: 'Upload size caps and a few free conversions a day', here: 'Unlimited files, converted on your device' },
   },
 

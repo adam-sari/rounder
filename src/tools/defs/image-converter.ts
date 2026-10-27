@@ -46,6 +46,7 @@ export default [
       filePrivacyFaq,
     ],
     related: ['image-compressor', 'image-resizer', 'heic-to-jpg', 'svg-to-png'],
+    next: ['image-compressor', 'image-resizer'],
     flagship: { elsewhere: 'Daily conversion limits and upload size caps', here: 'Unlimited files, converted on your device' },
   },
 

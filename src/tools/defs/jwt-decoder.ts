@@ -35,4 +35,5 @@ export default {
     privacyFaq,
   ],
   related: ['base64', 'json-formatter', 'hash-generator', 'regex-tester'],
+  noAds: true,
 } satisfies Tool;

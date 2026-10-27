@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['trim-video', 'video-compressor', 'add-audio-to-video', 'resize-video'],
+  next: ['add-audio-to-video', 'video-compressor'],
   flagship: { elsewhere: 'Watermarks, upload limits or a paid plan', here: 'No watermark, no uploads, no caps' },
 } satisfies Tool;

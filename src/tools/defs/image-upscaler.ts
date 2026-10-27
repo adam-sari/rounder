@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['background-remover', 'photo-colorizer', 'image-resizer', 'image-compressor'],
+  next: ['image-compressor'],
   flagship: { elsewhere: '2× free, 4× behind credits or a watermark', here: '2× and 4×, unlimited, no watermark' },
 } satisfies Tool;

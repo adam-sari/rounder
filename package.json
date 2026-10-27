@@ -8,13 +8,13 @@
     "dev": "astro dev",
     "prebuild": "npm run vendor",
     "build": "astro build",
+    "check:dist": "node scripts/seo/check-links.mjs dist && node scripts/seo/check-ads.mjs dist",
     "preview": "astro preview",
     "check": "astro check && svelte-check --threshold warning --incremental",
     "test": "vitest run",
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.4",
     "@astrojs/svelte": "^9.0.1",
     "@embedpdf/pdfium": "^2.15.1",
     "@ffmpeg/core": "^0.12.10",

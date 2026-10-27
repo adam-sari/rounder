@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['video-compressor', 'merge-videos', 'crop-video', 'video-to-gif'],
+  next: ['video-compressor', 'video-to-gif'],
   flagship: { elsewhere: 'Upload caps and watermarks on free exports', here: 'Any length, no watermark, never uploaded' },
 } satisfies Tool;

@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['audio-to-text', 'add-subtitles-to-video', 'trim-video', 'resize-video'],
+  next: ['add-subtitles-to-video'],
   flagship: { elsewhere: 'Watermarks, upload caps or paid minutes for auto captions', here: 'Free, no watermark, never uploaded' },
 } satisfies Tool;

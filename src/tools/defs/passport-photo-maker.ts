@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['crop-image', 'image-resizer', 'heic-to-jpg', 'image-compressor'],
+  next: ['image-compressor', 'jpg-to-pdf'],
   flagship: { elsewhere: '$5–15 to download each photo', here: 'Free, unlimited and print-ready' },
 } satisfies Tool;

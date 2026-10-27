@@ -23,4 +23,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['screen-recorder', 'voice-recorder', 'trim-video', 'video-to-gif'],
+  next: ['trim-video', 'video-compressor'],
 } satisfies Tool;

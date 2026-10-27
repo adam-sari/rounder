@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['watermark-pdf', 'merge-pdf', 'organize-pdf', 'split-pdf'],
+  next: ['compress-pdf', 'protect-pdf'],
   flagship: { elsewhere: 'Daily task limits and file size caps', here: 'Unlimited PDFs, no size cap' },
 } satisfies Tool;

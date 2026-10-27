@@ -1,0 +1,72 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
+import { categories } from '@/tools/categories';
+import { tools, toolsIn } from '@/tools/registry';
+
+const toolCount = tools.filter((t) => !t.variantOf).length;
+const categoryCount = categories.filter((c) => toolsIn(c.id).length > 0).length;
+const colors = [
+  { name: 'Ink', hex: '#131211' },
+  { name: 'Chalk', hex: '#F2EDE4' },
+  { name: 'Sun', hex: '#FFD25E' },
+];
+const assets = [
+  { href: '/favicon.svg', label: 'Roundy mark (SVG)' },
+  { href: '/icons/icon-512.png', label: 'App icon, 512 × 512 (PNG)' },
+  { href: '/og/home.png', label: 'Share card, 1200 × 630 (PNG)' },
+];
+---
+
+<Prose
+  title="Rounder press kit: logo, images and facts"
+  description="Writing about Rounder Tools? Logo, share images, colors, the key facts, and how to refer to the name."
+  heading="Press <em>kit</em>"
+>
+  <p>
+    Thanks for writing about Rounder. Everything here is free to use in articles, videos and reviews. Need something else, or
+    have a question? Email <a href={`mailto:${SITE.email}?subject=Press`}>{SITE.email}</a>.
+  </p>
+
+  <h2>The facts</h2>
+  <ul>
+    <li><strong>What:</strong> {toolCount} free online tools in {categoryCount} categories, for video, audio, images, PDFs, text, developers and everyday jobs.</li>
+    <li><strong>The difference:</strong> every tool runs in the browser, so files are never uploaded. No sign-ups, no watermarks, no daily limits, no premium tier.</li>
+    <li><strong>Who:</strong> {SITE.owner.name ? `made by ${SITE.owner.name}, an independent developer` : 'made by one independent developer'}, with AI coding assistants. <a href="/about">More about Rounder.</a></li>
+    <li><strong>Money:</strong> light ads from Google AdSense. Tools that handle passwords, keys and protected documents are ad-free.</li>
+    <li><strong>Open source:</strong> the whole site is published under the AGPL-3.0 at <a href={SITE.github}>{SITE.github.replace('https://', '')}</a>.</li>
+    <li><strong>Launched:</strong> 2026. Website: <a href="/">roundertools.com</a>.</li>
+  </ul>
+
+  <h2>The name</h2>
+  <p>
+    The product is <strong>Rounder</strong>, and when the name alone could be unclear (in a headline, a first mention, or
+    next to other "rounder" things) please call it <strong>Rounder Tools</strong>. On the site the wordmark is set in lowercase,
+    "rounder", but in running text a capital R is right. The mascot is <strong>Roundy</strong>.
+  </p>
+
+  <h2>Logo and images</h2>
+  <p class="flex flex-wrap items-center gap-6">
+    <img src="/favicon.svg" alt="Roundy, Rounder's mascot: a smiling yellow circle" width="96" height="96" />
+    <span class="font-serif text-6xl leading-none text-chalk">rounder</span>
+  </p>
+  <ul>
+    {assets.map((a) => <li><a href={a.href} download>{a.label}</a></li>)}
+  </ul>
+  <p>
+    Every tool and category also has its own share card at <code>/og/&lt;tool&gt;.png</code>, for example
+    <a href="/og/compress-pdf.png">/og/compress-pdf.png</a>. You're welcome to take your own screenshots of any tool, too.
+    Please don't change the mark's shape or colors, or use it in a way that suggests we endorse something.
+  </p>
+
+  <h2>Colors and type</h2>
+  <ul class="list-none! pl-0!">
+    {colors.map((c) => (
+      <li class="flex items-center gap-3">
+        <span class="inline-block size-6 rounded-full border border-line-2" style={`background:${c.hex}`}></span>
+        {c.name} <code>{c.hex}</code>
+      </li>
+    ))}
+  </ul>
+  <p>The wordmark and headings use Instrument Serif; body text uses Geist and Geist Mono.</p>
+</Prose>

@@ -165,6 +165,8 @@ const core: Tool[] = [
       privacyFaq,
     ],
     related: ['password-strength-checker', 'file-encryptor', 'hash-generator', 'uuid-generator'],
+    next: ['password-strength-checker'],
+    noAds: true,
   },
 
   // everyday
@@ -191,6 +193,12 @@ const core: Tool[] = [
 
 export const tools: Tool[] = [...core, ...Object.values(defs).flatMap((m) => [m.default].flat())];
 
+/** the file each tool is defined in, relative to the project root (sitemap lastmod is tracked per file) */
+export const toolSource: Record<string, string> = Object.fromEntries([
+  ...core.map((t) => [t.slug, 'src/tools/registry.ts']),
+  ...Object.entries(defs).flatMap(([file, m]) => [m.default].flat().map((t) => [t.slug, `src/tools/${file.slice(2)}`])),
+]);
+
 export const toolBySlug = Object.fromEntries(tools.map((t) => [t.slug, t])) as Record<string, Tool>;
 
 /** main tools in a category, without variant pages */
@@ -198,6 +206,15 @@ export const toolsIn = (category: CategoryId) => tools.filter((t) => t.category 
 
 /** variant pages that share an island with the given tool */
 export const variantsOf = (slug: string) => tools.filter((t) => t.variantOf === slug);
+
+/** whether a tool page may carry ads: never on a privacy-critical tool or on a preset page of one */
+export const adsAllowed = (tool: Tool) => !tool.noAds && !(tool.variantOf && toolBySlug[tool.variantOf]?.noAds);
+
+/** the "next step" tools for a page; variant pages follow their main tool's chain */
+export const nextSteps = (tool: Tool) =>
+  (tool.next ?? (tool.variantOf ? toolBySlug[tool.variantOf]?.next : undefined) ?? [])
+    .map((s) => toolBySlug[s])
+    .filter((t) => t !== undefined && t.slug !== tool.slug);
 
 /** Splits "Word *counter*" into plain and emphasised parts for rendering */
 export function splitEmphasis(text: string): { text: string; em: boolean }[] {

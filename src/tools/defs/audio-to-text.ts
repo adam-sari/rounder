@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['subtitle-generator', 'voice-recorder', 'audio-cutter', 'audio-noise-reduction'],
+  next: ['text-summarizer', 'translator'],
   flagship: { elsewhere: 'Free plans cap your minutes and upload your audio', here: 'No minute limits, transcribed on your device' },
 } satisfies Tool;

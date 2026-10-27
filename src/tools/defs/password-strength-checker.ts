@@ -35,4 +35,5 @@ export default {
     privacyFaq,
   ],
   related: ['password-generator', 'file-encryptor', 'hash-generator'],
+  noAds: true,
 } satisfies Tool;

@@ -39,4 +39,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['password-generator', 'zip-files', 'checksum-calculator', 'protect-pdf'],
+  noAds: true,
 } satisfies Tool;

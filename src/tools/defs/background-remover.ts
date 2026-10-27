@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-upscaler', 'object-remover', 'passport-photo-maker', 'video-background-remover'],
+  next: ['crop-image', 'image-upscaler'],
   flagship: { elsewhere: 'Paid credits for full-size downloads', here: 'Full resolution, unlimited, free' },
 } satisfies Tool;

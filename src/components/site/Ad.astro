@@ -1,0 +1,74 @@
+---
+import { SITE, adSlotLive } from '@/site';
+
+// One AdSense slot. It renders nothing until the site is approved (PUBLIC_ADS_LIVE) and the slot has a unit id,
+// so there are never empty boxes. Pages decide where slots go; never inside the tool card, next to a Download
+// button, or in a "processing" or "file ready" state.
+interface Props {
+  kind: 'content' | 'rail';
+  /** create the ad only when this media query matches (a hidden ad is not allowed, so it is never made) */
+  media?: string;
+  class?: string;
+}
+
+const { kind, media, class: className } = Astro.props;
+const unit = SITE.adSlots[kind];
+---
+
+{adSlotLive(kind) && (
+  <div class:list={['ad', `ad-${kind}`, className]} data-ad-media={media}>
+    <p class="mono mb-1.5">Advertisements</p>
+    <template>
+      {kind === 'rail' ? (
+        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:600px" data-ad-client={SITE.adsenseClient} data-ad-slot={unit} />
+      ) : (
+        <ins class="adsbygoogle" style="display:block" data-ad-client={SITE.adsenseClient} data-ad-slot={unit} data-ad-format="auto" data-full-width-responsive="true" />
+      )}
+    </template>
+  </div>
+)}
+
+<script>
+  // Fill a slot when it comes within 600px of the viewport. The ad tag itself loads at idle (see Base.astro);
+  // pushes made before then are queued by it.
+  const fill = (box: HTMLElement) => {
+    const tpl = box.querySelector('template');
+    if (!tpl) return;
+    box.append(tpl.content.cloneNode(true));
+    tpl.remove();
+    const w = window as Window & { adsbygoogle?: object[] };
+    (w.adsbygoogle ??= []).push({});
+  };
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        io.unobserve(e.target);
+        fill(e.target as HTMLElement);
+      }
+    },
+    { rootMargin: '600px 0px' },
+  );
+  for (const box of document.querySelectorAll<HTMLElement>('.ad')) {
+    const media = box.dataset.adMedia;
+    if (!media || matchMedia(media).matches) io.observe(box);
+  }
+</script>
+
+<style>
+  .ad {
+    contain: layout;
+  }
+  /* reserve the usual responsive ad height, so nothing below jumps when it fills */
+  .ad-content {
+    min-height: 300px;
+  }
+  .ad-rail {
+    width: 300px;
+    min-height: 620px;
+  }
+  /* AdSense marks a slot it couldn't fill; drop the empty labelled box (Google's recommended handling) */
+  .ad:has(:global(ins[data-ad-status='unfilled'])) {
+    display: none;
+  }
+</style>

@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['resize-video', 'trim-video', 'rotate-video', 'video-compressor'],
+  next: ['video-compressor'],
   flagship: { elsewhere: 'Watermarks on free exports and upload size caps', here: 'No watermark, no upload, no size cap' },
 } satisfies Tool;

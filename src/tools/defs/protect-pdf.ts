@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['unlock-pdf', 'file-encryptor', 'watermark-pdf', 'compress-pdf'],
+  noAds: true,
   flagship: { elsewhere: 'Upload your file, often with a daily cap', here: 'Encrypted on your device, no limits' },
 } satisfies Tool;

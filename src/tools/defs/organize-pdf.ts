@@ -25,6 +25,7 @@ export default [
       filePrivacyFaq,
     ],
     related: ['merge-pdf', 'split-pdf', 'compress-pdf', 'delete-pdf-pages'],
+    next: ['compress-pdf', 'add-page-numbers-to-pdf'],
     flagship: { elsewhere: 'Free tiers cap file size, page count or tasks per day', here: 'No caps, and every edit can be undone' },
   },
   {

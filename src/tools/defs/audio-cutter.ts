@@ -23,4 +23,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['ringtone-maker', 'audio-joiner', 'audio-converter', 'trim-video'],
+  next: ['audio-normalizer', 'audio-joiner'],
 } satisfies Tool;

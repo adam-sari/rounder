@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-to-text', 'pdf-to-text', 'compress-pdf'],
+  next: ['pdf-to-text', 'compress-pdf'],
   flagship: { elsewhere: 'Adobe Acrobat Pro subscription, or page limits online', here: 'Free, any number of pages, never uploaded' },
 } satisfies Tool;

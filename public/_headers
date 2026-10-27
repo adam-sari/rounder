@@ -1,10 +1,19 @@
 # Cloudflare Pages headers. No COOP/COEP on purpose: tools avoid SharedArrayBuffer so ad iframes keep working.
+# Every rule that matches a URL applies, and a header set by two matching rules gets both values joined with a
+# comma, so never repeat a header from /* in a narrower rule (use "! Name" to drop it first). Pages allows at most
+# 100 rules in this file; tests/unit/seo-headers.test.ts checks both.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# the *.pages.dev copies (production alias and every preview) stay out of search; only roundertools.com is indexed
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
 
 # hashed build output never changes
 /_astro/*
@@ -20,3 +29,7 @@
 
 /og/*
   Cache-Control: public, max-age=86400
+
+# AdSense re-reads ads.txt often; an hour keeps edits quick to take effect
+/ads.txt
+  Cache-Control: public, max-age=3600

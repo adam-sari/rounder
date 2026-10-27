@@ -2,6 +2,8 @@
 import Base from '@/layouts/Base.astro';
 import Mascot from '@/components/art/Mascot.astro';
 import CategoryArt from '@/components/art/CategoryArt.astro';
+import Ad from '@/components/site/Ad.astro';
+import { organization, website } from '@/seo/schema';
 import { categories, categoryPath } from '@/tools/categories';
 import { tools, toolsIn } from '@/tools/registry';
 
@@ -22,13 +24,8 @@ const toolCount = tools.filter((t) => !t.variantOf).length;
 const liveCategories = categories.filter((c) => toolsIn(c.id).length > 0);
 
 const schema = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Rounder',
-    url: Astro.site?.href,
-    description: 'Free online tools that run in your browser. No uploads, no sign-ups, no watermarks.',
-  },
+  website(Astro.site!, 'Free online tools that run in your browser. No uploads, no sign-ups, no watermarks.'),
+  organization(Astro.site!),
 ];
 ---
 
@@ -36,6 +33,7 @@ const schema = [
   title="Rounder: free online tools, no uploads, no sign-ups"
   description={`${toolCount} free tools for video, images, PDFs, text and more. Everything runs in your browser, so your files never leave your device. No sign-ups, no watermarks.`}
   schema={schema}
+  ads
 >
   <section class="wrap grid items-center gap-10 pt-[clamp(32px,7vw,96px)] pb-16 md:grid-cols-[1.3fr_0.7fr]">
     <div>
@@ -85,6 +83,8 @@ const schema = [
       ))}
     </div>
   </section>
+
+  <Ad kind="content" class="wrap mt-24" />
 
   {featured.length >= 3 && (
     <section class="wrap">

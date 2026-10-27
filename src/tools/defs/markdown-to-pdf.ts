@@ -24,6 +24,7 @@ export default [
       privacyFaq,
     ],
     related: ['markdown-editor', 'merge-pdf', 'compress-pdf'],
+    next: ['merge-pdf', 'compress-pdf'],
   },
   {
     slug: 'html-to-pdf',

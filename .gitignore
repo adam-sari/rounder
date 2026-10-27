@@ -3,6 +3,7 @@ dist/
 .astro/
 .wrangler/
 .env*
+!.env.production
 .DS_Store
 .svelte-check/
 test-results/

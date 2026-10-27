@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['ocr-pdf', 'pdf-to-text', 'translator', 'alt-text-generator'],
+  next: ['translator', 'grammar-checker'],
   flagship: { elsewhere: 'Daily limits, uploads and paid batch OCR', here: 'Unlimited images, free, never uploaded' },
 } satisfies Tool;

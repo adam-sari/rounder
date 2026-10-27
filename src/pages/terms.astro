@@ -1,9 +1,18 @@
 ---
 import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
 ---
 
-<Prose title="Terms of use" description="Terms of use for Rounder's free online tools." heading="Terms" updated="October 2026">
-  <p>Rounder provides free tools that run in your browser. By using the site you agree to these terms.</p>
+<Prose
+  title="Terms of use"
+  description="Terms of use for Rounder's free online tools: using the site, ads, the open-source code (AGPL-3.0) and the usual no-warranty fine print."
+  heading="Terms"
+  updated="October 27, 2026"
+>
+  <p>
+    Rounder provides free tools that run in your browser. By using roundertools.com you agree to these terms. They're
+    effective from October 27, 2026.
+  </p>
 
   <h2>Use the tools responsibly</h2>
   <p>
@@ -14,13 +23,35 @@ import Prose from '@/layouts/Prose.astro';
   <h2>No warranty</h2>
   <p>
     The tools are provided "as is". We work hard to make them accurate and reliable, but we can't guarantee results for every
-    file. Always keep a copy of your originals. To the extent the law allows, Rounder isn't liable for any loss arising from
-    use of the site.
+    file. Always keep a copy of your originals. Results from AI tools can be wrong, and calculators and exchange rates are for
+    information only, not financial, medical or legal advice. To the extent the law allows, Rounder isn't liable for any loss
+    arising from use of the site.
+  </p>
+
+  <h2>Ads</h2>
+  <p>
+    Rounder is free because it shows ads from Google on some pages. Ads come from third parties; showing one doesn't mean we
+    endorse what it offers. If an ad looks misleading or looks like part of a tool, please
+    <a href={`mailto:${SITE.email}?subject=Ad%20report`}>report it</a>. How ads use data is explained in the
+    <a href="/privacy">privacy policy</a>.
+  </p>
+
+  <h2>Open source</h2>
+  <p>
+    Rounder's source code is published at <a href={SITE.github}>{SITE.github.replace('https://', '')}</a> under the
+    <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="noopener">GNU Affero General Public License v3.0</a> (AGPL-3.0).
+    You may use, study, change and share the code under that license. If you run a modified copy as a public website, the
+    license requires you to offer your source code to its visitors too. The libraries and AI models the tools use keep their own
+    licenses, listed on the <a href="/credits">credits page</a>.
+  </p>
+  <p>
+    The license covers the code; these terms cover your use of roundertools.com. If you run your own copy, please give it a
+    different name and logo, so nobody mistakes it for this site.
   </p>
 
   <h2>Changes</h2>
   <p>We may update these terms as the site grows. The date above shows the latest version.</p>
 
   <h2>Contact</h2>
-  <p>Email <a href="mailto:hello@roundertools.com">hello@roundertools.com</a>.</p>
+  <p>Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
 </Prose>

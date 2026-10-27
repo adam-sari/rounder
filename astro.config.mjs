@@ -1,9 +1,10 @@
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
-import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { rm } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { defaultClientConditions } from 'vite';
+import { updateLastmod } from './scripts/seo/lastmod.mjs';
 
 // the /dev lab pages exercise engines with local fixtures; they stay out of production
 const dropDevPages = {
@@ -16,12 +17,23 @@ const dropDevPages = {
   },
 };
 
+// sitemap <lastmod> dates come from src/seo/lastmod.json, refreshed before every build
+// (the sitemaps themselves are routes: src/pages/sitemap-*.xml.ts)
+const seoLastmod = {
+  name: 'seo-lastmod',
+  hooks: {
+    'astro:config:setup': ({ command, config }) => {
+      if (command === 'build') updateLastmod(fileURLToPath(config.root));
+    },
+  },
+};
+
 export default defineConfig({
   site: 'https://roundertools.com',
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },
-  integrations: [svelte(), dropDevPages, sitemap({ filter: (page) => !/\/(styleframes|dev\/|offline)/.test(page) })],
+  integrations: [svelte(), dropDevPages, seoLastmod],
   vite: {
     plugins: [tailwindcss()],
     worker: {

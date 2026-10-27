@@ -35,4 +35,5 @@ export default {
     filePrivacyFaq,
   ],
   related: ['unzip-files', 'file-encryptor', 'image-compressor'],
+  next: ['file-encryptor'],
 } satisfies Tool;

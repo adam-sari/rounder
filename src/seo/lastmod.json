@@ -1,0 +1,546 @@
+{
+  "src/pages/404.astro": {
+    "hash": "a26b97cfd724f3e4",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/about.astro": {
+    "hash": "e20a28ed971d876e",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/contact.astro": {
+    "hash": "543fe80cd87f9672",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/credits.astro": {
+    "hash": "c0511d94072de51b",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/index.astro": {
+    "hash": "103b79b0db4d4e89",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/offline.astro": {
+    "hash": "54fc12410a11bf9c",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/press.astro": {
+    "hash": "ea3f157131caf65c",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/privacy.astro": {
+    "hash": "dbafa53246a908c5",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/security.astro": {
+    "hash": "01ae07f28738ce77",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/terms.astro": {
+    "hash": "090102135cb4d97a",
+    "lastmod": "2026-10-27"
+  },
+  "src/pages/why-free.astro": {
+    "hash": "c12199ec0cd1774a",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/add-audio-to-video.ts": {
+    "hash": "bbadf600d3554714",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/add-page-numbers-to-pdf.ts": {
+    "hash": "57270e86a9d8cae4",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/add-subtitles-to-video.ts": {
+    "hash": "5c1334323cafb99a",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/age-calculator.ts": {
+    "hash": "d55774df9ec962ee",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/alt-text-generator.ts": {
+    "hash": "b0c223de91ac1b10",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-converter.ts": {
+    "hash": "32449d0e66725fbc",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-cutter.ts": {
+    "hash": "1aae8094ab400900",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-joiner.ts": {
+    "hash": "a904549ca865fd9c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-noise-reduction.ts": {
+    "hash": "0dcaf4dfd3867a6d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-normalizer.ts": {
+    "hash": "e87950981baa00fc",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-speed-changer.ts": {
+    "hash": "ca35e0b65de3ec75",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audio-to-text.ts": {
+    "hash": "6277b569557c6557",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/audiogram-maker.ts": {
+    "hash": "48debec8b0be3601",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/auto-reframe-video.ts": {
+    "hash": "d8881ed9def85616",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/background-remover.ts": {
+    "hash": "7bf3e8c5d4e07d72",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/barcode-generator.ts": {
+    "hash": "c3834eca6173a646",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/blur-image.ts": {
+    "hash": "cfcd8e5bc468190c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/bmi-calculator.ts": {
+    "hash": "2bbadba81cdc16e0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/bpm-finder.ts": {
+    "hash": "9c092c1adea9c417",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/checksum-calculator.ts": {
+    "hash": "062c5cbe9d5e7544",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/code-minifier.ts": {
+    "hash": "9cbe422f9a33d054",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/collage-maker.ts": {
+    "hash": "dc6a4a5a5ae53da5",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/color-converter.ts": {
+    "hash": "60dcf50687375350",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/compare-pdf.ts": {
+    "hash": "9d3be5c4e4311096",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/compress-pdf.ts": {
+    "hash": "9d869942ec63bda7",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/cron-expression-generator.ts": {
+    "hash": "49545a58487847f5",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/crop-image.ts": {
+    "hash": "cd35403f4b95a635",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/crop-video.ts": {
+    "hash": "c59263b4b2d26d14",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/csv-json.ts": {
+    "hash": "be13b5b38478b40f",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/csv-viewer.ts": {
+    "hash": "d314408da11a8396",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/currency-converter.ts": {
+    "hash": "b7dd0482e5d2d77e",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/date-calculator.ts": {
+    "hash": "5eaae4c8f0295cee",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/depth-map-generator.ts": {
+    "hash": "894ab905df2e026c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/dice-roller.ts": {
+    "hash": "973b6c018cf08143",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/diff-checker.ts": {
+    "hash": "26380c65bfdb92f6",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/edit-pdf.ts": {
+    "hash": "5d734f9612d5d31d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/email-signature-generator.ts": {
+    "hash": "7b1db9eaf1c57f94",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/exif-remover.ts": {
+    "hash": "d2e7bc23597bd4e2",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/extract-images-from-pdf.ts": {
+    "hash": "d7fb56544289b73a",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/fancy-text-generator.ts": {
+    "hash": "a952e0fe22ee14d2",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/favicon-generator.ts": {
+    "hash": "2fc239fffb9239c7",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/file-encryptor.ts": {
+    "hash": "18ae54eda62d1fb7",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/fill-pdf-form.ts": {
+    "hash": "b12c3d8c850c2a1e",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/gif-to-mp4.ts": {
+    "hash": "12401a1bcbe0ac57",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/gpa-calculator.ts": {
+    "hash": "e2e46a215cf1eeab",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/grammar-checker.ts": {
+    "hash": "87b7bfffa022cec0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-color-picker.ts": {
+    "hash": "f2c24d64c7475bc9",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-compressor.ts": {
+    "hash": "e8a4de89effc7561",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-converter.ts": {
+    "hash": "ed467c481169f651",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-resizer.ts": {
+    "hash": "9b48140453b63145",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-to-ascii.ts": {
+    "hash": "76cfa1240be8da73",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-to-text.ts": {
+    "hash": "49d69b7378082525",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/image-upscaler.ts": {
+    "hash": "6acf71b2abfe05a2",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/instagram-grid-maker.ts": {
+    "hash": "8e817996969edf18",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/invoice-generator.ts": {
+    "hash": "cf484dabbe436e9b",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/jpg-to-pdf.ts": {
+    "hash": "56a547f1e0bb57ae",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/jwt-decoder.ts": {
+    "hash": "b2129ed3ce778819",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/loan-calculator.ts": {
+    "hash": "2d11556789db149f",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/lorem-ipsum-generator.ts": {
+    "hash": "c113b98bb9070316",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/markdown-editor.ts": {
+    "hash": "864e4c8c4f257e51",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/markdown-to-pdf.ts": {
+    "hash": "7890404c03d62a82",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/meme-generator.ts": {
+    "hash": "d60532577e58a164",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/merge-pdf.ts": {
+    "hash": "ad426872235cc87a",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/merge-videos.ts": {
+    "hash": "cd721d8d3abd9a6b",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/metronome.ts": {
+    "hash": "faa13e10d93c5fdf",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/mute-video.ts": {
+    "hash": "165116b10fed08c7",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/object-remover.ts": {
+    "hash": "bc43b10e45dee15e",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/ocr-pdf.ts": {
+    "hash": "32e34f250c9fff19",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/online-timer.ts": {
+    "hash": "dff953757df93b67",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/online-tuner.ts": {
+    "hash": "78ccadd0d9d16978",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/organize-pdf.ts": {
+    "hash": "c32383b0a6919229",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/paraphrasing-tool.ts": {
+    "hash": "32b19a0a89908e1d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/passport-photo-maker.ts": {
+    "hash": "881e7f21400dd0e5",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/password-strength-checker.ts": {
+    "hash": "32a4d7b2e0b48e7b",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pdf-to-jpg.ts": {
+    "hash": "831adbadf57f2b57",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pdf-to-text.ts": {
+    "hash": "369c3f266b84036c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/percentage-calculator.ts": {
+    "hash": "8c21ac073910b98d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/photo-colorizer.ts": {
+    "hash": "c2e98369ffad07c0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pitch-changer.ts": {
+    "hash": "e3c03ad11a6391c5",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pixel-art-maker.ts": {
+    "hash": "a725ea40fc86ee63",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/png-to-svg.ts": {
+    "hash": "3d347771416c95fa",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/pomodoro-timer.ts": {
+    "hash": "449dbff8144946b0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/protect-pdf.ts": {
+    "hash": "041f514ed71d48e5",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/qr-code-scanner.ts": {
+    "hash": "e8789bb46c3803ed",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/random-number-generator.ts": {
+    "hash": "1d9fe1dc5ba583e4",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/redact-pdf.ts": {
+    "hash": "aa07aef3c1581ce2",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/regex-tester.ts": {
+    "hash": "e59291820607c362",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/resize-video.ts": {
+    "hash": "3f91dd78f0670658",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/ringtone-maker.ts": {
+    "hash": "9361f99112ca467f",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/rotate-image.ts": {
+    "hash": "afcde9ab31ffef26",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/rotate-video.ts": {
+    "hash": "d3b6c9ddf59ed286",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/screen-recorder.ts": {
+    "hash": "f7da0e24eccb268d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/screenshot-beautifier.ts": {
+    "hash": "8c66d9c705de1084",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/sign-pdf.ts": {
+    "hash": "939d4fdf0b598897",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/slideshow-maker.ts": {
+    "hash": "aa455ddfb84c739d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/social-media-image-resizer.ts": {
+    "hash": "946dc5201a93f7d0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/split-pdf.ts": {
+    "hash": "65de574b02a3438d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/sql-formatter.ts": {
+    "hash": "d2908f194058679d",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/stopwatch.ts": {
+    "hash": "5fb41a7c3ff2b840",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/subtitle-generator.ts": {
+    "hash": "9a72093ad2df0141",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/svg-to-png.ts": {
+    "hash": "80bd9a3d3df8a85f",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/text-summarizer.ts": {
+    "hash": "b490d26e307a0a07",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/text-to-speech.ts": {
+    "hash": "89f21b9eb1834089",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/translator.ts": {
+    "hash": "a9a014f8fc1dbd45",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/trim-video.ts": {
+    "hash": "24ee16b7db800b9c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/unit-converter.ts": {
+    "hash": "99a856671fd7ecb5",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/unlock-pdf.ts": {
+    "hash": "0d57bda4bf9aa617",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/unzip-files.ts": {
+    "hash": "2bd68c1d49c25970",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-background-remover.ts": {
+    "hash": "7b667ce2fbc82b6e",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-compressor.ts": {
+    "hash": "d7514792469fad9c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-converter.ts": {
+    "hash": "160d559755e946e0",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-frame-extractor.ts": {
+    "hash": "fb4c7b55c0880595",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-speed-changer.ts": {
+    "hash": "a2dc9498b2836afa",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-to-gif.ts": {
+    "hash": "44cb1219e1700ddb",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/video-to-mp3.ts": {
+    "hash": "e93bd4444a981cd7",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/vocal-remover.ts": {
+    "hash": "a05233c158d33260",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/voice-recorder.ts": {
+    "hash": "8c6e25b56463c653",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/volume-booster.ts": {
+    "hash": "7db5105ccd67f850",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/watermark-image.ts": {
+    "hash": "7259f095e9f32841",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/watermark-pdf.ts": {
+    "hash": "d66e3354918d709c",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/webcam-recorder.ts": {
+    "hash": "0263b1854002c3c6",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/wheel-spinner.ts": {
+    "hash": "2c1f85d07511e5c8",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/youtube-thumbnail-maker.ts": {
+    "hash": "f25bfaf580a39c51",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/defs/zip-files.ts": {
+    "hash": "be68e65ab4dfa973",
+    "lastmod": "2026-10-27"
+  },
+  "src/tools/registry.ts": {
+    "hash": "276dfc5d91f45a40",
+    "lastmod": "2026-10-27"
+  }
+}

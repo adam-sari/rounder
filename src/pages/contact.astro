@@ -1,0 +1,47 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
+
+const mail = (subject: string) => `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}`;
+---
+
+<Prose
+  title="Contact Rounder"
+  description="Get in touch with Rounder: email hello@roundertools.com, report a bug or suggest a tool on GitHub, report an ad or a security issue."
+  heading="Say <em>hello</em>"
+>
+  <p>
+    Rounder is run by one person, and every message gets read. Replies can take a few days, but they do come.
+  </p>
+
+  <h2>Email</h2>
+  <p>
+    <a href={`mailto:${SITE.email}`}>{SITE.email}</a> works for anything: questions, ideas, privacy requests, press, or just
+    to say a tool saved your afternoon.
+  </p>
+
+  <h2>Bugs and tool ideas</h2>
+  <p>
+    If you have a GitHub account, <a href={`${SITE.github}/issues`}>open an issue</a>. That way others can see it, add
+    details and follow the fix. Email is fine too.
+  </p>
+  <p>A good bug report includes:</p>
+  <ul>
+    <li>the tool's address, for example roundertools.com/compress-pdf</li>
+    <li>your browser and device (for example "Chrome 130 on a Pixel 7" or "Safari on an iPhone 15")</li>
+    <li>what you did, what you expected, and what happened instead</li>
+    <li>the file type and rough size, but <strong>please don't send private files</strong>; a similar test file is perfect</li>
+  </ul>
+
+  <h2>A bad ad</h2>
+  <p>
+    If an ad looks like a button, pretends to be part of a tool or is otherwise misleading,
+    <a href={mail('Ad report')}>email us</a> with the page address and a screenshot, and we'll block it.
+  </p>
+
+  <h2>Security issues</h2>
+  <p>
+    Please report vulnerabilities privately: by email, or with a <a href={`${SITE.github}/security/advisories/new`}>private
+    advisory on GitHub</a>. Details are on the <a href="/security#report">security page</a>.
+  </p>
+</Prose>

@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['webcam-recorder', 'trim-video', 'video-compressor', 'video-to-gif'],
+  next: ['trim-video', 'video-compressor'],
   flagship: { elsewhere: 'Watermarks or a 5–15 minute cap on free plans', here: 'No time limit and no watermark' },
 } satisfies Tool;

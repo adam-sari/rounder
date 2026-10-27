@@ -1,44 +1,140 @@
 ---
 import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
+import { tools } from '@/tools/registry';
+
+// This page is the privacy link in Google's consent message, so it must never load the ad or consent tag (Prose doesn't).
+// the privacy-critical tools, which never load ad or consent scripts (`noAds` in their defs)
+const adFree = tools.filter((t) => t.noAds && !t.variantOf);
+const mail = `mailto:${SITE.email}`;
+// TODO(owner): SITE.owner.name in src/site.ts names the person responsible for the site's data (GDPR asks for
+// the controller's identity); the page reads fine without it
+const owner = SITE.owner.name;
 ---
 
 <Prose
   title="Privacy policy"
-  description="Rounder's privacy policy. Tools run in your browser, so your files and text are never uploaded to our servers."
+  description="Rounder's privacy policy. Tools run in your browser, so your files and text are never uploaded. How ads, consent and cookieless analytics work here."
   heading="Privacy"
-  updated="October 2026"
+  updated="October 27, 2026"
 >
-  <p><strong>Short version:</strong> the files and text you use with our tools never leave your device. We don't have accounts, so we don't hold your email, name or password.</p>
+  <p>
+    <strong>Short version:</strong> the files and text you use with our tools never leave your device. We have no accounts,
+    so we don't hold your name, email or password. The site is paid for by ads from Google, which use cookies where you allow
+    them, and we count visits with cookieless analytics.
+  </p>
+  <p>
+    This policy is effective from October 27, 2026. "Rounder", "we" and "us" mean roundertools.com and
+    {owner ? <>{owner}, who runs it and is responsible for this site's data</> : 'the independent developer who runs it'}.
+    You can reach us at <a href={mail}>{SITE.email}</a>.
+  </p>
 
   <h2>Your files and text</h2>
   <p>
     Every tool on Rounder processes data locally in your browser. Files you drop in, text you paste and results you generate
-    are not uploaded to or stored on our servers. Some AI tools download a model file the first time you use them, from
-    our site or from Hugging Face, a public model library. That download only goes to you; nothing about your input goes
-    the other way.
+    are not uploaded to or stored on our servers, and we never send them to anyone else, ad partners included. You can
+    <a href="/security#check">check this yourself</a>.
   </p>
 
   <h2>The few tools that go online</h2>
-  <p>A handful of tools need a little data from the internet, and they say so on the page:</p>
+  <p>A handful of tools need a little data from the internet:</p>
   <ul>
     <li>The <a href="/currency-converter">currency converter</a> fetches daily exchange rates from the Frankfurter API (European Central Bank reference rates). Only the request for rates is sent, never the amounts you type.</li>
     <li>The <a href="/password-strength-checker">password strength checker</a> can check whether a password appeared in a known data breach, but only if you click to do so. It then sends the first 5 characters of the password's SHA-1 hash to Have I Been Pwned, never the password itself.</li>
-    <li>AI tools download their model the first time you run them, after asking you.</li>
+    <li>AI tools download their model the first time you run them, after asking you, mostly from Hugging Face, a public model library (the video background remover gets its small model from Google's model storage instead). Text recognition (OCR) downloads language data from jsDelivr. These downloads only come to you; nothing about your input goes the other way.</li>
+    <li>The Markdown editor and the Markdown and HTML to PDF tools load any images your document links to, and the email signature generator previews the image address you enter. Your browser fetches those images from wherever they're hosted.</li>
+    <li>In Chrome, the translator, summarizer, paraphraser and grammar checker can use the AI model built into the browser. If Chrome needs to download that model, Chrome does it, from Google; your text stays on your device.</li>
   </ul>
+  <p>The <a href="/security#network">security page</a> lists every request the site makes.</p>
+
+  <h2>Advertising</h2>
+  <p>
+    Rounder shows ads from <strong>Google AdSense</strong> on tool, category and home pages. To pick and measure ads, Google
+    and its partners may use cookies and similar technology on your device, and may receive information such as your IP
+    address, browser, the page you're on and whether you saw or clicked an ad.
+  </p>
+  <ul>
+    <li>
+      Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other
+      websites. Google's advertising cookies let it and its partners serve ads to you based on your visits to Rounder
+      and/or other sites on the internet.
+    </li>
+    <li>
+      You can opt out of personalized advertising from Google in <a href="https://adssettings.google.com" rel="noopener">Ads Settings</a>,
+      and from many other vendors at <a href="https://optout.aboutads.info" rel="noopener">aboutads.info</a> or, in Europe,
+      <a href="https://www.youronlinechoices.eu" rel="noopener">youronlinechoices.eu</a>. You'll still see ads, just not personalized ones.
+    </li>
+    <li>
+      Google explains what it does with this data in
+      <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">How Google uses information from sites or apps that use our services</a>
+      and its <a href="https://policies.google.com/privacy" rel="noopener">privacy policy</a>.
+    </li>
+    <li>Other ad vendors may work through Google's platform. Where consent is required, the consent message lists each of them by name and lets you choose.</li>
+  </ul>
+  <p>
+    <strong>Ads and your input.</strong> We never send your files or what you type to Google or any other ad company. But ad
+    code, on Rounder as on any site with ads, runs inside the page, where the tool is, and we don't control that code. That's
+    why the tools where privacy matters most have <strong>no ads and no consent scripts at all</strong>:
+    {adFree.map((t, i) => <><a href={`/${t.slug}`}>{t.name}</a>{i < adFree.length - 1 ? ', ' : '.'}</>)}
+    Pages like this one are ad-free too.
+  </p>
+
+  <h2>Your consent and how to change it</h2>
+  <p>
+    If you're in the European Economic Area, the UK or Switzerland, Google's consent message (a certified consent management
+    platform) asks before any cookies are used for ads, and you can say no. In US states with privacy laws, the message lets
+    you opt out of the sale or sharing of your information for advertising. You can change your choice at any time with the
+    <strong>Privacy &amp; cookie settings</strong> link at the bottom of any page that shows ads, such as the
+    <a href="/">home page</a>. You can also clear cookies in your browser settings.
+  </p>
+
+  <h2>Analytics</h2>
+  <p>
+    We use <strong>Cloudflare Web Analytics</strong> to count page views and measure how fast pages load. It doesn't use
+    cookies or local storage, doesn't build a profile of you and doesn't follow you to other sites. It never sees files or
+    tool input. We see only totals, such as how many people visited a page and from which country.
+  </p>
+  <p>
+    Our host, Cloudflare, also processes basic request data (such as your IP address and browser) to deliver the site and
+    protect it from abuse, like any web host.
+  </p>
 
   <h2>What your browser stores</h2>
   <p>
-    We keep a few small things in your browser's local storage to make the site nicer, such as your recently used tools and
-    downloaded AI models. They stay on your device and you can clear them at any time in your browser settings.
+    We keep a few things in your browser to make the site nicer: your recently used tools, some settings, downloaded AI
+    models, and drafts a few tools keep for you (such as an invoice, an email signature, a Markdown draft, or a handwritten
+    signature you chose to remember). They stay on your device, we never receive them, and you can clear them at any time in
+    your browser settings. Ad cookies, where you allow them, are described above.
   </p>
 
-  <h2>Analytics and advertising</h2>
+  <h2>If you email us</h2>
   <p>
-    To keep Rounder free we may show ads and measure basic, aggregated traffic (such as how many people visit a page). Ad
-    partners may use cookies according to their own policies, and where the law requires it we will ask for your consent
-    first. Ad and analytics scripts never receive your files or tool input.
+    If you write to us, we keep your message and email address so we can reply, and we don't use them for anything else. If you
+    report a bug on GitHub, that's public and covered by GitHub's own privacy policy.
+  </p>
+
+  <h2>Your rights</h2>
+  <p>
+    Depending on where you live (for example under the GDPR or US state laws), you can ask what personal data we hold about
+    you, and ask us to correct or delete it. Apart from emails you send us, we hold none: no accounts, no files, no profiles.
+    For data Google collects for ads, use the consent settings and opt-outs above, or contact Google. We rely on your consent
+    for ad cookies where the law requires it, and on our legitimate interest in running and securing the site for cookieless
+    analytics and hosting logs. You can also complain to your local data protection authority.
+  </p>
+
+  <h2>Children</h2>
+  <p>
+    Rounder is a general-audience site and isn't directed at children under 13 (or under 16 in the EEA and UK). We don't
+    knowingly collect personal information from children. Since we have no accounts or forms, there's nothing for a child to
+    give us, but if you think a child has sent us personal information by email, tell us and we'll delete it.
+  </p>
+
+  <h2>Changes</h2>
+  <p>
+    If this policy changes, we'll update it here and change the date at the top. The site is
+    <a href={SITE.github}>open source</a>, so you can also see every change to this page.
   </p>
 
   <h2>Contact</h2>
-  <p>Questions about privacy? Email <a href="mailto:hello@roundertools.com">hello@roundertools.com</a>.</p>
+  <p>Questions about privacy? Email <a href={mail}>{SITE.email}</a>.</p>
 </Prose>

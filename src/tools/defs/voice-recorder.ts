@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['audio-to-text', 'audio-cutter', 'audio-noise-reduction', 'audio-converter'],
+  next: ['audio-noise-reduction', 'audio-to-text'],
   flagship: { elsewhere: 'Time limits or uploads to a server', here: 'Unlimited length, never leaves your device' },
 } satisfies Tool;

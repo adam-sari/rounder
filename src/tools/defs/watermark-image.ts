@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['image-resizer', 'image-compressor', 'exif-remover', 'crop-image'],
+  next: ['image-compressor'],
   flagship: { elsewhere: 'Batch caps, sign-ups or their own logo on your photos', here: 'Unlimited photos, only your mark' },
 } satisfies Tool;

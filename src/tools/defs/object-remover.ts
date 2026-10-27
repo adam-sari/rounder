@@ -23,5 +23,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['background-remover', 'image-upscaler', 'blur-image', 'crop-image'],
+  next: ['image-upscaler', 'image-compressor'],
   flagship: { elsewhere: 'HD export behind a subscription', here: 'Full resolution, free, on your device' },
 } satisfies Tool;

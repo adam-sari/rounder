@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['merge-pdf', 'protect-pdf', 'split-pdf', 'image-compressor'],
+  next: ['protect-pdf', 'sign-pdf'],
   flagship: { elsewhere: 'Daily task limits and file size caps', here: 'Unlimited PDFs, no size cap' },
 } satisfies Tool;

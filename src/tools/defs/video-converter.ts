@@ -44,6 +44,7 @@ export default [
       filePrivacyFaq,
     ],
     related: ['video-compressor', 'video-to-mp3', 'trim-video', 'resize-video'],
+    next: ['video-compressor', 'trim-video'],
     flagship: { elsewhere: 'Upload size caps, daily limits or watermarks', here: 'Any size, no limits, no watermark, nothing uploaded' },
   },
 

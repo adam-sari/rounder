@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['sign-pdf', 'redact-pdf', 'fill-pdf-form', 'watermark-pdf'],
+  next: ['sign-pdf', 'compress-pdf'],
   flagship: { elsewhere: 'Editing behind a subscription or a daily task limit', here: 'Every editing tool, free and unlimited' },
 } satisfies Tool;

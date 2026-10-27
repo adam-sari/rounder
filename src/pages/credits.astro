@@ -1,5 +1,6 @@
 ---
 import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
 
 // Open-source software that does the heavy lifting in our tools. Copyleft components (LGPL, MPL, GPL) are
 // loaded as separate, unmodified modules; their source is linked here as their licenses ask.
@@ -63,13 +64,21 @@ const fonts = ['Instrument Serif', 'Geist and Geist Mono', 'Noto Sans (PDF text)
 
 <Prose
   title="Credits and open-source licenses"
-  description="The open-source software, fonts and models that power Rounder's free tools, with their licenses."
+  description="The open-source software, fonts and models that power Rounder's free tools, with their licenses. Rounder itself is open source under the AGPL-3.0."
   heading="Credits"
   updated="October 2026"
 >
   <p>
     Rounder stands on the shoulders of open-source projects. Thank you to everyone who builds and maintains them. Each
     component is used under its license, linked below.
+  </p>
+
+  <h2>Rounder's own code</h2>
+  <p>
+    Rounder is open source too. The code for the whole site is at <a href={SITE.github}>{SITE.github.replace('https://', '')}</a>,
+    licensed under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="noopener">GNU AGPL-3.0</a>: you can read it,
+    run your own copy and improve it, as long as you share your changes under the same license. The components below keep
+    their own licenses.
   </p>
 
   <h2>Software</h2>
@@ -98,6 +107,7 @@ const fonts = ['Instrument Serif', 'Geist and Geist Mono', 'Noto Sans (PDF text)
   <p>
     libheif (via heic-to) is licensed under the LGPL, Mediabunny under the MPL, and the ffmpeg core and eSpeak NG under the GPL. We use them
     unmodified, as separate modules that your browser loads on demand, and their full source code is available at the links
-    above.
+    above. The exact versions we ship are recorded in the
+    <a href={`${SITE.github}/blob/main/package-lock.json`}>package-lock.json</a> of Rounder's repository.
   </p>
 </Prose>

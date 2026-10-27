@@ -2,17 +2,25 @@
 import Base from '@/layouts/Base.astro';
 import ToolHost from '@/components/tool/ToolHost.svelte';
 import ToolCard from '@/components/site/ToolCard.astro';
+import Ad from '@/components/site/Ad.astro';
 import CategoryArt from '@/components/art/CategoryArt.astro';
-import { tools, toolBySlug, toolsIn, splitEmphasis, plainText, type Tool } from '@/tools/registry';
+import { tools, toolBySlug, toolsIn, variantsOf, nextSteps, adsAllowed, splitEmphasis, plainText, type Tool } from '@/tools/registry';
 import { categoryById, categoryPath } from '@/tools/categories';
+import { SITE, RAIL_MEDIA, adSlotLive } from '@/site';
+import { breadcrumbs, faqPage, webApplication } from '@/seo/schema';
 
 export function getStaticPaths() {
   return tools.map((tool) => ({ params: { slug: tool.slug }, props: { tool } }));
 }
 
 const { tool } = Astro.props as { tool: Tool };
+const site = Astro.site!;
 const category = categoryById[tool.category];
-const url = new URL(`/${tool.slug}`, Astro.site).href;
+const url = new URL(`/${tool.slug}`, site).href;
+// a preset page of an ad-free tool stays ad-free too
+const ads = adsAllowed(tool);
+// the rail sits beside the text below the tool, never beside the tool card and its Download button
+const rail = ads && adSlotLive('rail');
 
 // explicit related tools first, then fill from the same category
 const related = [
@@ -20,90 +28,131 @@ const related = [
   ...toolsIn(tool.category).filter((t) => t.slug !== tool.slug && !tool.related?.includes(t.slug)),
 ].slice(0, 6);
 
+const next = nextSteps(tool);
+// the main tool and its preset pages (png-to-jpg, flac-to-mp3…) all link to each other
+const main = (tool.variantOf && toolBySlug[tool.variantOf]) || tool;
+const family = [main, ...variantsOf(main.slug)].filter((t) => t.slug !== tool.slug);
+const familyTitle = /convert|-to-/.test(main.slug) ? 'Popular conversions' : 'Shortcuts';
+
+const report = `mailto:${SITE.email}?subject=${encodeURIComponent(`Problem with ${tool.name}`)}&body=${encodeURIComponent(
+  `Page: ${url}\n\nWhat happened:\n\n\nBrowser and device:\n`,
+)}`;
+
 const schema = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'WebApplication',
-    name: plainText(tool.h1),
-    url,
-    description: tool.description,
-    applicationCategory: 'UtilitiesApplication',
-    operatingSystem: 'Any (runs in the browser)',
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: tool.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Rounder', item: new URL('/', Astro.site).href },
-      { '@type': 'ListItem', position: 2, name: `${category.name} tools`, item: new URL(categoryPath(category.id), Astro.site).href },
-      { '@type': 'ListItem', position: 3, name: tool.name, item: url },
-    ],
-  },
+  webApplication(site, { name: plainText(tool.h1), url, description: tool.description }),
+  faqPage(tool.faq),
+  breadcrumbs([
+    { name: SITE.name, url: site.href },
+    { name: `${category.name} tools`, url: new URL(categoryPath(category.id), site).href },
+    { name: tool.name, url },
+  ]),
 ];
 ---
 
-<Base title={tool.title} description={tool.description} schema={schema} ogImage={`/og/${tool.slug}.png`}>
-  <article class="wrap max-w-[1040px]!">
-    <nav class="mono mt-6" aria-label="Breadcrumb">
-      <a href="/" class="no-underline hover:text-chalk">index</a> /
-      <a href={categoryPath(category.id)} class="no-underline hover:text-chalk">{category.id}</a> /
-      <span class="text-chalk">{tool.slug}</span>
-    </nav>
+<Base title={tool.title} description={tool.description} schema={schema} ogImage={`/og/${tool.slug}.png`} ads={ads}>
+  <article class:list={['wrap max-w-[1040px]!', rail && 'min-[1280px]:max-w-[1320px]!']}>
+    <div class:list={[rail && 'min-[1280px]:max-w-[928px]']}>
+      <nav class="mono mt-6" aria-label="Breadcrumb">
+        <a href="/" class="no-underline hover:text-chalk">index</a> /
+        <a href={categoryPath(category.id)} class="no-underline hover:text-chalk">{category.id}</a> /
+        <span class="text-chalk">{tool.slug}</span>
+      </nav>
 
-    <header class="mt-4 mb-8 flex items-center gap-5">
-      <CategoryArt kind={tool.category} spot={category.spot} ink="var(--color-chalk)" size={84} class="hidden shrink-0 sm:block" />
-      <div>
-        <h1 class="text-[clamp(44px,6vw,80px)] leading-[0.95]">
-          {splitEmphasis(tool.h1).map((p) => (p.em ? <em>{p.text}</em> : p.text))}
-        </h1>
-        <p class="mt-3 text-lg text-soft">{tool.tagline}</p>
-      </div>
-    </header>
-
-    <section class="card p-[clamp(16px,3vw,32px)]" aria-label="Tool">
-      <ToolHost client:load island={tool.island} props={tool.props} />
-    </section>
-
-    <div class="mt-20 grid gap-12 md:grid-cols-[1fr_1.3fr]">
-      <section>
-        <h2 class="text-4xl">How it works</h2>
-        <ol class="mt-5 grid gap-4">
-          {tool.steps.map((step, i) => (
-            <li class="flex gap-4">
-              <span class="mono pt-1">{String(i + 1).padStart(2, '0')}</span>
-              <span class="text-soft">{step}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-      <section>
-        <h2 class="text-4xl">Questions</h2>
-        <div class="mt-5 grid gap-2">
-          {tool.faq.map((f) => (
-            <details class="card group px-5 py-4">
-              <summary class="cursor-pointer list-none font-medium marker:hidden">
-                <span class="mono mr-2 inline-block transition-transform group-open:rotate-90">›</span>{f.q}
-              </summary>
-              <p class="mt-2 text-soft">{f.a}</p>
-            </details>
-          ))}
+      <header class="mt-4 mb-8 flex items-center gap-5">
+        <CategoryArt kind={tool.category} spot={category.spot} ink="var(--color-chalk)" size={84} class="hidden shrink-0 sm:block" />
+        <div>
+          <h1 class="text-[clamp(44px,6vw,80px)] leading-[0.95]">
+            {splitEmphasis(tool.h1).map((p) => (p.em ? <em>{p.text}</em> : p.text))}
+          </h1>
+          <p class="mt-3 text-lg text-soft">{tool.tagline}</p>
         </div>
+      </header>
+
+      <section class="card p-[clamp(16px,3vw,32px)]" aria-label="Tool">
+        <ToolHost client:load island={tool.island} props={tool.props} />
       </section>
+
+      <div class="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+        {next.length > 0 && (
+          <p class="flex flex-wrap items-baseline gap-2">
+            <span class="mono">next step <span aria-hidden="true">→</span></span>
+            {next.map((t) => <a href={`/${t.slug}`} class="chip">{t.name}</a>)}
+          </p>
+        )}
+        <a href={report} class="mono ml-auto no-underline hover:text-chalk">report a problem</a>
+      </div>
     </div>
 
-    {related.length > 0 && (
-      <section class="mt-20">
-        <h2 class="text-4xl">More {category.name.toLowerCase()} tools</h2>
-        <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {related.map((t) => <ToolCard tool={t} />)}
+    <div class:list={[rail && 'min-[1280px]:grid min-[1280px]:grid-cols-[minmax(0,1fr)_300px] min-[1280px]:gap-x-10']}>
+      <div>
+        <div class="mt-20 grid gap-12 md:grid-cols-[1fr_1.3fr]">
+          <section>
+            <h2 class="text-4xl">How it works</h2>
+            <ol class="mt-5 grid gap-4">
+              {tool.steps.map((step, i) => (
+                <li class="flex gap-4">
+                  <span class="mono pt-1">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="text-soft">{step}</span>
+                </li>
+              ))}
+            </ol>
+            {ads && <Ad kind="content" class="mt-12" />}
+          </section>
+          <section>
+            <h2 class="text-4xl">Questions</h2>
+            <div class="mt-5 grid gap-2">
+              {tool.faq.map((f) => (
+                <details class="card group px-5 py-4">
+                  <summary class="cursor-pointer list-none font-medium marker:hidden">
+                    <span class="mono mr-2 inline-block transition-transform group-open:rotate-90">›</span>{f.q}
+                  </summary>
+                  <p class="mt-2 text-soft">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
-    )}
+
+        {family.length > 0 && (
+          <section class="mt-20">
+            <h2 class="text-4xl">{familyTitle}</h2>
+            <p class="mt-5 flex flex-wrap gap-2">
+              {family.map((t) => <a href={`/${t.slug}`} class="chip">{t.name}</a>)}
+            </p>
+          </section>
+        )}
+
+        {related.length > 0 && (
+          <section class="mt-20">
+            <h2 class="text-4xl">More {category.name.toLowerCase()} tools</h2>
+            <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((t) => <ToolCard tool={t} />)}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {rail && (
+        <aside class="mt-20 hidden min-[1280px]:block" aria-label="Advertisements">
+          <div class="sticky top-6"><Ad kind="rail" media={RAIL_MEDIA} /></div>
+        </aside>
+      )}
+    </div>
   </article>
 </Base>
+
+<style>
+  .chip {
+    padding: 4px 12px;
+    font-size: 14px;
+    color: var(--color-soft);
+    text-decoration: none;
+    border: 1px solid var(--color-line-2);
+    border-radius: 99px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .chip:hover {
+    color: var(--color-chalk);
+    border-color: var(--color-sun);
+  }
+</style>

@@ -1,0 +1,149 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import { SITE } from '@/site';
+import { tools } from '@/tools/registry';
+
+// the privacy-critical tools, which never load ad or consent scripts (`noAds` in their defs)
+const adFree = tools.filter((t) => t.noAds && !t.variantOf);
+const advisory = `${SITE.github}/security/advisories/new`;
+---
+
+<Prose
+  title="Security: how your files stay on your device"
+  description="Rounder's tools run in your browser, so files are never uploaded. How to check it yourself, every network request the site makes, and which tools are ad-free."
+  heading="Your files <em>stay put</em>"
+  updated="October 27, 2026"
+>
+  <p>
+    <strong>Short version:</strong> every Rounder tool runs inside your browser. Your files and the text you type are read,
+    processed and saved on your own device. We never send them anywhere, and you don't have to take our word for it: below is
+    how to check, plus the complete list of everything the site does connect to.
+  </p>
+
+  <h2>How it works</h2>
+  <p>
+    When you open a tool, your browser downloads the page and a small program (JavaScript and WebAssembly) from our site.
+    When you drop a file in, the browser hands it to that program in memory. The work happens on your device, often in a
+    background thread, and the result is built in memory too. "Download" saves it straight from your browser to your disk.
+    There is no upload step, no server that processes files, and no database. Rounder is a static website.
+  </p>
+
+  <h2 id="check">Check it yourself</h2>
+  <h3>Watch the Network tab</h3>
+  <ol>
+    <li>Open a tool, for example <a href="/compress-pdf">Compress PDF</a>.</li>
+    <li>Open your browser's developer tools (F12, or Cmd+Option+I on a Mac) and pick the <strong>Network</strong> tab.</li>
+    <li>Clear the list, then use the tool on a file.</li>
+    <li>
+      Look at what appears. You'll see files loading from roundertools.com (program code, fonts), and maybe analytics or ad
+      requests. You won't see a request carrying your file: no upload, and no request anywhere near your file's size.
+    </li>
+  </ol>
+  <h3>Use airplane mode</h3>
+  <ol>
+    <li>Open a tool and let the page finish loading. For AI tools, run them once so the model is downloaded.</li>
+    <li>Turn off Wi-Fi or switch on airplane mode.</li>
+    <li>
+      Use the tool. It keeps working, because processing your file doesn't need the internet. (The few tools that fetch
+      something, like exchange rates or a new OCR language, are listed <a href="#network">below</a>.)
+    </li>
+  </ol>
+  <p>
+    And because the whole site is <a href={SITE.github}>open source</a>, you (or someone you trust) can read exactly what
+    every tool does.
+  </p>
+
+  <h2 id="network">Every network request the site makes</h2>
+  <p>This is the complete list. If you find a request that isn't here, that's a bug, so please <a href="/contact">tell us</a>.</p>
+  <ul>
+    <li>
+      <strong>Rounder itself</strong> (roundertools.com, hosted on Cloudflare Pages): pages, program code, fonts and some small
+      model files. Like any web host, Cloudflare sees basic request details such as your IP address and browser.
+    </li>
+    <li>
+      <strong>Cloudflare Web Analytics</strong> (cloudflareinsights.com): counts page views and measures load speed. It sets
+      no cookies and doesn't track you across sites. It never sees files or tool input.
+    </li>
+    <li>
+      <strong>Google AdSense</strong>, on pages that show ads: Google's ad code (from domains such as googlesyndication.com,
+      doubleclick.net and gstatic.com) and, in the EEA, the UK, Switzerland and some US states, Google's consent message,
+      which loads from another Google domain. The ads themselves load inside their own frames, and an ad can pull its
+      images, video and measurement pixels from the advertiser's or other ad companies' servers. See
+      <a href="#ads">ads and your input</a> below.
+    </li>
+    <li>
+      <strong>Hugging Face</strong> (huggingface.co and its download servers): AI tools download their model the first time you
+      use them, after asking you, pinned to an exact version. The video background remover gets its small model from
+      Google's model storage (storage.googleapis.com) instead. Models are cached in your browser, so this happens once.
+    </li>
+    <li>
+      <strong>jsDelivr</strong> (cdn.jsdelivr.net): <a href="/image-to-text">Image to text</a> and <a href="/ocr-pdf">Scanned PDF to searchable PDF</a>
+      download the language data for the languages you pick.
+    </li>
+    <li>
+      <strong>Frankfurter</strong> (api.frankfurter.dev): the <a href="/currency-converter">currency converter</a> fetches
+      European Central Bank reference rates. Only the request for rates is sent, never your amounts.
+    </li>
+    <li>
+      <strong>Have I Been Pwned</strong> (api.pwnedpasswords.com): the <a href="/password-strength-checker">password strength
+      checker</a> checks breaches only when you click to. It sends the first 5 characters of the password's SHA-1 hash, never
+      the password, and the match happens on your device.
+    </li>
+    <li>
+      <strong>Images you link to</strong>: the <a href="/markdown-editor">Markdown editor</a>,
+      <a href="/markdown-to-pdf">Markdown to PDF</a> and <a href="/html-to-pdf">HTML to PDF</a> show images your document
+      links to, and the <a href="/email-signature-generator">email signature generator</a> previews the photo or logo
+      address you enter. Your browser loads those images from wherever they're hosted. That site sees your IP address and,
+      at most, that the request came from roundertools.com, never which page or what else is in your document.
+    </li>
+    <li>
+      <strong>Your browser's own AI</strong>: in Chrome, the translator, summarizer, paraphraser and grammar checker can use the
+      AI model built into the browser. If Chrome needs to download that model, Chrome does it, from Google. The text you
+      process still stays on your device.
+    </li>
+  </ul>
+  <p>
+    A service worker (part of our site, running in your browser) keeps a copy of pages you've visited so they work offline.
+    It only ever talks to roundertools.com.
+  </p>
+
+  <h2 id="ads">Ads and your input</h2>
+  <p>
+    Rounder is kept free by light ads from Google. We never send your files or what you type to Google or anyone else. But
+    to be straight with you: ad code, on Rounder as on any website with ads, runs inside the page, and the page is where your
+    tool is. We don't write that code and can't fully control what it does.
+  </p>
+  <p id="ad-free">
+    That's why the tools where it matters most carry <strong>no ads and no consent scripts at all</strong>. They handle
+    passwords, keys, tokens and documents you're trying to protect:
+  </p>
+  <ul>
+    {adFree.map((t) => <li><a href={`/${t.slug}`}>{t.name}</a></li>)}
+  </ul>
+  <p>
+    Pages about the site itself (this one, <a href="/privacy">privacy</a>, <a href="/terms">terms</a>,
+    <a href="/about">about</a> and the like) are ad-free too. Ads are never placed inside a tool or next to a download button.
+  </p>
+
+  <h2>Security headers</h2>
+  <p>Every page is served with:</p>
+  <ul>
+    <li><code>Strict-Transport-Security</code>: HTTPS only, for a year, on every subdomain.</li>
+    <li><code>X-Content-Type-Options: nosniff</code> and <code>X-Frame-Options: SAMEORIGIN</code>: no content-type guessing, and other sites can't frame our pages.</li>
+    <li><code>Referrer-Policy: strict-origin-when-cross-origin</code>: other sites see at most "roundertools.com", never the page you were on.</li>
+    <li><code>Permissions-Policy</code>: the camera, microphone and screen capture are available only to our own pages (for the recorders, and only when you allow it); location, payments and USB are switched off.</li>
+  </ul>
+  <p>
+    We don't send cross-origin isolation headers (COOP/COEP), because they break ad frames. Tools are built to work without
+    them. We don't send a Content Security Policy yet either: ad code loads from many Google domains, and a policy loose
+    enough for that would add little.
+  </p>
+
+  <h2 id="report">Reporting a security problem</h2>
+  <p>
+    Found a vulnerability? Please email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or open a
+    <a href={advisory}>private advisory on GitHub</a>, and give us a reasonable chance to fix it before you share it publicly.
+    We won't take action against good-faith research that avoids harm to people and their data. Our
+    <a href="/.well-known/security.txt">security.txt</a> has the same details.
+  </p>
+</Prose>

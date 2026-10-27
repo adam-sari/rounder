@@ -35,5 +35,6 @@ export default {
     filePrivacyFaq,
   ],
   related: ['add-page-numbers-to-pdf', 'protect-pdf', 'watermark-image', 'merge-pdf'],
+  next: ['protect-pdf', 'compress-pdf'],
   flagship: { elsewhere: 'Daily task limits and file size caps', here: 'Unlimited PDFs, no size cap' },
 } satisfies Tool;
