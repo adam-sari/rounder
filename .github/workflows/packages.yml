@@ -31,6 +31,8 @@ jobs:
           elif [ "$RUNNER_OS" = "macOS" ]; then brew install ffmpeg
           else choco install ffmpeg -y --no-progress; fi
       - run: npm ci
+      # the site's runtime files in public/vendor are generated, not committed; some unit tests check them
+      - run: npm run vendor
       - run: npm test
       - run: npm run sdk:check
       - run: npm run sdk:build
