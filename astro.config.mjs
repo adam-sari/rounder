@@ -32,7 +32,6 @@ export default defineConfig({
   site: 'https://roundertools.com',
   output: 'static',
   trailingSlash: 'never',
-  // CSS goes inline: most visits are one page from search, and on a slow phone a stylesheet request delays first paint
   build: { format: 'file' },
   integrations: [svelte(), dropDevPages, seoLastmod],
   vite: {
