@@ -30,16 +30,18 @@
     copyBlocker,
     defaultContainer,
     etaSeconds,
+    exportPreset,
     frameIndex,
     friendlyError,
     inPoint,
     keptParts,
-    likelyCodec,
     markCut,
     markTrimIn,
     markTrimOut,
     outPoint,
+    outputCodec,
     skipTarget,
+    sourceVideoBitrate,
     stepFrame,
     videoQuality,
     VIDEO_CONTAINERS,
@@ -52,7 +54,7 @@
   const ACCEPT = 'video/*,.mp4,.m4v,.mov,.webm,.mkv,.avi,.wmv,.flv,.mpg,.mpeg,.3gp,.ts,.mts,.m2ts,.ogv';
 
   const presets: { id: Preset; label: string; hint: string }[] = [
-    { id: 'very-high', label: 'Best', hint: "frame-accurate, high bitrate, capped near the original's so files don't balloon" },
+    { id: 'very-high', label: 'Best', hint: "frame-accurate, re-encoded at the original's bitrate, so the file is about the size of that part of the original" },
     { id: 'high', label: 'High', hint: 'frame-accurate, a smaller file that still looks sharp' },
     { id: 'medium', label: 'Smaller', hint: 'frame-accurate, good for messaging and email' },
     { id: 'copy', label: 'No re-encode', hint: 'fastest and lossless, but the start snaps to the nearest keyframe (up to a few seconds early)' },
@@ -69,6 +71,9 @@
   let previewUrl = $state('');
   let previewBroken = $state(false);
   let video = $state<HTMLVideoElement | null>(null);
+
+  // a preset from the address (/trim-video#start=10): where the kept part starts and ends, in seconds
+  let { start: startAt = 0, end: endAt }: { start?: number; end?: number } = $props();
 
   let mode = $state<'trim' | 'segments'>('trim');
   let start = $state(0);
@@ -114,6 +119,20 @@
   );
   const copyAllowed = $derived(!copyBlock);
   const effective = $derived<Preset>(preset === 'copy' && !copyAllowed ? 'very-high' : preset);
+  /** what the export does: Best copies too when the kept part starts on the first frame */
+  const exportAs = $derived(exportPreset(preset, parts, copyBlock, fps));
+  const encodable = $derived(caps?.video.encode ?? null);
+  const hint = $derived.by(() => {
+    if (preset === 'very-high' && exportAs === 'copy') return 'the clip starts on the first frame, so nothing needs re-encoding: the original video is copied untouched (lossless, original quality and bitrate)';
+    if (exportAs === 'copy' && parts[0]?.start < 0.5 / fps) return 'fastest and lossless; the clip starts on the first frame, so the start is exact too';
+    // Best scales the bitrate up when it has to switch to a less efficient codec, so the size claim doesn't hold
+    const v = info?.video;
+    const unit = { codec: v?.codec ?? null, width: v?.displayWidth ?? 0, height: v?.displayHeight ?? 0, bitrate: 1e6 };
+    if (exportAs === 'very-high' && v && videoQuality('very-high', unit, outputCodec('very-high', v.codec, container, encodable))!.bitrate > unit.bitrate)
+      return `frame-accurate, at about the original's quality; this browser can't write ${v.codec?.toUpperCase() ?? 'its codec'} into ${container.toUpperCase()}, so the file can come out larger than that part of the original`;
+    const base = presets.find((p) => p.id === effective)?.hint ?? '';
+    return preset === 'copy' && !copyAllowed ? `${base} · ${copyBlock}, so Best is used` : base;
+  });
   const ext = $derived(file?.name.match(/\.([^.]+)$/)?.[1].toUpperCase() ?? 'this');
   const busy = $derived(phase === 'working' || phase === 'converting');
   const eta = $derived(etaSeconds(now - startedAt, progress));
@@ -149,8 +168,8 @@
     }
     src = blob;
     info = probed;
-    start = 0;
-    end = probed.durationSec;
+    start = startAt < probed.durationSec ? startAt : 0;
+    end = endAt && endAt > start && endAt < probed.durationSec ? endAt : probed.durationSec;
     cuts = [];
     currentTime = 0;
     container = defaultContainer(sourceContainer, caps?.containers ?? null);
@@ -189,18 +208,21 @@
     if (!src || !info?.video || !parts.length) return;
     video?.pause();
     const v = info.video;
-    const source = { codec: v.codec, width: v.displayWidth, height: v.displayHeight, bitrate: v.bitrate };
-    const outCodec = likelyCodec(container, caps?.video.encode ?? null);
-    const quality = videoQuality(effective, source, outCodec);
+    const source = { codec: v.codec, width: v.displayWidth, height: v.displayHeight, bitrate: sourceVideoBitrate(info) };
+    const outCodec = outputCodec(exportAs, v.codec, container, encodable);
+    const quality = videoQuality(exportAs, source, outCodec);
+    // naming the codec keeps Best in the source's own codec (the engine would take the container's first)
+    const videoOptions = quality ? { ...quality, codec: outCodec } : undefined;
     const signal = begin('working');
     try {
       let out: TranscodeResult;
       if (parts.length === 1) {
-        out = await transcode(src, { container, trim: parts[0], video: quality ?? undefined }, { signal, onStatus: (s) => (status = s), onProgress: (p) => (progress = p) });
+        out = await transcode(src, { container, trim: parts[0], video: videoOptions }, { signal, onStatus: (s) => (status = s), onProgress: (p) => (progress = p) });
       } else {
-        // each kept part is cut at top quality (capped like Best, so long clips don't make huge
-        // intermediates), then the join encodes once at the chosen quality
-        const pieceQuality = videoQuality('very-high', source, outCodec) ?? undefined;
+        // each kept part is cut at Best (the source's bitrate, so intermediates stay the size of the
+        // parts), then the join encodes once at the chosen quality
+        const pieceCodec = outputCodec('very-high', v.codec, container, encodable);
+        const pieceQuality = { ...videoQuality('very-high', source, pieceCodec), codec: pieceCodec };
         const pieces: Blob[] = [];
         let done = 0;
         for (const [i, part] of parts.entries()) {
@@ -211,7 +233,7 @@
           done += len;
         }
         status = `Joining ${parts.length} parts…`;
-        out = await concat(pieces, { container, ...quality }, { signal, onProgress: (p) => (progress = 0.5 + 0.5 * p) });
+        out = await concat(pieces, { container, ...videoOptions }, { signal, onProgress: (p) => (progress = 0.5 + 0.5 * p) });
       }
       // cancelled (or closed) just as the job finished: don't show a result nobody wants
       if (signal.aborted) {
@@ -516,7 +538,7 @@
               >
             {/each}
           </div>
-          <p class="mono mt-2">{presets.find((p) => p.id === effective)?.hint}{preset === 'copy' && !copyAllowed ? ` · ${copyBlock}, so Best is used` : ''}</p>
+          <p class="mono mt-2">{hint}</p>
         </div>
       </div>
 

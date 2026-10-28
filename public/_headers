@@ -26,6 +26,12 @@ https://:version.:project.pages.dev/*
   Cache-Control: public, max-age=31536000
 /models/*
   Cache-Control: public, max-age=2592000
+# the search box's model, index and tool vectors are content-hashed, so they never change
+/models/search/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/search/*
+  Cache-Control: public, max-age=31536000, immutable
 
 /og/*
   Cache-Control: public, max-age=86400

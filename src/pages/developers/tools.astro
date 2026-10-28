@@ -1,0 +1,85 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import DevNav from '@/components/site/DevNav.astro';
+import { ops } from '@/developers';
+import { toolBySlug, variantsOf } from '@/tools/registry';
+
+const FAMILY: Record<string, string> = { pdf: 'PDF', image: 'Images', files: 'Files', media: 'Video and audio' };
+const groups = ['pdf', 'image', 'files', 'media'].map((f) => ({ name: FAMILY[f], ops: ops.filter((o) => o.family === f) }));
+const optionNames = (o: (typeof ops)[number]) => Object.keys(o.options.shape).map((k) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`));
+---
+
+<Prose
+  title="Every Rounder tool for Node.js, the CLI and MCP"
+  description="The tools in Rounder's npm packages: each one's command, SDK function and options, and which need ffmpeg. Generated from the packages' own definitions."
+  heading="The <em>tools</em>"
+>
+  <DevNav current="/developers/tools" />
+  <p>
+    Each tool's command is its address on the site, its SDK function is <code>family.name()</code>, and its MCP tool has the
+    same name as the command. The options are the flags (<code>--target</code>) and the SDK's option names
+    (<code>target</code>). Preset pages from the site work as commands too.
+  </p>
+
+  {groups.map((g) => (
+    <>
+      <h2>{g.name}</h2>
+      <div class="card overflow-x-auto">
+        <table class="tool-table">
+          <thead><tr><th scope="col">Command</th><th scope="col">SDK</th><th scope="col">Options</th></tr></thead>
+          <tbody>
+            {g.ops.map((o) => {
+              const page = toolBySlug[o.slug];
+              const presets = variantsOf(o.slug).filter((v) => o.presets?.(v.props ?? {})).length;
+              return (
+                <tr>
+                  <td>
+                    {page ? <a href={`/${o.slug}`}><code>{o.slug}</code></a> : <code>{o.slug}</code>}
+                    {o.requires?.includes('ffmpeg') && <span class="need">needs ffmpeg</span>}
+                    {o.requires?.includes('canvas') && <span class="need">needs @napi-rs/canvas</span>}
+                    {presets > 0 && <span class="need">+{presets} presets</span>}
+                  </td>
+                  <td><code>{o.family}.{o.fn}()</code></td>
+                  <td>{optionNames(o).map((n, i) => <><code>{n}</code>{i < optionNames(o).length - 1 ? ' ' : ''}</>)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  ))}
+
+  <p class="mt-8">
+    <code>npx roundertools help &lt;command&gt;</code> explains every option, with its default. The MCP server's
+    <code>describe-tool</code> returns the same as JSON Schema.
+  </p>
+</Prose>
+
+<style>
+  .tool-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    th {
+      padding: 12px 14px 8px;
+      text-align: left;
+      font: 400 12.5px var(--font-mono);
+      color: var(--color-muted);
+      border-bottom: 1px solid var(--color-line-2);
+    }
+    td {
+      padding: 10px 14px;
+      vertical-align: top;
+      color: var(--color-soft);
+      border-top: 1px solid var(--color-line);
+    }
+    tbody tr:first-child td { border-top: 0; }
+    td:first-child { white-space: nowrap; }
+    .need {
+      display: block;
+      font: 400 12px var(--font-mono);
+      color: var(--color-muted);
+    }
+  }
+</style>

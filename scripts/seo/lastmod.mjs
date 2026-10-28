@@ -17,6 +17,8 @@ export function sources(root) {
     'src/tools/registry.ts',
     ...list('src/tools/defs', (f) => f.endsWith('.ts')),
     ...list('src/pages', (f) => f.endsWith('.astro') && !f.startsWith('[')),
+    // the developer docs, the one folder of pages the sitemap lists (src/seo/sitemaps.ts)
+    ...(existsSync(join(root, 'src/pages/developers')) ? list('src/pages/developers', (f) => f.endsWith('.astro')) : []),
   ].sort();
 }
 

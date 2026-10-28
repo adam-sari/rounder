@@ -1,0 +1,20 @@
+{
+"about": "Unseen queries with no exact tool, from the critique (crit/abstain2.mjs). Search should answer \"Closest tools\", not a confident \"Best match\".",
+"queries": [
+  {"q":"convert pdf to epub","c":"none","accept":[]},
+  {"q":"audio to midi","c":"none","accept":[]},
+  {"q":"video to live photo","c":"none","accept":[]},
+  {"q":"text to video","c":"none","accept":[]},
+  {"q":"how to remove gel nails at home","c":"none","accept":[]},
+  {"q":"excel to google sheets","c":"none","accept":[]},
+  {"q":"pdf ko hindi me translate","c":"none","accept":[]},
+  {"q":"add signature in outlook","c":"none","accept":[]},
+  {"q":"make pdf fillable","c":"none","accept":[]},
+  {"q":"crop pdf","c":"none","accept":[]},
+  {"q":"png to gif","c":"none","accept":[]},
+  {"q":"remove watermark from video","c":"none","accept":[]},
+  {"q":"change image color","c":"none","accept":[]},
+  {"q":"text to binary","c":"none","accept":[]},
+  {"q":"how to add page numbers in word","c":"none","accept":[]}
+]
+}

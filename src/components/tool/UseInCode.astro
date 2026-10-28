@@ -1,0 +1,33 @@
+---
+import CodeBlock from '@/components/site/CodeBlock.astro';
+import { PACKAGES_ON_NPM, snippetsFor } from '@/developers';
+import type { Tool } from '@/tools/types';
+
+interface Props {
+  tool: Tool;
+}
+
+// generated from the npm packages' op specs; tools that only run in a browser show nothing
+const s = PACKAGES_ON_NPM ? snippetsFor(Astro.props.tool) : null;
+---
+
+{s && (
+  <section class="mt-20" aria-label="Use this in code">
+    <details class="card group px-5 py-4">
+      <summary class="cursor-pointer list-none font-medium marker:hidden">
+        <span class="mono mr-2 inline-block transition-transform group-open:rotate-90">›</span>Use this in code
+        <span class="mono ml-2 hidden sm:inline">cli · node.js · ai assistants</span>
+      </summary>
+      <div class="mt-4 text-soft">
+        <p>The same engine runs on your own machine, from a terminal or a script. Files stay there too.</p>
+        <CodeBlock label="terminal" code={s.cli} />
+        <CodeBlock label="node.js" code={s.sdk} />
+        <p>
+          Or ask an AI assistant that has <a href="/developers/mcp" class="text-sun">Rounder's MCP server</a>: “{s.prompt}”
+        </p>
+        {s.needs.length > 0 && <p class="mt-2 text-sm">Needs {s.needs.join(' and ')}.</p>}
+        <p class="mono mt-3"><a href="/developers" class="hover:text-chalk">developer docs →</a></p>
+      </div>
+    </details>
+  </section>
+)}

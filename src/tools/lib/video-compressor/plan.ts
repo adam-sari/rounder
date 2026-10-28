@@ -30,10 +30,10 @@ export const targetPresets: { mb: number; label: string }[] = [
 /** VP9 lives in WebM; the rest go in MP4, which plays almost everywhere */
 export const containerFor = (codec: CodecChoice) => (codec === 'vp9' ? 'webm' : 'mp4');
 
-// bits mediabunny's own size model gives each codec relative to H.264 at equal quality
+// bits each codec needs relative to H.264 at equal quality (calibrated to match mediabunny's encoder output)
 const efficiency: Record<CodecChoice, number> = { avc: 1, hevc: 0.6, vp9: 0.6, av1: 0.4 };
 
-// mediabunny's quality scale (0 = very-low … 1 = very-high) for each preset, and how far
+// a 0–1 quality scale (0 = very-low … 1 = very-high) for each preset, and how far
 // below the source's own bitrate each preset is allowed to go
 const presetLevel: Record<Preset, { q: number; ofSource: number; aac: number; opus: number }> = {
   high: { q: 0.5, ofSource: 0.75, aac: 160_000, opus: 128_000 },
@@ -41,7 +41,7 @@ const presetLevel: Record<Preset, { q: number; ofSource: number; aac: number; op
   small: { q: 0, ofSource: 0.3, aac: 96_000, opus: 64_000 },
 };
 
-/** mediabunny's bitrate model for a quality level (encode.js computeVideoBitrate) */
+/** our bitrate model for a quality level: a power law in pixel count, calibrated so its sizes match mediabunny's */
 export function qualityBitrate(codec: CodecChoice, width: number, height: number, q: number) {
   const base = 3_000_000 * Math.pow((width * height) / (1920 * 1080), 0.95);
   return Math.ceil((base * efficiency[codec] * 0.3 * Math.exp(2.5538 * q)) / 1000) * 1000;

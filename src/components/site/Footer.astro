@@ -16,6 +16,7 @@ const about = [
   ['press', 'Press'],
   ['credits', 'Credits'],
 ].filter(([slug]) => pages.has(slug));
+const developers = Object.keys(import.meta.glob('/src/pages/developers/index.astro')).length > 0;
 ---
 
 <footer class="wrap mt-32 pb-16">
@@ -37,6 +38,7 @@ const about = [
       <ul class="grid gap-1.5 text-soft">
         {about.map(([slug, label]) => <li><a href={`/${slug}`} class="no-underline hover:text-chalk">{label}</a></li>)}
         {/* the AGPL asks a network service to offer its source; this is where */}
+        {developers && <li><a href="/developers" class="no-underline hover:text-chalk">Developers</a></li>}
         {SITE.github && <li><a href={SITE.github} class="no-underline hover:text-chalk">Source code</a></li>}
         <li hidden data-consent-settings>
           <button type="button" class="cursor-pointer text-left hover:text-chalk">Privacy &amp; cookie settings</button>

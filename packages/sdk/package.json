@@ -1,0 +1,47 @@
+{
+  "name": "@roundertools/sdk",
+  "version": "0.1.0",
+  "description": "Rounder's file tools for Node: compress, merge, split and protect PDFs, convert and resize images, zip files, and shrink video with your own ffmpeg. Runs locally; files never leave your machine.",
+  "license": "MIT",
+  "author": "Adam Sari <hello@roundertools.com>",
+  "homepage": "https://roundertools.com/developers/sdk",
+  "repository": { "type": "git", "url": "git+https://github.com/adam-sari/rounder.git", "directory": "packages/sdk" },
+  "bugs": "https://github.com/adam-sari/rounder/issues",
+  "keywords": ["pdf", "compress pdf", "merge pdf", "image compression", "image converter", "webp", "avif", "ffmpeg", "local", "offline", "privacy"],
+  "type": "module",
+  "exports": {
+    ".": { "types": "./dist/types/index.d.ts", "default": "./dist/index.mjs" },
+    "./no-network": { "types": "./dist/types/no-network.d.ts", "default": "./dist/no-network.mjs" },
+    "./catalog.json": "./dist/catalog.json",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "files": ["dist", "LICENSE", "README.md", "THIRD_PARTY_NOTICES.md"],
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@jsquash/avif": "^2.1.1",
+    "@jsquash/jpeg": "^1.6.0",
+    "@jsquash/oxipng": "^2.3.0",
+    "@jsquash/png": "^3.1.1",
+    "@jsquash/resize": "^2.1.1",
+    "@jsquash/webp": "^1.5.0",
+    "@neslinesli93/qpdf-wasm": "^0.3.0",
+    "wasm-feature-detect": "^1.9.0",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "@napi-rs/canvas": ">=0.1.80"
+  },
+  "peerDependenciesMeta": {
+    "@napi-rs/canvas": { "optional": true }
+  },
+  "devDependencies": {
+    "@roundertools/build": "*"
+  },
+  "publishConfig": { "access": "public" }
+}

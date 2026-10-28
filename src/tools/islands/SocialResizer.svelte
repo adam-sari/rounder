@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import Dropzone from '@/components/tool/Dropzone.svelte';
   import { decodeImage, encodeCanvas, processImage, resizeImage, type EncodeOptions } from '@/engines/image/client';
   import { downloadResult, formatBytes, zipFiles } from '@/tools/lib/files';
@@ -28,7 +28,10 @@
   let src = $state.raw<Source | null>(null);
   let loading = $state(false);
   let error = $state('');
-  let chosen = $state<string[]>([...defaultSelection]);
+  // a preset from the address (/social-media-image-resizer#platform=instagram) starts with that platform's sizes
+  let { platform }: { platform?: Platform } = $props();
+  const forPlatform = untrack(() => sizes.filter((s) => s.platform === platform).map((s) => s.id));
+  let chosen = $state<string[]>(forPlatform.length ? forPlatform : [...defaultSelection]);
   let focus = $state<Focus>({ x: 0.5, y: 0.5 });
   let defaultFit = $state<Fit>('crop');
   /** per-size changes made on a preview card */

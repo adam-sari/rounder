@@ -184,3 +184,19 @@ export function formatBytes(bytes: number): string {
 }
 
 export const formatBitrate = (bps: number) => (bps >= 1_000_000 ? `${(bps / 1_000_000).toFixed(1)} Mbps` : `${Math.round(bps / 1000)} kbps`);
+
+/** `t` (> 0) and the doubles up to `steps` representable values either side of it, nearest first */
+export function nearbyDoubles(t: number, steps = 4): number[] {
+  if (!(t > 0) || !Number.isFinite(t)) return [t];
+  const f = new Float64Array([t]);
+  const bits = new BigInt64Array(f.buffer);
+  const base = bits[0];
+  const out = [t];
+  for (let k = 1; k <= steps; k++) {
+    for (const d of [k, -k]) {
+      bits[0] = base + BigInt(d);
+      out.push(f[0]);
+    }
+  }
+  return out;
+}

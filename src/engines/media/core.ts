@@ -51,7 +51,7 @@ import {
 import { GIFEncoder, applyPalette, quantize } from 'gifenc';
 import { dbToGain, encoderSampleRate, mixdown, PeakAccumulator, Resampler, resample, writeWav } from './dsp';
 import { decodeGifFrames, isGif, parseGif } from './gif';
-import { bitrateForTargetSize, clamp, evenize, planVideoSize, snapAudioBitrate, spreadTimes } from './math';
+import { bitrateForTargetSize, clamp, evenize, nearbyDoubles, planVideoSize, snapAudioBitrate, spreadTimes } from './math';
 import {
   containers,
   isAudioContainer,
@@ -507,6 +507,33 @@ async function run(conversions: Conversion[], output: Output, sink: Sink, ctl: J
   }
 }
 
+/** how much earlier than asked an audio-only trim may start, so its packets can be copied */
+const COPY_SHIFT = 0.2;
+
+/**
+ * A start at (or a hair from) `start` where mediabunny copies the audio instead of re-encoding it, or
+ * null. For outputs that must begin at zero it checks packet + (start − packet) === start in floating
+ * point, which misses by one bit for some starts a few frames in (0.09999999999999999 s, ten 0.01 s
+ * arrow-key steps, on a 44.1 kHz MP3), and then it quietly re-encodes. Neighbouring doubles cut at the
+ * same place, so the first one that passes is used. Each try is a dry run on a throwaway output.
+ */
+async function copyableStart(input: Input, container: Container, track: InputAudioTrack, start: number, end: number, audio: ConversionAudioOptions): Promise<number | null> {
+  for (const s of nearbyDoubles(start)) {
+    const dry = await Conversion.init({
+      input,
+      output: new Output({ format: outputFormat(container), target: new BufferTarget() }),
+      trim: { start: s, end },
+      copy: { mode: 'forced', shiftTolerance: COPY_SHIFT },
+      tracks: 'primary',
+      showWarnings: false,
+      video: { discard: true },
+      audio,
+    });
+    if (!dry.discardedTracks.some((d) => d.track === track)) return s;
+  }
+  return null;
+}
+
 /** Converts, compresses, trims, crops, rotates, re-times, mutes or re-voices a file with WebCodecs. */
 export async function transcode(file: Blob, o: TranscodeOptions, ctl: JobControl = {}): Promise<TranscodeResult> {
   const c = containers[o.container];
@@ -594,14 +621,15 @@ export async function transcode(file: Blob, o: TranscodeOptions, ctl: JobControl
       }
     }
 
-    const audioOptions = async (track: InputAudioTrack, forReplace: boolean): Promise<ConversionAudioOptions> => {
+    const audioOptions = async (track: InputAudioTrack, forReplace: boolean, forceReencode = false): Promise<ConversionAudioOptions> => {
       const audioSpeed = forReplace ? 1 : speed;
       const channels = ao.channels ?? Math.min(2, await track.getNumberOfChannels());
       const rate = ao.sampleRate ?? (await track.getSampleRate());
       const process = audioProcessor(ao.gainDb ?? 0, audioSpeed);
-      const reencode = !!(process || ao.codec || audioBitrate || ao.quality || ao.sampleRate || ao.channels);
+      const reencode = forceReencode || !!(process || ao.codec || audioBitrate || ao.quality || ao.sampleRate || ao.channels);
       const opts: ConversionAudioOptions = { numberOfChannels: ao.channels ?? (channels < (await track.getNumberOfChannels()) ? channels : undefined), sampleRate: ao.sampleRate, forceTranscode: reencode, process };
-      if (reencode || !c.audio.includes((await track.getCodec()) as AudioCodec)) {
+      // a downmix re-encodes too, so its encoder (LAME, wasm AAC) has to be picked and registered
+      if (reencode || opts.numberOfChannels || !c.audio.includes((await track.getCodec()) as AudioCodec)) {
         opts.codec = await pickAudioCodec(o.container, ao.codec, channels, encoderSampleRate(ao.codec ?? c.audio[0], rate));
         opts.quality = audioQuality(opts.codec, { bitrate: audioBitrate, quality: ao.quality }, 'high');
         if (opts.codec !== ao.codec && ao.codec) notes.push(`This browser can't encode ${ao.codec.toUpperCase()}; used ${opts.codec.toUpperCase()} instead.`);
@@ -611,18 +639,30 @@ export async function transcode(file: Blob, o: TranscodeOptions, ctl: JobControl
       return opts;
     };
 
-    const audio: ConversionAudioOptions = wantAudio && aTrack && !replace ? await audioOptions(aTrack, false) : { discard: true };
+    let audio: ConversionAudioOptions = wantAudio && aTrack && !replace ? await audioOptions(aTrack, false) : { discard: true };
     if (wantAudio && speed !== 1 && !replace) notes.push('Audio pitch follows the speed change.');
+
+    // An audio-only trim that copies packets (MP3, WAV, FLAC… out) must start the file at zero, which a
+    // packet boundary rarely matches exactly. A little shift lets mediabunny copy anyway: 0.2 s covers a
+    // FLAC frame or two MP3/AAC frames, so the copy starts at most that early. If it still can't copy,
+    // mediabunny would re-encode to the source codec without asking for an encoder, which fails for MP3
+    // in Chrome (no native one, LAME not registered yet), so that case re-encodes through pickAudioCodec.
+    let copy: { shiftTolerance: number } | undefined;
+    let trimStart = start;
+    if (o.trim && start > 0 && !wantVideo && aTrack && !replace && !audio.codec) {
+      copy = { shiftTolerance: COPY_SHIFT };
+      const s = await copyableStart(input, o.container, aTrack, start, end, audio);
+      if (s !== null) trimStart = s;
+      else {
+        audio = await audioOptions(aTrack, false, true);
+        notes.push("The cut couldn't be copied exactly, so the audio was re-encoded.");
+      }
+    }
 
     const sink = await makeSink(file.size, c.mime);
     const output = new Output({ format: outputFormat(o.container), target: sink.target });
     const tags = o.keepMetadata === false ? {} : undefined;
-    // An audio-only trim that copies packets (MP3, WAV, FLAC… out) must start the file at zero, which a
-    // packet boundary rarely matches exactly. Without a little shift mediabunny falls back to re-encoding,
-    // and with no MP3 encoder registered (Chrome has none) the cut fails. 0.2 s covers a FLAC frame or
-    // two MP3/AAC frames, so the copy starts at most that early.
-    const copy = o.trim && start > 0 && !wantVideo ? { shiftTolerance: 0.2 } : undefined;
-    const base = { input, output, trim: o.trim ? { start, end } : undefined, copy, tracks: 'primary' as const, showWarnings: false, tags };
+    const base = { input, output, trim: o.trim ? { start: trimStart, end } : undefined, copy, tracks: 'primary' as const, showWarnings: false, tags };
     const main = await Conversion.init({ ...base, video, audio, composable: !!replace });
     const err = (wantVideo && discardError(main, vTrack)) || (wantAudio && !replace && discardError(main, aTrack));
     if (err) throw err;

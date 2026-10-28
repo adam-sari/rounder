@@ -4,11 +4,50 @@
 @import '@fontsource-variable/geist-mono/wght.css';
 @import 'tailwindcss';
 
+/* Stand-ins while Instrument Serif loads: Times-metric fonts scaled to its much narrower letters, so a heading wraps
+   the same before and after the swap (the home hero jumped about 100px on slow phones). Overrides are divided by
+   the size-adjust because it scales them too. */
+@font-face {
+  font-family: 'Instrument Serif Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Liberation Serif'), local('Tinos');
+  size-adjust: 78.7%;
+  ascent-override: 125.8%;
+  descent-override: 39.4%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Instrument Serif Fallback';
+  font-style: italic;
+  src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Liberation Serif Italic'), local('Tinos Italic');
+  size-adjust: 83.3%;
+  ascent-override: 118.8%;
+  descent-override: 37.2%;
+  line-gap-override: 0%;
+}
+/* Geist is a little wider than Arial (and its metric twins) */
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 103.4%;
+  ascent-override: 97.7%;
+  descent-override: 29%;
+  line-gap-override: 0%;
+}
+/* Geist Mono is 0.6em per letter like Menlo and DejaVu Sans Mono; Windows' Consolas is 0.55em */
+@font-face {
+  font-family: 'Geist Mono Fallback';
+  src: local('Consolas');
+  size-adjust: 109.1%;
+  ascent-override: 92.6%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
 /* Night Workshop: dark graph paper, chalk ink, warm riso spot colors. */
 @theme {
-  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
-  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+  --font-serif: 'Instrument Serif', 'Instrument Serif Fallback', ui-serif, Georgia, serif;
+  --font-sans: 'Geist Variable', 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono Fallback', ui-monospace, monospace;
 
   --color-bg: #131211;
   --color-panel: #1a1917;

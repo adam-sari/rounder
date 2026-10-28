@@ -7,11 +7,13 @@
 
   type Side = 'from' | 'to';
 
-  let { category = 'length', from, to, table }: { category?: string; from?: string; to?: string; table?: number[] } = $props();
+  let { category, from, to, table, value }: { category?: string; from?: string; to?: string; table?: number[]; value?: number } = $props();
 
   // the page's preset is only the starting point; everything stays changeable
   const start = untrack(() => {
-    const c = categoryById[category] ?? categories[0];
+    // a preset from the address (/unit-converter#from=ml&to=l&value=500) names units, not their category
+    const named = categories.find((k) => [from, to].every((id) => k.units.some((u) => u.id === id)));
+    const c = categoryById[category ?? named?.id ?? 'length'] ?? categories[0];
     const ok = (id?: string) => !!id && c.units.some((u) => u.id === id);
     return { c, from: ok(from) ? from! : c.defaults[0], to: ok(to) ? to! : c.defaults[1], table };
   });
@@ -21,7 +23,7 @@
   let ids = $state<Record<Side, string>>({ from: start.from, to: start.to });
   // the side the person last typed in; the other side is computed from it
   let anchor = $state<Side>('from');
-  let text = $state('1');
+  let text = $state(untrack(() => (value != null && Number.isFinite(value) ? String(value) : '1')));
   let digits = $state(6);
   let view = $state<'all' | 'table'>(start.table ? 'table' : 'all');
   let turns = $state(0);

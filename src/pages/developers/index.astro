@@ -1,0 +1,90 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import CodeBlock from '@/components/site/CodeBlock.astro';
+import DevNav from '@/components/site/DevNav.astro';
+import { MCP_INSTALL, ops } from '@/developers';
+import { SITE } from '@/site';
+
+const families = [
+  ['PDF', ops.filter((o) => o.family === 'pdf').length],
+  ['image', ops.filter((o) => o.family === 'image').length],
+  ['video and audio', ops.filter((o) => o.family === 'media').length],
+  ['file', ops.filter((o) => o.family === 'files').length],
+] as const;
+---
+
+<Prose
+  title="Rounder for developers: SDK, CLI and MCP server"
+  description="Rounder's PDF, image and video tools as an npm package, a command-line tool and an MCP server for AI assistants. They run on your machine; files are never uploaded."
+  heading="Rounder for <em>developers</em>"
+>
+  <DevNav current="/developers" />
+  <p>
+    The engines behind roundertools.com also come as three free npm packages. They run on your own computer, in Node,
+    with the same code the site runs in your browser: your files never leave the machine, and the packages make no network
+    requests at all.
+  </p>
+
+  <ul>
+    <li><a href="/developers/sdk"><strong>@roundertools/sdk</strong></a>: typed functions for Node.js, like <code>pdf.compress(file, &#123; target: '1mb' &#125;)</code>.</li>
+    <li><a href="/developers/cli"><strong>roundertools</strong></a>: the command line, for scripts and batches: <code>npx roundertools compress-pdf report.pdf</code>.</li>
+    <li><a href="/developers/mcp"><strong>@roundertools/mcp</strong></a>: an MCP server, so Claude, Cursor or VS Code can work on files on your computer.</li>
+  </ul>
+
+  <h2>Try it in 30 seconds</h2>
+  <p>With Node 22.13 or newer, in a folder with a PDF in it:</p>
+  <CodeBlock label="terminal" code={'npx roundertools compress-pdf report.pdf --target 1mb\nnpx roundertools list'} />
+  <p>To give Claude Code the same tools:</p>
+  <CodeBlock label="terminal" code={MCP_INSTALL.claudeCode} />
+
+  <h2>What's included</h2>
+  <p>
+    {ops.length} tools in version 0.1: {families.map(([name, n], i) => `${n} ${name}${i < families.length - 1 ? (i === families.length - 2 ? ' and ' : ', ') : ''}`).join('')} tools.
+    The <a href="/developers/tools">tool table</a> lists each one with its command and function. Video and audio tools use
+    the ffmpeg already installed on your computer; nothing of ffmpeg ships in the packages. Tools that need a screen
+    (recorders, editors) or a model download (the AI tools) stay on the site for now.
+  </p>
+
+  <h2>Where things run</h2>
+  <div class="card overflow-x-auto">
+    <table class="dev-table">
+      <thead><tr><th scope="col">What</th><th scope="col">Where</th></tr></thead>
+      <tbody>
+        <tr><td>Your files</td><td>Read and written on your machine only. Results go next to the input (or where you say) and never replace an existing file.</td></tr>
+        <tr><td>Network</td><td>None. The CLI and MCP server block outgoing connections in their own process as a safeguard.</td></tr>
+        <tr><td>PDFs and images</td><td>pdf-lib, PDF.js, qpdf and jSquash codecs, in-process (WebAssembly).</td></tr>
+        <tr><td>Video and audio</td><td>Your own ffmpeg, run as a separate program.</td></tr>
+        <tr><td>AI assistants</td><td>See only the paths, sizes and summaries the MCP server returns, plus text you ask it to extract.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>License</h2>
+  <p>
+    The packages are MIT-licensed, so you can use them in any project, commercial or not. The website itself stays
+    AGPL-3.0. The source for both is on <a href={SITE.github}>GitHub</a>, in <code>packages/</code>.
+  </p>
+</Prose>
+
+<style>
+  .dev-table {
+    width: 100%;
+    border-collapse: collapse;
+    th {
+      padding: 12px 16px 8px;
+      text-align: left;
+      font: 400 12.5px var(--font-mono);
+      color: var(--color-muted);
+      border-bottom: 1px solid var(--color-line-2);
+    }
+    td {
+      padding: 10px 16px;
+      vertical-align: top;
+      color: var(--color-soft);
+      border-top: 1px solid var(--color-line);
+      font-size: 15px;
+    }
+    tbody tr:first-child td { border-top: 0; }
+    td:first-child { color: var(--color-chalk); white-space: nowrap; }
+  }
+</style>

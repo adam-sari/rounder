@@ -1,4 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { transcode } from '@/engines/media/core';
+import { nearbyDoubles } from '@/engines/media/math';
 import { MediaError } from '@/engines/media/types';
 import { errorText, estimateBytes, etaSeconds, fitFades, formatSupport, joinPieces, keptSegments, sameFormat, toStereo } from '@/tools/lib/audio-cutter/edit';
 import tool from '@/tools/defs/audio-cutter';
@@ -142,5 +145,44 @@ describe('review fixes', () => {
   });
   it('maps a main-thread allocation failure to the memory message', () => {
     expect(errorText(new RangeError('Array buffer allocation failed'))).toMatch(/memory/);
+  });
+});
+
+describe('same-format cut after moving the start (regression)', () => {
+  // Ten 0.01 s arrow-key steps leave the start at 0.09999999999999999, where mediabunny's float check for
+  // copying into a start-at-zero format failed. It then re-encoded to MP3 with no encoder registered, and
+  // the cutter said "This browser can't write that format". Copying needs no codecs, so this runs in Node.
+  const mp3 = () => new Blob([readFileSync('tests/fixtures/media/sample.mp3')]);
+  const keyboardStart = (steps: number) => Array.from({ length: steps }).reduce<number>((t) => t + 0.01, 0);
+
+  it('nearbyDoubles walks out one representable value at a time', () => {
+    const t = keyboardStart(10);
+    const near = nearbyDoubles(t, 2);
+    expect(near[0]).toBe(t);
+    expect(near).toHaveLength(5);
+    expect(near[1]).toBeGreaterThan(t);
+    expect(near[2]).toBeLessThan(t);
+    for (const x of near) expect(Math.abs(x - t)).toBeLessThan(1e-15);
+    expect(nearbyDoubles(0)).toEqual([0]);
+  });
+
+  it('copies the MP3 instead of failing, for every start the arrow keys reach in the first second', async () => {
+    const file = mp3();
+    for (let steps = 1; steps <= 100; steps++) {
+      const out = await transcode(file, { container: 'mp3', trim: { start: keyboardStart(steps), end: 2 }, video: false });
+      expect(out.notes, `start after ${steps} steps`).toEqual([]);
+      expect(out.blob.size).toBeLessThan(file.size);
+    }
+  });
+
+  it('keeps the cut where it was asked, starting at most 0.2 s early', async () => {
+    const file = mp3();
+    const start = keyboardStart(10);
+    const out = await transcode(file, { container: 'mp3', trim: { start, end: 2 }, video: false });
+    const buf = new Uint8Array(await out.blob.arrayBuffer());
+    // 128 kbps, 44.1 kHz: 417–418 bytes a frame of 1152 samples
+    const seconds = (buf.length / 418) * (1152 / 44100);
+    expect(seconds).toBeGreaterThan(2 - start - 0.05);
+    expect(seconds).toBeLessThan(2 - start + 0.25);
   });
 });

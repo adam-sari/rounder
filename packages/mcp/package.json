@@ -1,0 +1,32 @@
+{
+  "name": "@roundertools/mcp",
+  "version": "0.1.0",
+  "description": "An MCP server that gives AI assistants Rounder's file tools: compress, merge and split PDFs, convert images, shrink video. Runs locally over stdio; files never leave your machine and it makes no network requests.",
+  "license": "MIT",
+  "author": "Adam Sari <hello@roundertools.com>",
+  "homepage": "https://roundertools.com/developers/mcp",
+  "repository": { "type": "git", "url": "git+https://github.com/adam-sari/rounder.git", "directory": "packages/mcp" },
+  "bugs": "https://github.com/adam-sari/rounder/issues",
+  "keywords": ["mcp", "model context protocol", "claude", "pdf", "image", "ffmpeg", "local", "offline"],
+  "mcpName": "io.github.adam-sari/roundertools",
+  "type": "module",
+  "bin": { "roundertools-mcp": "./dist/bin.mjs" },
+  "exports": { ".": { "types": "./dist/types/main.d.ts", "default": "./dist/server.mjs" }, "./package.json": "./package.json" },
+  "types": "./dist/types/main.d.ts",
+  "files": ["dist", "LICENSE", "README.md"],
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@roundertools/sdk": "0.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@roundertools/build": "*"
+  },
+  "publishConfig": { "access": "public" }
+}

@@ -16,12 +16,32 @@
     "lastmod": "2026-10-27"
   },
   "src/pages/credits.astro": {
-    "hash": "5857ec68745fc893",
-    "lastmod": "2026-10-27"
+    "hash": "d2aa267c163c4787",
+    "lastmod": "2026-10-28"
+  },
+  "src/pages/developers/cli.astro": {
+    "hash": "c23926e21260a782",
+    "lastmod": "2026-10-28"
+  },
+  "src/pages/developers/index.astro": {
+    "hash": "eb94350583006080",
+    "lastmod": "2026-10-28"
+  },
+  "src/pages/developers/mcp.astro": {
+    "hash": "3bcdcfaceeed2525",
+    "lastmod": "2026-10-28"
+  },
+  "src/pages/developers/sdk.astro": {
+    "hash": "58a814ca17e2d29e",
+    "lastmod": "2026-10-28"
+  },
+  "src/pages/developers/tools.astro": {
+    "hash": "71dde8a027f4ba3b",
+    "lastmod": "2026-10-28"
   },
   "src/pages/index.astro": {
-    "hash": "103b79b0db4d4e89",
-    "lastmod": "2026-10-27"
+    "hash": "3321588366daa1fa",
+    "lastmod": "2026-10-28"
   },
   "src/pages/offline.astro": {
     "hash": "54fc12410a11bf9c",
@@ -508,8 +528,8 @@
     "lastmod": "2026-10-27"
   },
   "src/tools/defs/trim-video.ts": {
-    "hash": "6b5211d91aa49949",
-    "lastmod": "2026-10-27"
+    "hash": "7ea67646829c14fe",
+    "lastmod": "2026-10-28"
   },
   "src/tools/defs/unit-converter.ts": {
     "hash": "99a856671fd7ecb5",

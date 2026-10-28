@@ -1,0 +1,77 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import CodeBlock from '@/components/site/CodeBlock.astro';
+import DevNav from '@/components/site/DevNav.astro';
+
+const examples = `npx roundertools compress-pdf report.pdf --target 1mb
+npx roundertools merge-pdf a.pdf b.pdf c.pdf -o merged.pdf
+npx roundertools image-converter "photos/*.png" --to webp -o webp/
+npx roundertools png-to-jpg scan.png               # the site's preset pages work as commands
+npx roundertools video-compressor clip.mov --target 25mb
+cat in.pdf | npx roundertools compress-pdf - -o - > out.pdf`;
+const help = `npx roundertools list              # every tool
+npx roundertools help compress-pdf  # its options, examples and preset names
+npx roundertools doctor             # Node, ffmpeg and canvas: what's installed`;
+const json = `{ "schema": 1, "ok": true, "tool": "compress-pdf", "version": "0.1.0",
+  "results": [{ "input": "/work/report.pdf", "output": "/work/report-compressed.pdf",
+                "bytesIn": 3375514, "bytesOut": 118735, "ratio": 0.035,
+                "meta": { "kept": false, "images": { "found": 4, "replaced": 3 } }, "warnings": [] }],
+  "errors": [], "durationMs": 1012, "web": "https://roundertools.com/compress-pdf" }`;
+const codes = [
+  ['0', 'every input worked'],
+  ['1', 'the tool failed (a damaged file, an unsupported format, an existing output)'],
+  ['2', 'usage: an unknown tool, flag or option value'],
+  ['3', 'some inputs worked and some failed; the rest were written'],
+  ['4', 'a dependency is missing (ffmpeg, @napi-rs/canvas)'],
+  ['5', 'a size target was missed, with --strict (without it, the smallest result is written and noted)'],
+  ['6', 'a password is needed or wrong'],
+  ['130', 'interrupted with Ctrl+C; nothing half-written is left behind'],
+];
+---
+
+<Prose
+  title="Rounder CLI: compress PDFs, convert images and shrink video from the terminal"
+  description="npx roundertools: the tools from roundertools.com on the command line. Batches and globs, JSON output for scripts, clear exit codes, and files that never leave your machine."
+  heading="The <em>CLI</em>"
+>
+  <DevNav current="/developers/cli" />
+  <p>
+    <code>roundertools</code> runs the site's tools from a terminal. Each command is the tool's address on the site:
+    <code>roundertools compress-pdf</code> is roundertools.com/compress-pdf. Nothing to install with <code>npx</code>;
+    <code>npm install -g roundertools</code> keeps it around.
+  </p>
+  <CodeBlock label="terminal" code={examples} />
+  <CodeBlock label="terminal" code={help} />
+
+  <h2>Files in, files out</h2>
+  <ul>
+    <li>Inputs are files, globs (quoted, so they work the same on Windows), folders with <code>--recursive</code>, or <code>-</code> for stdin.</li>
+    <li>Results go next to each input with the site's names (<code>report-compressed.pdf</code>), into a folder with <code>-o out/</code>, to one file with <code>-o name.pdf</code>, or to stdout with <code>-o -</code>.</li>
+    <li>It never replaces a file: a clash gets <code>report-compressed (2).pdf</code>. <code>--overwrite</code> allows replacing outputs; inputs are never replaced.</li>
+    <li>Batches keep going when one file fails, and say which at the end. <code>-j 4</code> runs four files at a time.</li>
+    <li>Passwords can come from <code>ROUNDERTOOLS_PASSWORD</code>, so they stay out of your shell history.</li>
+  </ul>
+
+  <h2>For scripts and AI agents</h2>
+  <p>
+    <code>--json</code> prints one JSON document when it's done; <code>--ndjson</code> streams progress, result and error
+    lines as they happen. Neither ever prompts.
+  </p>
+  <CodeBlock label="--json" code={json} />
+  <p>
+    The npm package also ships an Agent Skill (<code>skill/SKILL.md</code>) that tells coding agents how to use it. Drop it
+    into your agent's skills folder and it costs no context until it's needed.
+  </p>
+
+  <h2>Exit codes</h2>
+  <ul>
+    {codes.map(([code, what]) => <li><code>{code}</code> {what}</li>)}
+  </ul>
+
+  <h2>Video and audio</h2>
+  <p>
+    The video and audio commands run the ffmpeg already on your computer, found on your PATH or at
+    <code>ROUNDERTOOLS_FFMPEG</code>. Without one they exit with code 4 and a link to
+    <a href="https://ffmpeg.org/download.html">ffmpeg.org</a>. <code>roundertools doctor</code> shows what it found.
+  </p>
+</Prose>

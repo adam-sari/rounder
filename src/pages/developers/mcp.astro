@@ -1,0 +1,75 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import CodeBlock from '@/components/site/CodeBlock.astro';
+import DevNav from '@/components/site/DevNav.astro';
+import { MCP_INSTALL } from '@/developers';
+---
+
+<Prose
+  title="Rounder MCP server: local PDF, image and video tools for AI assistants"
+  description="@roundertools/mcp gives Claude, Cursor and VS Code Rounder's file tools. It runs on your computer over stdio, reads only the folders you allow, and never uploads a file."
+  heading="The <em>MCP</em> server"
+>
+  <DevNav current="/developers/mcp" />
+  <p>
+    <code>@roundertools/mcp</code> is a <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server that lets an
+    AI assistant use Rounder's tools on files on your computer: "compress the PDFs in my Downloads folder under 2 MB", "make
+    these screenshots into one PDF", "cut this video to the first 30 seconds". It runs locally over stdio, so your files
+    stay where they are; the assistant only sees the results' paths, sizes and summaries.
+  </p>
+
+  <h2>Claude Code</h2>
+  <CodeBlock label="terminal" code={MCP_INSTALL.claudeCode} />
+  <p>
+    <code>--allow</code> names a folder it may read; <code>~</code> works in every config below, JSON included. To make it
+    available in every project, with more folders:
+  </p>
+  <CodeBlock label="terminal" code={MCP_INSTALL.claudeCodeAllow} />
+
+  <h2>Claude Desktop</h2>
+  <p>Settings → Developer → Edit config, then add it to <code>claude_desktop_config.json</code>:</p>
+  <CodeBlock label="claude_desktop_config.json" code={MCP_INSTALL.claudeDesktop} />
+  <p>On Windows, if Claude can't find <code>npx</code>:</p>
+  <CodeBlock label="claude_desktop_config.json (Windows)" code={MCP_INSTALL.claudeDesktopWindows} />
+
+  <h2>Cursor</h2>
+  <p>In <code>~/.cursor/mcp.json</code> (every project) or <code>.cursor/mcp.json</code> (one project):</p>
+  <CodeBlock label="mcp.json" code={MCP_INSTALL.cursor} />
+
+  <h2>VS Code</h2>
+  <p>In <code>.vscode/mcp.json</code>:</p>
+  <CodeBlock label=".vscode/mcp.json" code={MCP_INSTALL.vscode} />
+
+  <h2>Which files it can touch</h2>
+  <ul>
+    <li><strong>Reading:</strong> the folders you pass with <code>--allow</code> (repeat it for more), or in <code>ROUNDERTOOLS_ALLOW</code>. Without either, your home folder and the folder it was started in. A client's roots can narrow that further, never widen it.</li>
+    <li><strong>Never:</strong> hidden folders and files (<code>.ssh</code>, <code>.aws</code>, <code>.env</code>…), key and password files, and app data such as browser profiles, even inside an allowed folder. Symlinks are followed to where they really point before checking.</li>
+    <li><strong>Writing:</strong> only next to the input, or into a folder you name with <code>--out</code>. It never replaces an existing file and never touches an input.</li>
+    <li><strong>Network:</strong> none. It has no code that makes a connection, and it blocks outgoing connections and DNS lookups in its own process as well. That guard isn't a sandbox: video and audio run on your own ffmpeg, a separate program, which it starts limited to local files.</li>
+  </ul>
+  <p>
+    Text and details it reads out of a file (PDF to text, a PDF's title, EXIF fields) are marked as the file's content, not instructions, because a document can
+    contain words written to mislead an assistant.
+  </p>
+
+  <h2>Tools</h2>
+  <p>
+    It lists about 30 tools by default: PDF (compress, merge, split, organize, protect, unlock, page numbers, watermark, to
+    text, to JPG, extract images), images (convert, compress, resize, crop, rotate, remove EXIF), ZIP files, file info, and,
+    when ffmpeg is installed, video and audio. Three more help with the rest: <code>find-tool</code> searches every tool on
+    the site by what you want done, <code>describe-tool</code> shows a tool's options, and <code>run-tool</code> runs any of
+    them that work outside a browser (<code>find-tool</code> links to the site for the rest). <code>--tools all</code> lists everything; <code>--tools pdf,image</code> lists just those.
+  </p>
+
+  <h2>Options</h2>
+  <ul>
+    <li><code>--allow DIR</code>: a folder it may read (repeatable)</li>
+    <li><code>--out DIR</code>: a folder it may write results to, besides next to the inputs</li>
+    <li><code>--tools LIST</code>: <code>default</code>, <code>all</code>, families or tool names</li>
+    <li><code>--max-input SIZE</code>, <code>--timeout MINUTES</code>, <code>--max-outputs N</code>: limits per call</li>
+  </ul>
+  <p>
+    It speaks MCP over stdio with the official TypeScript SDK, logs to stderr only, runs one heavy job at a time, reports
+    progress and stops when a call is cancelled.
+  </p>
+</Prose>

@@ -62,6 +62,8 @@ const models: { name: string; use: string; license: string; url: string }[] = [
   { name: 'Depth Anything V2 Small', use: 'depth maps', license: 'Apache-2.0', url: 'https://github.com/DepthAnything/Depth-Anything-V2' },
   { name: 'MediaPipe face detection and selfie segmentation', use: 'blur faces, video backgrounds, auto reframe', license: 'Apache-2.0', url: 'https://github.com/google-ai-edge/mediapipe' },
   { name: 'RNNoise', use: 'noise reduction', license: 'BSD-3-Clause', url: 'https://github.com/xiph/rnnoise' },
+  // self-hosted (public/models/search); its vocabulary comes from BAAI's bge-base-en-v1.5 (MIT), itself BERT's (Apache-2.0)
+  { name: 'potion-base-2M (Minish Lab, Model2Vec)', use: 'tool search, served from this site', license: 'MIT', url: 'https://huggingface.co/minishlab/potion-base-2M' },
 ];
 
 const fonts = ['Instrument Serif', 'Geist and Geist Mono', 'Noto Sans (PDF text)', 'Carlito, Caladea, Arimo, Tinos and Cousine (Office to PDF)', 'handwriting and display fonts used in the signature and thumbnail tools'];

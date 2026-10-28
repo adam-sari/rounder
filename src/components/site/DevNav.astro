@@ -1,0 +1,28 @@
+---
+import { PACKAGES_ON_NPM } from '@/developers';
+import { SITE } from '@/site';
+
+interface Props {
+  current: string;
+}
+
+const links = [
+  ['/developers', 'overview'],
+  ['/developers/sdk', 'sdk'],
+  ['/developers/cli', 'cli'],
+  ['/developers/mcp', 'mcp server'],
+  ['/developers/tools', 'tools'],
+] as const;
+const { current } = Astro.props;
+---
+
+<nav class="mono mb-8 flex flex-wrap gap-x-4 gap-y-1" aria-label="Developer docs">
+  {links.map(([href, label]) => (href === current ? <span class="text-chalk" aria-current="page">{label}</span> : <a href={href} class="no-underline hover:text-chalk">{label}</a>))}
+</nav>
+{!PACKAGES_ON_NPM && (
+  <p class="mb-8 rounded-xl border border-line-2 bg-panel-2 px-4 py-3 text-soft">
+    <strong class="text-chalk">Coming to npm soon.</strong> The packages are built and open source, but the first npm
+    release isn't out yet, so the <code>npx</code> commands below won't work until it is. Until then, build them from
+    the <a href={SITE.github}>GitHub repository</a> (<code>npm ci</code>, then <code>npm run sdk:build</code>).
+  </p>
+)}

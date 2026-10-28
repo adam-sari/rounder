@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hash, nextManifest } from '../../scripts/seo/lastmod.mjs';
+import { hash, nextManifest, sources } from '../../scripts/seo/lastmod.mjs';
 
 describe('lastmod manifest', () => {
   const prev = { 'a.ts': { hash: 'h1', lastmod: '2026-01-01' }, 'gone.ts': { hash: 'h9', lastmod: '2026-01-01' } };
@@ -17,5 +17,11 @@ describe('lastmod manifest', () => {
   it('hashes CRLF and LF checkouts the same', () => {
     expect(hash('a\r\nb\r\n')).toBe(hash('a\nb\n'));
     expect(hash('a')).not.toBe(hash('b'));
+  });
+
+  it('covers every page the sitemap dates, the developer docs included', () => {
+    const list = sources('.');
+    expect(list).toEqual(expect.arrayContaining(['src/pages/about.astro', 'src/pages/developers/index.astro', 'src/pages/developers/mcp.astro']));
+    expect(list.some((f: string) => f.includes('['))).toBe(false);
   });
 });

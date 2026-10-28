@@ -6,6 +6,7 @@ import {
   defaultContainer,
   estimateVideoBitrate,
   etaSeconds,
+  exportPreset,
   frameIndex,
   friendlyError,
   inPoint,
@@ -15,7 +16,9 @@ import {
   markTrimIn,
   markTrimOut,
   outPoint,
+  outputCodec,
   skipTarget,
+  sourceVideoBitrate,
   stepFrame,
   videoQuality,
 } from '@/tools/lib/trim-video/plan';
@@ -156,16 +159,86 @@ describe('quality', () => {
   it('copy means no video options', () => {
     expect(videoQuality('copy', { codec: 'avc', width: 1920, height: 1080, bitrate: 8e6 }, 'avc')).toBeNull();
   });
-  it("uses the level's bitrate for rich or unknown sources, never a bare (unbounded) quality level", () => {
-    const best = estimateVideoBitrate('avc', 1920, 1080, 'very-high');
-    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 20e6 }, 'avc')).toEqual({ bitrate: best });
+  it('never passes a bare (unbounded) quality level, and uses the estimates for unknown sources', () => {
+    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: null }, 'avc')).toEqual({ bitrate: estimateVideoBitrate('avc', 1920, 1080, 'very-high') });
     expect(videoQuality('high', { codec: 'avc', width: 1920, height: 1080, bitrate: null }, 'avc')).toEqual({ bitrate: estimateVideoBitrate('avc', 1920, 1080, 'high') });
-    // the measured case: a 16 Mbps phone clip stays under its own bitrate at Best
-    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 16e6 }, 'avc')!.bitrate).toBeLessThan(16e6);
   });
-  it('caps lean sources near their own bitrate, scaled for codec efficiency', () => {
-    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 2e6 }, 'avc')).toEqual({ bitrate: 2_300_000 });
-    expect(videoQuality('very-high', { codec: 'hevc', width: 1920, height: 1080, bitrate: 3e6 }, 'avc')).toEqual({ bitrate: 5_750_000 });
+  it('Best follows the source bitrate, so a cut is about the size of that part of the original', () => {
+    // the measured case: 0:10–0:40 of a 117 MB, 1-minute 1080p clip came out 157 MB (42 Mbps)
+    const src = { codec: 'avc', width: 1920, height: 1080, bitrate: 15.6e6 };
+    const { bitrate } = videoQuality('very-high', src, 'avc')!;
+    expect(bitrate).toBe(15.6e6);
+    expect((bitrate * 30) / 8).toBeLessThanOrEqual((117e6 * 30) / 60);
+    // lean and rich sources alike
+    expect(videoQuality('very-high', { ...src, bitrate: 2e6 }, 'avc')).toEqual({ bitrate: 2e6 });
+    expect(videoQuality('very-high', { ...src, bitrate: 40e6 }, 'avc')).toEqual({ bitrate: 40e6 });
+  });
+  it('scales for a codec change', () => {
+    expect(videoQuality('very-high', { codec: 'hevc', width: 1920, height: 1080, bitrate: 3e6 }, 'avc')).toEqual({ bitrate: 5e6 });
+    expect(videoQuality('very-high', { codec: 'avc', width: 1920, height: 1080, bitrate: 5e6 }, 'vp9')).toEqual({ bitrate: 3e6 });
+  });
+  it('High and Smaller stay under Best, and under their level for rich sources', () => {
+    const rich = { codec: 'avc', width: 1920, height: 1080, bitrate: 30e6 };
+    expect(videoQuality('high', rich, 'avc')).toEqual({ bitrate: estimateVideoBitrate('avc', 1920, 1080, 'high') });
+    for (const bitrate of [0.5e6, 2e6, 8e6, 15.6e6, 30e6]) {
+      const s = { ...rich, bitrate };
+      const best = videoQuality('very-high', s, 'avc')!.bitrate;
+      const high = videoQuality('high', s, 'avc')!.bitrate;
+      const small = videoQuality('medium', s, 'avc')!.bitrate;
+      expect(high).toBeLessThan(best);
+      expect(small).toBeLessThan(high);
+    }
+  });
+});
+
+describe('sourceVideoBitrate', () => {
+  const video = { codec: 'avc', width: 1920, height: 1080, displayWidth: 1920, displayHeight: 1080, rotation: 0 as const, fps: 30, canDecode: true };
+  const audio = { codec: 'aac', sampleRate: 48000, channels: 2, bitrate: 128_000, canDecode: true };
+  it("follows the whole file, not the track's estimate from its opening packets", () => {
+    // a still 10 s intro, then motion: the first 240 packets measured 17.7 kbps for a 163 Mbps clip
+    const info = { sizeBytes: 815_612_421, durationSec: 40, video: { ...video, bitrate: 17_725 }, audio };
+    expect(sourceVideoBitrate(info)).toBe(Math.round((815_612_421 * 8) / 40 - 128_000));
+  });
+  it('a cut at that bitrate is about the size of that slice of the file', () => {
+    const info = { sizeBytes: 117e6, durationSec: 60, video: { ...video, bitrate: 30e6 }, audio };
+    const v = sourceVideoBitrate(info)!;
+    expect(((v + 128_000) * 30) / 8).toBeCloseTo((117e6 * 30) / 60, -3);
+  });
+  it("falls back to the track's figure without a usable duration", () => {
+    expect(sourceVideoBitrate({ sizeBytes: 1e6, durationSec: 0, video: { ...video, bitrate: 2e6 } })).toBe(2e6);
+    expect(sourceVideoBitrate({ sizeBytes: 1e6, durationSec: 0, video: { ...video, bitrate: null } })).toBeNull();
+  });
+});
+
+describe('outputCodec', () => {
+  const enc = ['avc', 'hevc', 'vp9'] as const;
+  it('Best keeps the source codec when the browser can write it into the container', () => {
+    expect(outputCodec('very-high', 'hevc', 'mp4', [...enc])).toBe('hevc');
+    expect(outputCodec('very-high', 'vp9', 'webm', [...enc])).toBe('vp9');
+  });
+  it('otherwise takes the engine pick', () => {
+    expect(outputCodec('high', 'hevc', 'mp4', [...enc])).toBe('avc');
+    expect(outputCodec('very-high', 'hevc', 'mp4', ['avc'])).toBe('avc');
+    expect(outputCodec('very-high', 'hevc', 'webm', [...enc])).toBe('vp9');
+    expect(outputCodec('very-high', 'hevc', 'mp4', null)).toBe('avc');
+  });
+});
+
+describe('exportPreset', () => {
+  const fps = 30;
+  it('Best copies when the one part starts on the first frame and the stream can be copied', () => {
+    expect(exportPreset('very-high', [{ start: 0, end: 60 }], '', fps)).toBe('copy');
+    expect(exportPreset('very-high', [{ start: 0, end: 40 }], '', fps)).toBe('copy');
+  });
+  it('Best re-encodes a later start, which can only be frame-exact that way', () => {
+    expect(exportPreset('very-high', [{ start: 10, end: 40 }], '', fps)).toBe('very-high');
+    expect(exportPreset('very-high', [{ start: 1 / fps, end: 40 }], '', fps)).toBe('very-high');
+  });
+  it("re-encodes when the stream can't be copied, and keeps the other presets", () => {
+    expect(exportPreset('very-high', [{ start: 0, end: 60 }], 'this video is stored rotated', fps)).toBe('very-high');
+    expect(exportPreset('copy', [{ start: 5, end: 60 }], 'joining parts needs a re-encode', fps)).toBe('very-high');
+    expect(exportPreset('copy', [{ start: 5, end: 60 }], '', fps)).toBe('copy');
+    expect(exportPreset('high', [{ start: 0, end: 60 }], '', fps)).toBe('high');
   });
 });
 

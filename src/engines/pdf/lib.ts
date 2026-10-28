@@ -1,5 +1,6 @@
 import type { PDFDocument, PDFFont, PDFPage, SaveOptions } from 'pdf-lib';
 import { DAMAGED, PdfError, PdfPasswordError } from './errors';
+import { loadPdfFontBytes } from './fonts';
 import { runQpdf } from './qpdf';
 import { normalizeRotation, type PageRef, type PdfSource } from './pdfjs';
 
@@ -118,17 +119,14 @@ export function isWinAnsi(text: string) {
 }
 
 /** Noto Sans (OFL), Latin + Latin Extended + Greek + Cyrillic; served from /fonts/pdf/ */
-const fontFiles = { regular: 'NotoSans-Regular.ttf', bold: 'NotoSans-Bold.ttf' };
+const fontFiles = { regular: 'NotoSans-Regular.ttf', bold: 'NotoSans-Bold.ttf' } as const;
 const fontBytes = new Map<string, Promise<Uint8Array>>();
 
 function unicodeFont(bold: boolean): Promise<Uint8Array> {
   const file = fontFiles[bold ? 'bold' : 'regular'];
   let p = fontBytes.get(file);
   if (!p) {
-    p = fetch(`${import.meta.env.BASE_URL}fonts/pdf/${file}`).then(async (r) => {
-      if (!r.ok) throw new PdfError("The font for non-Latin text couldn't be loaded. Check your connection and try again.");
-      return new Uint8Array(await r.arrayBuffer());
-    });
+    p = loadPdfFontBytes(file);
     p.catch(() => fontBytes.delete(file));
     fontBytes.set(file, p);
   }

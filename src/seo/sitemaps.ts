@@ -12,10 +12,13 @@ const dateOf = (file: string): string | undefined => (lastmod as Record<string, 
 
 // top-level pages left out: the home page is listed by hand, 404 and offline are noindex app shells
 const skip = new Set(['index', '404', 'offline']);
-const staticPages = Object.keys(import.meta.glob('/src/pages/*.astro'))
+// plus the developer docs, the one section of pages in a folder (developers/index.astro is /developers)
+const staticPages = Object.keys(import.meta.glob(['/src/pages/*.astro', '/src/pages/developers/*.astro']))
   .map((p) => p.slice('/src/pages/'.length, -'.astro'.length))
   .filter((name) => !name.startsWith('[') && !skip.has(name))
   .sort();
+const pageFile = (name: string) => `src/pages/${name}.astro`;
+const pagePath = (name: string) => `/${name.replace(/\/index$/, '')}`;
 
 export function sitemapSections(site: URL): Record<Section, SitemapEntry[]> {
   const at = (path: string) => new URL(path, site).href;
@@ -30,7 +33,7 @@ export function sitemapSections(site: URL): Record<Section, SitemapEntry[]> {
       ...categories
         .filter((c) => toolsIn(c.id).length > 0)
         .map((c) => ({ loc: at(categoryPath(c.id)), lastmod: latest(tools.filter((t) => t.category === c.id).map((t) => toolDate(t.slug))) })),
-      ...staticPages.map((name) => ({ loc: at(`/${name}`), lastmod: dateOf(`src/pages/${name}.astro`) })),
+      ...staticPages.map((name) => ({ loc: at(pagePath(name)), lastmod: dateOf(pageFile(name)) })),
     ],
   };
 }

@@ -7,6 +7,9 @@
   import AudioEditShell, { type AudioSource } from './AudioEditShell.svelte';
   import AudioFadeControls from './AudioFadeControls.svelte';
 
+  // a preset from the address (/audio-cutter#start=10): where the kept part starts and ends, in seconds
+  let { start: startAt = 0, end: endAt }: { start?: number; end?: number } = $props();
+
   let caps = $state.raw<Capabilities | null>(null);
   let src = $state.raw<AudioSource | null>(null);
   let mode = $state<'trim' | 'cut'>('trim');
@@ -54,8 +57,8 @@
     src = s;
     if (!s) return;
     mode = 'trim';
-    start = 0;
-    end = s.info.durationSec;
+    start = startAt < s.info.durationSec ? startAt : 0;
+    end = endAt && endAt > start && endAt < s.info.durationSec ? endAt : s.info.durationSec;
     cuts = [];
     choice = !s.converted && sameFormat(s.info) ? 'same' : 'mp3';
   }

@@ -1,0 +1,96 @@
+---
+import Prose from '@/layouts/Prose.astro';
+import CodeBlock from '@/components/site/CodeBlock.astro';
+import DevNav from '@/components/site/DevNav.astro';
+import { ops } from '@/developers';
+
+const families = ['pdf', 'image', 'files', 'media'] as const;
+const install = 'npm install @roundertools/sdk';
+const basic = `import { pdf, image } from '@roundertools/sdk';
+
+// paths, file: URLs, bytes or Blobs all work as input
+const small = await pdf.compress('report.pdf', { target: '1mb' });
+console.log(small.size, small.meta.fits);   // 412345 true
+await small.save();                         // ./report-compressed.pdf, never over an existing file
+
+const webp = await image.convert('photo.png', { to: 'webp', quality: 80 });
+await webp.save('out/');                    // out/photo.webp`;
+const generic = `import { run, describe, ops } from '@roundertools/sdk';
+
+// any tool by its slug, including the site's preset pages
+const r = await run('compress-pdf-to-100kb', ['scan.pdf']);
+await r.files[0].save();
+
+describe('compress-pdf').options;   // JSON Schema of its options
+ops.map((o) => o.slug);             // every tool the SDK has`;
+const progress = `const controller = new AbortController();
+const out = await pdf.compress('big.pdf', { level: 'strong' }, {
+  signal: controller.signal,
+  onProgress: (p) => console.log(p.stage, p.done, p.total),
+});`;
+const errors = `import { RounderError } from '@roundertools/sdk';
+
+try {
+  await pdf.unlock('statement.pdf');
+} catch (e) {
+  if (e instanceof RounderError && e.code === 'needs-password') {
+    // ask for it, then: pdf.unlock('statement.pdf', { password })
+  }
+}`;
+---
+
+<Prose
+  title="Rounder SDK for Node.js: PDF, image and video tools"
+  description="@roundertools/sdk: compress, merge, split and protect PDFs, convert and resize images, and shrink video from Node.js. Typed, MIT, and it runs locally."
+  heading="The <em>SDK</em>"
+>
+  <DevNav current="/developers/sdk" />
+  <p>
+    <code>@roundertools/sdk</code> gives Node.js the tools from roundertools.com as typed functions. It's the site's own
+    code, bundled for Node, so results match what the site makes. Everything runs in your process; there are no API keys
+    and no network requests.
+  </p>
+  <CodeBlock label="terminal" code={install} />
+  <p>
+    It needs Node 22.13 or newer. Two things are optional: <code>@napi-rs/canvas</code> (for PDF to JPG and for GIF, BMP or
+    SVG input) and an <code>ffmpeg</code> on your PATH, or at <code>ROUNDERTOOLS_FFMPEG</code>, for video and audio.
+  </p>
+
+  <h2>Basics</h2>
+  <CodeBlock label="node.js" code={basic} />
+  <p>
+    Each function returns a <code>FileOutput</code> (or a list of them, or text): <code>data</code> (the bytes),
+    <code>name</code>, <code>mime</code>, <code>size</code>, <code>meta</code> (details like page counts, pixel sizes or
+    whether a target was met) and <code>warnings</code>. <code>save(path?)</code> writes it atomically and refuses to replace
+    an existing file unless you pass <code>&#123; overwrite: true &#125;</code>.
+  </p>
+  <p>Sizes are decimal, like the site's targets: <code>"100kb"</code> is 100,000 bytes. Use <code>"100KiB"</code> for 102,400.</p>
+
+  <h2>Every tool by name</h2>
+  <CodeBlock label="node.js" code={generic} />
+
+  <h2>Progress and cancelling</h2>
+  <CodeBlock label="node.js" code={progress} />
+
+  <h2>Errors</h2>
+  <p>
+    Everything throws a <code>RounderError</code> with a plain-English <code>message</code>, an optional <code>hint</code>,
+    and a <code>code</code>: <code>needs-password</code>, <code>wrong-password</code>, <code>damaged</code>,
+    <code>unsupported-input</code>, <code>unsupported-codec</code>, <code>missing-dependency</code>,
+    <code>invalid-options</code>, <code>out-of-memory</code>, <code>aborted</code>, <code>exists</code> or <code>failed</code>.
+  </p>
+  <CodeBlock label="node.js" code={errors} />
+
+  <h2>The functions</h2>
+  {families.map((f) => (
+    <>
+      <h3>{f === 'files' ? 'files' : f}</h3>
+      <ul>
+        {ops.filter((o) => o.family === f).map((o) => (
+          <li><code>{o.family}.{o.fn}({o.inputs.mode === 'all' ? 'files' : 'file'}, options?)</code>: {o.summary}</li>
+        ))}
+      </ul>
+    </>
+  ))}
+  <p>The options of each are on the <a href="/developers/tools">tool table</a>, and your editor shows them as you type.</p>
+</Prose>

@@ -33,7 +33,8 @@ export async function renderAudio(file: Blob, o: RenderOptions, ctl: StatusContr
     const [{ start, end }] = o.segments;
     const copy = !!o.sameAsSource;
     const out = await transcode(file, { container: o.format, trim: { start, end }, video: false, audio: copy ? undefined : { bitrate: o.bitrate } }, ctl);
-    return { blob: out.blob, durationSec: out.durationSec, copied: copy };
+    // the engine notes every fallback it takes, re-encoding a cut it couldn't copy among them
+    return { blob: out.blob, durationSec: out.durationSec, copied: copy && !out.notes.length };
   }
 
   // decoding takes most of the time; encoding the joined result the rest

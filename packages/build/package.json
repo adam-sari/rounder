@@ -1,0 +1,15 @@
+{
+  "name": "@roundertools/build",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bundler plugins and checks shared by the npm packages (not published)",
+  "license": "MIT",
+  "type": "module",
+  "exports": { ".": "./src/index.mjs", "./bundle": "./src/bundle.mjs", "./licenses": "./src/licenses.mjs" },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "rolldown": "^1.2.15"
+  }
+}

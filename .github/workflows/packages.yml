@@ -1,0 +1,62 @@
+# The npm packages: build, test (with the site's own unit tests, since they share code), licence checks, and a run with
+# outbound network blocked to back the "no network" promise.
+name: packages
+
+on:
+  push:
+    branches: [main, initial-build]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['22.13', '24']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Install ffmpeg
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          elif [ "$RUNNER_OS" = "macOS" ]; then brew install ffmpeg
+          else choco install ffmpeg -y --no-progress; fi
+      - run: npm ci
+      - run: npm test
+      - run: npm run sdk:check
+      - run: npm run sdk:build
+      - run: npm run sdk:test
+
+  # every package test again, with all outbound traffic dropped: a network call anywhere fails the run
+  egress-blocked:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: npm ci
+      - run: npm run sdk:build
+      - name: Block outbound traffic
+        run: |
+          for t in iptables ip6tables; do
+            sudo $t -A OUTPUT -o lo -j ACCEPT
+            sudo $t -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+            sudo $t -P OUTPUT DROP
+          done
+          if curl -sS --max-time 5 https://registry.npmjs.org/ > /dev/null; then echo "egress is still open"; exit 1; fi
+      - run: npm run sdk:test
+        env:
+          NO_UPDATE_NOTIFIER: '1'
+          npm_config_update_notifier: 'false'

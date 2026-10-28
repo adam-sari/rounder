@@ -59,6 +59,50 @@ JSON-LD, only from 20 ratings on (`src/seo/ratings.ts`). Never seed, edit or har
 To try the API locally: `npm run build`, then `npx wrangler@4 d1 migrations apply rounder-ratings --local` and
 `npx wrangler@4 dev`.
 
+## Search
+
+The ⌘K palette and the home page's search box share one engine in `src/search/`, all of it on the visitor's device:
+
+- `core/`: a deterministic intent parser (formats and aliases, sizes and ranges, dimensions, durations, platforms with
+  their sourced limits, devices, verbs, typos, romanised Hindi) that routes to a tool, a preset and, for several steps,
+  a chain; BM25 with typo tolerance over the lean index; and the fusion that ranks them. Parser routes are strong boosts,
+  never pins. The conversion graph is read off the registry's slugs and variant props, so most new tools need no search code.
+- `semantic/`: Model2Vec potion-base-2M (MIT), pruned to its Latin vocabulary and quantised to int8 by
+  `scripts/vendor-search.mjs` from a pinned revision with SHA-256 checks, and committed in `public/models/search/`.
+  It loads after the first query (never on Save-Data or slow connections) and only re-ranks.
+- `ai/`: Chrome's built-in Prompt API plans long requests, only when the visitor turns it on in the palette and the
+  model is already on the device.
+- `src/pages/search/[file].ts` serves the content-hashed index and tool vectors. `/search-index.json` stays as it is for the ratings Worker.
+
+Results deep-link with presets in the hash (`/compress-pdf#target=150kb`, `/image-resizer#range=20-50kb`), which
+`src/tools/presets.ts` validates per island and ToolHost merges into the props. Queries are never logged, stored or put in a URL.
+`tests/unit/search/eval.test.ts` gates quality on the dev, held-out, independent "fresh" and adversarial-review sets in `tests/fixtures/search/`
+(dev is the only one to tune on); run it with `--silent=false` to see every miss.
+
+## npm packages (SDK, CLI, MCP)
+
+`packages/` holds three MIT packages that run the site's tools in Node, on the user's machine: `@roundertools/sdk`
+(typed functions), `roundertools` (the CLI, `npx roundertools compress-pdf report.pdf`) and `@roundertools/mcp` (an MCP
+server for AI assistants). `packages/build` (private) holds the bundler plugins. Docs for users are on `/developers`.
+
+- They import the site's own `src/engines` and `src/tools/lib` code, bundled with rolldown. Browser-only leaves are
+  swapped for Node twins in `packages/sdk/src/platform/node` (qpdf in process, PDF.js's environment, the image codecs,
+  the compress-pdf runner, the PDF fonts), and a guard fails the build if `?url`/`?raw`, `import.meta.env`, a Web Worker
+  or a `.svelte` file reaches a package. So a shared module that gains a browser-only import breaks `npm run sdk:build`,
+  not users.
+- One spec per tool (`packages/sdk/src/ops/`) drives the SDK's types, the CLI's flags and help, the MCP schemas and the
+  site's "Use this in code" block (`src/components/tool/UseInCode.astro`, via `src/developers.ts`).
+- Media runs on the user's own ffmpeg; nothing of ffmpeg, libheif or mediabunny ships. The packages make no network
+  requests, and the CLI and MCP bins load `@roundertools/sdk/no-network` first.
+- The site files they bundle are listed in `REUSE.toml` as "AGPL-3.0-only OR MIT". The SDK build fails when its bundle
+  and that list differ; `node packages/sdk/build.mjs --reuse-write` updates the list (see CONTRIBUTING.md).
+
+```sh
+npm run sdk:build   # builds the SDK, CLI and MCP server into packages/*/dist
+npm run sdk:test    # plugin and licence checks, SDK ops, CLI end-to-end, MCP protocol tests
+npm run sdk:check   # type checks the packages, tests included (npm run check skips packages/)
+```
+
 ## Commands
 
 | Command | What it does |
@@ -69,6 +113,7 @@ To try the API locally: `npm run build`, then `npx wrangler@4 d1 migrations appl
 | `npm run check:dist` | Checks a build in `dist/`: every sitemap page is linked and no link is broken, no ad code on ad-free pages, no two pages share more than 80% of their text |
 | `npm test` | Unit tests (Vitest) |
 | `npm run e2e` | Browser tests (Playwright): builds into `../.rounder-e2edist`, serves it on :4600 (`E2E_PORT` to change it) and runs every page plus real file flows in Chromium, Firefox, WebKit and two phone profiles. Install the browsers once with `npx playwright install chromium firefox webkit`; `E2E_SKIP_BUILD=1` reuses the last build, `E2E_DIST=<dir>` picks the build folder. |
+| `npm run sdk:build` / `npm run sdk:test` / `npm run sdk:check` | Builds, tests and type checks the npm packages in `packages/` (Node 22.13+; the media tests use a system ffmpeg when there is one) |
 | `npm run vendor` | Copies runtime files (ffmpeg, onnxruntime, Tesseract, PDF.js, libarchive, the Office to PDF fonts) into `public/vendor`. It runs automatically before `dev` and `build`. |
 
 Engine test pages live under `/dev/` (for example `/dev/media-lab`, `/dev/ai-lab`). They are dropped from production builds.
@@ -144,6 +189,9 @@ fully offline, mirror those files, set `baseUrl` on the models in `src/engines/a
 Rounder is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0). You may use, change and
 share it under that license. If you run a modified version as a network service, you must offer its users the
 corresponding source code (section 13).
+
+The npm packages in `packages/` are MIT, and the site files they bundle (listed in [REUSE.toml](REUSE.toml)) are offered
+under "AGPL-3.0-only OR MIT". UI code, page copy and everything else stay AGPL-3.0 only.
 
 ## Third-party licenses
 

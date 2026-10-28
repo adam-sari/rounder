@@ -1,23 +1,14 @@
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
-// the legacy build carries polyfills (e.g. Map.getOrInsertComputed) that the modern one assumes are native
-import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
 import { abortError, DAMAGED, PdfError, PdfPasswordError } from './errors';
+import { documentOptions, importPdfjs, newCanvas, pdfjsAsset } from './pdfjs-env';
 
 type PdfjsModule = typeof import('pdfjs-dist');
 let pdfjs: Promise<PdfjsModule> | undefined;
 
 /** pdf.js itself, loaded on first use; parsing runs in its own worker */
 export function loadPdfjs(): Promise<PdfjsModule> {
-  pdfjs ??= import('pdfjs-dist/legacy/build/pdf.mjs').then((m) => {
-    m.GlobalWorkerOptions.workerSrc = workerUrl;
-    return m;
-  });
+  pdfjs ??= importPdfjs();
   return pdfjs;
-}
-
-/** cmaps (CJK text), standard fonts, image codecs and ICC profiles, copied from pdfjs-dist */
-function vendor(dir: string) {
-  return new URL(`${import.meta.env.BASE_URL}vendor/pdfjs/${dir}/`, location.href).href;
 }
 
 let nextDoc = 0;
@@ -82,13 +73,14 @@ export async function openPdf(src: PdfSource, { password }: { password?: string 
   const task = lib.getDocument({
     data,
     password,
-    cMapUrl: vendor('cmaps'),
+    cMapUrl: pdfjsAsset('cmaps'),
     cMapPacked: true,
-    standardFontDataUrl: vendor('standard_fonts'),
-    wasmUrl: vendor('wasm'),
-    iccUrl: vendor('iccs'),
+    standardFontDataUrl: pdfjsAsset('standard_fonts'),
+    wasmUrl: pdfjsAsset('wasm'),
+    iccUrl: pdfjsAsset('iccs'),
     // annotations / form scripts never run
     enableXfa: false,
+    ...documentOptions,
   });
   try {
     return new PdfDoc(await task.promise, src instanceof File ? src.name : '');
@@ -167,7 +159,7 @@ export async function renderPage(doc: PdfDoc, pageIndex: number, o: RenderOption
   const h = Math.max(1, Math.floor(viewport.height));
 
   const offscreen = o.output === 'bitmap' && typeof OffscreenCanvas !== 'undefined';
-  const canvas = offscreen ? new OffscreenCanvas(w, h) : Object.assign(document.createElement('canvas'), { width: w, height: h });
+  const canvas = newCanvas(w, h, offscreen);
   const transparent = o.background === 'transparent';
   // created first so pdf.js reuses this context (its own default has no alpha)
   canvas.getContext('2d', { alpha: transparent });

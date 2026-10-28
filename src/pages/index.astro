@@ -3,6 +3,8 @@ import Base from '@/layouts/Base.astro';
 import Mascot from '@/components/art/Mascot.astro';
 import CategoryArt from '@/components/art/CategoryArt.astro';
 import Ad from '@/components/site/Ad.astro';
+import HeroSearch from '@/search/ui/HeroSearch.svelte';
+import { searchAssets } from '@/search/build';
 import { organization, website } from '@/seo/schema';
 import { categories, categoryPath } from '@/tools/categories';
 import { tools, toolsIn } from '@/tools/registry';
@@ -43,21 +45,19 @@ const schema = [
         No uploads, no sign-ups, no watermarks, no “premium” wall halfway through. Just the tool, running on your machine.
       </p>
       <div class="hero-palette max-w-[520px] overflow-hidden rounded-2xl border border-line-2 bg-[#1c1b19]">
-        <button type="button" data-open-palette class="flex w-full cursor-text items-center gap-3 border-b border-line px-[18px] py-4 text-left text-lg text-muted">
-          <span class="mono">›</span> What do you need to do?<span class="caret"></span>
-          <kbd class="mono ml-auto">⌘K</kbd>
-        </button>
-        <ul class="p-1.5">
-          {popular.map((t) => (
-            <li>
-              <a href={`/${t.slug}`} class="grid grid-cols-[26px_1fr_auto] items-center gap-3 rounded-[10px] px-3 py-2 no-underline hover:bg-[#f2ede414]">
-                <CategoryArt kind={t.category} spot={`var(--color-${t.category})`} ink="var(--color-chalk)" size={26} rough={false} />
-                <span>{t.name}</span>
-                <span class="mono">{t.category}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
+        <HeroSearch client:idle manifest={searchAssets().manifest}>
+          <ul class="p-1.5">
+            {popular.map((t) => (
+              <li>
+                <a href={`/${t.slug}`} class="grid grid-cols-[26px_1fr_auto] items-center gap-3 rounded-[10px] px-3 py-2 no-underline hover:bg-[#f2ede414]">
+                  <CategoryArt kind={t.category} spot={`var(--color-${t.category})`} ink="var(--color-chalk)" size={26} rough={false} />
+                  <span>{t.name}</span>
+                  <span class="mono">{t.category}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </HeroSearch>
       </div>
     </div>
     <div class="relative order-first mx-auto w-full max-w-[200px] md:order-none md:max-w-[360px]">
@@ -133,16 +133,6 @@ const schema = [
 <style>
   .hero-palette {
     box-shadow: 0 30px 80px -30px #000, 0 0 0 6px #f2ede40a;
-  }
-  .caret {
-    width: 2px;
-    height: 22px;
-    margin-left: -6px;
-    background: var(--color-sun);
-    animation: blink 1s steps(1) infinite;
-  }
-  @keyframes blink {
-    50% { opacity: 0; }
   }
   :global(.roundy) {
     animation: bob 5s ease-in-out infinite;

@@ -1,9 +1,13 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import CopyButton from '@/components/tool/CopyButton.svelte';
   import { applyPercent, fmt, parseNum, percentChange, percentOf, reversePercent, whatPercent } from '@/tools/lib/percentage/calc';
 
+  // a preset from the address (/percentage-calculator#p=15&of=80) fills the first calculator
+  let { p, of: ofValue }: { p?: number; of?: number } = $props();
+
   // each calculator starts with a worked example so the page reads at a glance
-  let of = $state({ p: '20', y: '150' });
+  let of = $state(untrack(() => ({ p: String(p ?? 20), y: String(ofValue ?? 150) })));
   let what = $state({ x: '30', y: '120' });
   let change = $state({ a: '80', b: '100' });
   let apply = $state({ x: '200', p: '15', dir: 1 as 1 | -1 });

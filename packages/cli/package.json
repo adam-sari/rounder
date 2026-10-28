@@ -1,0 +1,28 @@
+{
+  "name": "roundertools",
+  "version": "0.1.0",
+  "description": "Rounder's file tools on the command line: compress, merge and split PDFs, convert and resize images, shrink video with your own ffmpeg. Runs locally; files never leave your machine.",
+  "license": "MIT",
+  "author": "Adam Sari <hello@roundertools.com>",
+  "homepage": "https://roundertools.com/developers/cli",
+  "repository": { "type": "git", "url": "git+https://github.com/adam-sari/rounder.git", "directory": "packages/cli" },
+  "bugs": "https://github.com/adam-sari/rounder/issues",
+  "keywords": ["cli", "pdf", "compress pdf", "merge pdf", "image", "webp", "ffmpeg", "local", "offline"],
+  "type": "module",
+  "bin": { "roundertools": "./dist/bin.mjs" },
+  "exports": { "./package.json": "./package.json" },
+  "files": ["dist", "skill", "LICENSE", "README.md"],
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@roundertools/sdk": "0.1.0",
+    "tinyglobby": "^0.2.17"
+  },
+  "devDependencies": {
+    "@roundertools/build": "*"
+  },
+  "publishConfig": { "access": "public" }
+}

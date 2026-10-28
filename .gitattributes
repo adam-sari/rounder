@@ -1,0 +1,2 @@
+# the search model's files are checked by SHA-256 (scripts/vendor-search.mjs), so line endings must never be rewritten
+public/models/search/** -text

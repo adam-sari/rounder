@@ -1,0 +1,61 @@
+---
+interface Props {
+  code: string;
+  /** a short caption over the code, e.g. "Terminal" */
+  label?: string;
+  class?: string;
+}
+
+const { code, label, class: className } = Astro.props;
+---
+
+<figure class:list={['code-block card', className]}>
+  {label && <figcaption class="mono">{label}</figcaption>}
+  <pre><code>{code}</code></pre>
+  <button type="button" class="btn copy" data-copy-code aria-live="polite">Copy</button>
+</figure>
+
+<script>
+  // one listener for every code block, not an island per block: blocks inside a closed <details> (the tool pages'
+  // "Use this in code") would otherwise wait to hydrate until opened
+  document.addEventListener('click', async (e) => {
+    const button = (e.target as Element | null)?.closest<HTMLButtonElement>('[data-copy-code]');
+    const code = button?.parentElement?.querySelector('code')?.textContent;
+    if (!button || !code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      button.textContent = 'Copied ✓';
+    } catch {
+      // clipboard access can be refused (permissions, insecure origin); say so rather than pretend
+      button.textContent = 'Copy blocked';
+    }
+    clearTimeout(Number(button.dataset.timer));
+    button.dataset.timer = String(setTimeout(() => (button.textContent = 'Copy'), 1600));
+  });
+</script>
+
+<style>
+  .code-block {
+    position: relative;
+    margin: 12px 0 20px;
+    padding: 14px 16px;
+  }
+  figcaption {
+    margin-bottom: 6px;
+  }
+  pre {
+    margin: 0;
+    padding-right: 72px;
+    overflow-x: auto;
+    font: 400 13.5px/1.6 var(--font-mono);
+    color: var(--color-chalk);
+    white-space: pre;
+  }
+  .copy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+</style>

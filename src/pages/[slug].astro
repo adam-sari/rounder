@@ -5,6 +5,7 @@ import RateSlot from '@/components/tool/RateSlot.svelte';
 import ToolCard from '@/components/site/ToolCard.astro';
 import Ad from '@/components/site/Ad.astro';
 import CategoryArt from '@/components/art/CategoryArt.astro';
+import UseInCode from '@/components/tool/UseInCode.astro';
 import { tools, toolBySlug, toolsIn, variantsOf, nextSteps, adsAllowed, splitEmphasis, plainText, measuredOn, type Tool } from '@/tools/registry';
 import { categoryById, categoryPath } from '@/tools/categories';
 import { SITE, RAIL_MEDIA, adSlotLive } from '@/site';
@@ -224,6 +225,9 @@ const schema = [
         </aside>
       )}
     </div>
+
+    {/* after the questions and outside the ad rail's column, so no ad ever sits beside code people copy */}
+    <div class:list={[rail && 'min-[1280px]:max-w-[928px]']}><UseInCode tool={tool} /></div>
   </article>
 </Base>
 

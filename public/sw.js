@@ -18,7 +18,8 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-const immutable = (path) => /^\/(_astro|vendor|fonts|icons|models)\//.test(path);
+// search/: the palette's content-hashed index and tool vectors, so search keeps working offline too
+const immutable = (path) => /^\/(_astro|vendor|fonts|icons|models|search)\//.test(path);
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;

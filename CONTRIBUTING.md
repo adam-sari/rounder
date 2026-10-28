@@ -21,7 +21,8 @@ These are what make Rounder what it is, so pull requests that break them can't b
 3. **No trackers, no new third-party scripts.** Ads and analytics are set up in one place, and never on ad-free tools.
 4. **No dark patterns.** No fake buttons, no nagging, no sign-up walls, no watermarks, no limits.
 5. **Licenses must fit.** New dependencies need a license compatible with the AGPL-3.0, and get a line on the
-   credits page (`src/pages/credits.astro`).
+   credits page (`src/pages/credits.astro`). Dependencies of the npm packages must be permissive (no GPL, LGPL or
+   MPL); `packages/build/test/licenses.test.ts` checks them.
 
 ## Setting up
 
@@ -50,5 +51,16 @@ npm run e2e       # browser tests (optional locally, but please run them for too
 
 ## License
 
-Rounder is licensed under the [GNU AGPL-3.0](LICENSE). By contributing, you agree that your contribution is
-licensed under the same license.
+Rounder is licensed under the [GNU AGPL-3.0](LICENSE). The npm packages in `packages/` (`@roundertools/sdk`, the
+`roundertools` CLI and `@roundertools/mcp`) are MIT, and so are the site files they bundle: those `.ts` files in
+`src/engines` and `src/tools/lib` are offered under "AGPL-3.0-only OR MIT". [REUSE.toml](REUSE.toml) lists exactly
+which files that is; UI code (`.svelte`), page copy (`src/tools/defs`) and everything else stay AGPL-3.0 only.
+
+By contributing, you agree that your contribution is licensed the same way as the file it changes: AGPL-3.0 for the
+site, MIT for `packages/`, and both AGPL-3.0 and MIT for the files listed in REUSE.toml (inbound = outbound). Sign off
+each commit to confirm you have the right to do that, under the [Developer Certificate of Origin](https://developercertificate.org/):
+add a `Signed-off-by: Your Name <you@example.com>` line, which `git commit -s` does for you.
+
+If a change makes the SDK bundle a site file it didn't before, `npm run sdk:build` stops and asks you to add it to
+REUSE.toml (`node packages/sdk/build.mjs --reuse-write`). That puts the file under the MIT option too, so only do it
+for code you wrote or may license that way.

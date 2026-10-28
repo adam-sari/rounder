@@ -1,8 +1,9 @@
 import { expect, type Page } from '@playwright/test';
 
-/** waits until every Astro island hydrated and the tool chunk behind ToolHost finished loading */
+/** waits until every eager Astro island hydrated and the tool chunk behind ToolHost finished loading */
 export async function waitForTool(page: Page) {
-  await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'), undefined, { timeout: 60_000 });
+  // client:visible islands below the fold only hydrate once scrolled to, so they never count
+  await page.waitForFunction(() => !document.querySelector('astro-island[ssr]:not([client="visible"])'), undefined, { timeout: 60_000 });
   const tool = page.locator('section[aria-label="Tool"]');
   if (await tool.count()) {
     await expect(tool).not.toContainText('warming up the tool', { timeout: 60_000 });

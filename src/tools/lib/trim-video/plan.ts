@@ -1,5 +1,5 @@
 import { clamp, invertSegments, normalizeSegments } from '@/engines/media/math';
-import { containers, type Container, type MediaErrorCode, type QualityLevel, type Segment, type VideoCodec } from '@/engines/media/types';
+import { containers, type Container, type MediaErrorCode, type MediaInfo, type QualityLevel, type Segment, type VideoCodec } from '@/engines/media/types';
 
 export const VIDEO_CONTAINERS = ['mp4', 'mov', 'webm', 'mkv'] as const satisfies readonly Container[];
 export type VideoContainer = (typeof VIDEO_CONTAINERS)[number];
@@ -124,17 +124,56 @@ export interface SourceVideo {
 }
 
 /**
- * Video options for a preset: null = copy the stream, otherwise always an explicit bitrate: the
- * level's estimate, capped just above the source's (scaled for codec efficiency). A bare quality
- * level makes mediabunny encode at a constant quantizer for H.264/HEVC/VP9/AV1, whose size has no
- * bound (Best turned a 16 Mbps 1080p clip into 42 Mbps), so the level is never passed on as is.
+ * The source video's average bitrate, for Best to follow: the file's own average less the audio's.
+ * The track's figure is often an estimate from its first 240 packets (few MP4s store one), which a
+ * calm or busy opening throws off many times over (17 kbps for a 163 Mbps clip with a still intro);
+ * the whole file's average can't be, and following it keeps a cut about the size of that slice.
+ */
+export function sourceVideoBitrate(info: Pick<MediaInfo, 'sizeBytes' | 'durationSec' | 'video' | 'audio'>): number | null {
+  const whole = info.durationSec > 0 ? (info.sizeBytes * 8) / info.durationSec - (info.audio?.bitrate ?? 0) : 0;
+  return whole > 0 ? Math.round(whole) : (info.video?.bitrate ?? null);
+}
+
+/**
+ * The codec a re-encode writes. Best keeps the source's own codec when the container holds it and
+ * this browser can encode it, so following the source's bitrate keeps the size too (an HEVC phone
+ * clip needs about 1.7× the bitrate in H.264 to look the same). Otherwise the engine's pick.
+ */
+export function outputCodec(preset: Preset, srcCodec: string | null, container: Container, encodable: VideoCodec[] | null): VideoCodec {
+  const own = srcCodec as VideoCodec;
+  if (preset === 'very-high' && encodable?.includes(own) && containers[container].video.includes(own)) return own;
+  return likelyCodec(container, encodable);
+}
+
+/** the most High and Smaller spend relative to Best, so they always come out lighter than it */
+const SHARE = { high: 0.7, medium: 0.45 };
+
+/**
+ * Video options for a preset: null = copy the stream, otherwise always an explicit bitrate. A bare
+ * quality level makes mediabunny encode at a constant quantizer for H.264/HEVC/VP9/AV1, whose size
+ * has no bound (Best turned a 16 Mbps 1080p clip into 42 Mbps), so the level is never passed on.
+ * Best follows the source's own bitrate (scaled for a codec change), so the cut comes out about the
+ * size of that part of the original, like the converter's "original". High and Smaller take the
+ * level's estimate for the resolution, capped at a share of that. An unknown source bitrate falls
+ * back to the estimates.
  */
 export function videoQuality(preset: Preset, src: SourceVideo, outCodec: VideoCodec): null | { bitrate: number } {
   if (preset === 'copy') return null;
   const level = estimateVideoBitrate(outCodec, src.width, src.height, preset);
   if (!src.bitrate) return { bitrate: level };
-  const ceiling = Math.round((src.bitrate * 1.15 * (efficiency[outCodec] ?? 1)) / (efficiency[src.codec ?? ''] ?? 1));
-  return { bitrate: Math.min(level, ceiling) };
+  const follow = Math.round((src.bitrate * (efficiency[outCodec] ?? 1)) / (efficiency[src.codec ?? ''] ?? 1));
+  return { bitrate: preset === 'very-high' ? follow : Math.min(level, Math.round(follow * SHARE[preset])) };
+}
+
+/**
+ * What an export really does with the chosen preset. A copy has to begin on a keyframe, and the
+ * first frame always is one, so Best copies the streams untouched (lossless, original size) when
+ * the one kept part starts there and the stream can be copied; the end of a copy is cut on the
+ * frame. "No re-encode" falls back to Best when the stream can't be copied (`copyBlock`).
+ */
+export function exportPreset(preset: Preset, parts: Segment[], copyBlock: string, fps: number): Preset {
+  if (copyBlock) return preset === 'copy' ? 'very-high' : preset;
+  return preset === 'very-high' && parts.length === 1 && parts[0].start < 0.5 / fps ? 'copy' : preset;
 }
 
 // ---------------------------------------------------------------- progress & errors
