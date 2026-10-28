@@ -16,10 +16,11 @@
     "check": "astro check && svelte-check --threshold warning --incremental",
     "test": "vitest run",
     "e2e": "playwright test",
-    "deploy": "npx wrangler@4 d1 migrations apply rounder-ratings --remote && npx wrangler@4 deploy && npx wrangler@4 deploy -c workers/www-redirect/wrangler.jsonc",
+    "deploy": "npm run db:migrate && npx wrangler@4 deploy && npx wrangler@4 deploy -c workers/www-redirect/wrangler.jsonc",
     "sdk:build": "npm run build -w @roundertools/sdk && npm run build -w roundertools && npm run build -w @roundertools/mcp",
     "sdk:check": "tsc -p packages/sdk --noEmit && tsc -p packages/cli --noEmit && tsc -p packages/mcp --noEmit",
-    "sdk:test": "npm test -w @roundertools/build && npm test -w @roundertools/sdk && npm test -w roundertools && npm test -w @roundertools/mcp"
+    "sdk:test": "npm test -w @roundertools/build && npm test -w @roundertools/sdk && npm test -w roundertools && npm test -w @roundertools/mcp",
+    "db:migrate": "npx wrangler@4 d1 migrations apply rounder-ratings --remote || npx wrangler@4 d1 migrations apply rounder-ratings --remote || npx wrangler@4 d1 migrations apply rounder-ratings --remote"
   },
   "dependencies": {
     "@aiden0z/pptx-renderer": "^1.4.0",
