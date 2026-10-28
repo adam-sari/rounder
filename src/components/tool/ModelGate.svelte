@@ -47,6 +47,9 @@
     load: (ctx: GateLoadContext) => Promise<void | { device?: Device }>;
     /** true once loaded */
     ready?: boolean;
+    /** true while the first device and cache check runs (the panel is short until then); content placed after the
+     *  gate can hide meanwhile, so it doesn't visibly jump down when the panel opens */
+    checking?: boolean;
     /** load at once when the visitor agreed before or the model is cached */
     autostart?: boolean;
     /** the one-line model status above the tool */
@@ -54,11 +57,24 @@
     children: Snippet<[GateContext]>;
   }
 
-  let { model, light, variant, load, ready = $bindable(false), autostart = true, chip = true, children }: Props = $props();
+  let {
+    model,
+    light,
+    variant,
+    load,
+    ready = $bindable(false),
+    checking = $bindable(true),
+    autostart = true,
+    chip = true,
+    children,
+  }: Props = $props();
 
   const uid = $props.id();
   type Status = 'checking' | 'idle' | 'loading' | 'ready' | 'error';
   let status = $state<Status>('checking');
+  $effect(() => {
+    checking = status === 'checking';
+  });
   let info = $state<DeviceInfo | null>(null);
   let useLight = $state(false);
   let cached = $state(false);
@@ -209,15 +225,15 @@
     </div>
 
     {#if status === 'checking' || !info}
-      <h3 id={`${uid}-title`} class="title">Checking your device…</h3>
+      <h2 id={`${uid}-title`} class="title">Checking your device…</h2>
       <p class="mono">looking for WebGPU and the model cache</p>
     {:else if !models || !first}
-      <h3 id={`${uid}-title`} class="title">{MODELS[primary[0]].name} can't run in this browser</h3>
+      <h2 id={`${uid}-title`} class="title">{MODELS[primary[0]].name} can't run in this browser</h2>
       <p class="text-soft">
         It needs WebGPU, a way for web pages to use the graphics card. {info.reason ?? ''} Try the latest Chrome or Edge on a computer.
       </p>
     {:else}
-      <h3 id={`${uid}-title`} class="title">{first.spec.name}{models.length > 1 ? ` + ${models.length - 1} more` : ''}</h3>
+      <h2 id={`${uid}-title`} class="title">{first.spec.name}{models.length > 1 ? ` + ${models.length - 1} more` : ''}</h2>
       <p class="text-soft">{first.spec.summary}</p>
 
       <dl class="facts">

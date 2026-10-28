@@ -29,6 +29,8 @@
   const worker = modelWorker<CaptionWorker>(() => new Worker(new URL('../lib/alt-text-generator/caption.worker.ts', import.meta.url), { type: 'module' }));
   let opts: Pick<LoadOptions, 'device' | 'variant'> = {};
 
+  // the model check is running; the tips below wait for it so they don't jump down when the model panel opens
+  let checking = $state(true);
   let mode = $state<Mode>('alt');
   let items = $state<Item[]>([]);
   let running = $state(false);
@@ -177,7 +179,7 @@
 </script>
 
 <div class="grid gap-6">
-  <ModelGate model="florence2-base" light={null} {load}>
+  <ModelGate model="florence2-base" light={null} {load} bind:checking>
     {#snippet children()}
       <div class="grid gap-5">
         <div class="grid gap-2">
@@ -258,7 +260,7 @@
     {/snippet}
   </ModelGate>
 
-  <aside class="tips card" aria-labelledby="alt-tips">
+  <aside class="tips card" aria-labelledby="alt-tips" style:visibility={checking ? 'hidden' : null}>
     <h2 id="alt-tips" class="tips-title">Tips for good alt text</h2>
     <ul>
       <li><strong>Context matters.</strong> The same photo needs different words on a recipe blog and a news story. Say why the picture is there, not everything in it.</li>

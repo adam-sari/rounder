@@ -1,6 +1,7 @@
 ---
 import Base from '@/layouts/Base.astro';
 import ToolHost from '@/components/tool/ToolHost.svelte';
+import islandHeights from '@/tools/island-heights.json';
 import RateSlot from '@/components/tool/RateSlot.svelte';
 import ToolCard from '@/components/site/ToolCard.astro';
 import Ad from '@/components/site/Ad.astro';
@@ -89,7 +90,13 @@ const schema = [
       </header>
 
       <section class="card p-[clamp(16px,3vw,32px)]" aria-label="Tool">
-        <ToolHost client:load island={tool.island} slug={tool.slug} props={tool.props} />
+        <ToolHost
+          client:load
+          island={tool.island}
+          slug={tool.slug}
+          props={tool.props}
+          heights={(islandHeights as Record<string, number[]>)[tool.slug]}
+        />
       </section>
 
       {ratePrompt && <div class="mt-3"><RateSlot client:idle slug={tool.slug} /></div>}

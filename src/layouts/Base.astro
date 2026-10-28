@@ -6,6 +6,11 @@ import CommandPalette from '@/components/site/CommandPalette.svelte';
 import { searchAssets } from '@/search/build';
 import { SITE } from '@/site';
 import { jsonLd } from '@/seo/schema';
+// the four faces every page uses above the fold; preloaded so they usually arrive before first paint and nothing reflows
+import serifUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url';
+import serifItalicUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url';
+import sansUrl from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import monoUrl from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -43,6 +48,7 @@ const cfBeacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN as string | undefined;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
+    {[serifUrl, serifItalicUrl, sansUrl, monoUrl].map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}

@@ -185,9 +185,9 @@
       {#if status !== 'checking' && !missing.length}<span class="pill done">✓ already downloaded</span>{/if}
     </div>
     {#if status === 'checking'}
-      <h3 id={`${uid}-title`} class="title">Checking your device…</h3>
+      <h2 id={`${uid}-title`} class="title">Checking your device…</h2>
     {:else}
-      <h3 id={`${uid}-title`} class="title">Tesseract OCR</h3>
+      <h2 id={`${uid}-title`} class="title">Tesseract OCR</h2>
       <p class="text-soft">
         Reads printed and typed text in {LANGUAGES.length} languages. Sharp scans and screenshots work best; handwriting, curved pages and busy photos are hit and miss.
       </p>
@@ -240,7 +240,8 @@
   </section>
 {/if}
 
-<div class="mt-6">{@render children()}</div>
+<!-- hidden for the moment the device check takes, so the tool doesn't visibly jump down when the panel above it opens -->
+<div class="mt-6" style:visibility={status === 'checking' ? 'hidden' : null}>{@render children()}</div>
 
 <style>
   .gate {

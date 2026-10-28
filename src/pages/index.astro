@@ -38,6 +38,11 @@ const schema = [
   ads
 >
   <section class="wrap grid items-center gap-10 pt-[clamp(32px,7vw,96px)] pb-16 md:grid-cols-[1.3fr_0.7fr]">
+    {/* first in the HTML so a slow phone paints Roundy above the text from the start, instead of pushing it down later */}
+    <div class="relative mx-auto w-full max-w-[200px] md:order-last md:max-w-[360px]">
+      <Mascot size="100%" spot="var(--color-sun)" cheek="var(--color-video)" ink="var(--color-chalk)" face="var(--color-bg)" class="roundy" />
+      <p class="note hidden md:block">← that's Roundy.<br />he does the work locally.</p>
+    </div>
     <div>
       <p class="mono mb-4">[ a workshop of {toolCount} free tools ]</p>
       <h1 class="text-[clamp(56px,9vw,128px)] leading-[0.9]">Small tools,<br /><em>done properly.</em></h1>
@@ -59,10 +64,6 @@ const schema = [
           </ul>
         </HeroSearch>
       </div>
-    </div>
-    <div class="relative order-first mx-auto w-full max-w-[200px] md:order-none md:max-w-[360px]">
-      <Mascot size="100%" spot="var(--color-sun)" cheek="var(--color-video)" ink="var(--color-chalk)" face="var(--color-bg)" class="roundy" />
-      <p class="note hidden md:block">← that's Roundy.<br />he does the work locally.</p>
     </div>
   </section>
 
