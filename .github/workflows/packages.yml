@@ -34,8 +34,9 @@ jobs:
       # the site's runtime files in public/vendor are generated, not committed; some unit tests check them
       - run: npm run vendor
       - run: npm test
-      - run: npm run sdk:check
+      # the package tests type-check against the built packages' declarations, so build first
       - run: npm run sdk:build
+      - run: npm run sdk:check
       - run: npm run sdk:test
 
   # every package test again, with all outbound traffic dropped: a network call anywhere fails the run
@@ -62,3 +63,7 @@ jobs:
         env:
           NO_UPDATE_NOTIFIER: '1'
           npm_config_update_notifier: 'false'
+      # reopen egress so setup-node's post step can save the npm cache (it would fail the job otherwise)
+      - name: Restore outbound traffic
+        if: always()
+        run: for t in iptables ip6tables; do sudo $t -P OUTPUT ACCEPT; done
