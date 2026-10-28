@@ -5,32 +5,52 @@
 @import 'tailwindcss';
 
 /* Stand-ins while Instrument Serif loads: Times-metric fonts scaled to its much narrower letters, so a heading wraps
-   the same before and after the swap (the home hero jumped about 100px on slow phones). Overrides are divided by
-   the size-adjust because it scales them too. */
+   the same before and after the swap. Sizes are the median width ratio over the site's real headings (82.5% upright,
+   89% italic, nudged toward the home hero's "done properly."). Overrides are divided by the size-adjust because it scales them too. */
 @font-face {
   font-family: 'Instrument Serif Fallback';
   src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Liberation Serif'), local('Tinos');
-  size-adjust: 78.7%;
-  ascent-override: 125.8%;
-  descent-override: 39.4%;
+  size-adjust: 82.5%;
+  ascent-override: 120.0%;
+  descent-override: 37.6%;
   line-gap-override: 0%;
 }
 @font-face {
   font-family: 'Instrument Serif Fallback';
   font-style: italic;
   src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Liberation Serif Italic'), local('Tinos Italic');
-  size-adjust: 83.3%;
-  ascent-override: 118.8%;
-  descent-override: 37.2%;
+  size-adjust: 89%;
+  ascent-override: 111.2%;
+  descent-override: 34.8%;
   line-gap-override: 0%;
 }
-/* Geist is a little wider than Arial (and its metric twins) */
+/* Geist is a little wider than Arial (and its metric twins), by weight, measured on real copy: 101.7% of Arial at 400,
+   104.4% of Arial at 500 (Arial has no medium), 100–102% of Arial Bold at 600–700 */
 @font-face {
   font-family: 'Geist Fallback';
+  font-weight: 100 450;
   src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Arimo');
-  size-adjust: 103.4%;
-  ascent-override: 97.7%;
-  descent-override: 29%;
+  size-adjust: 101.7%;
+  ascent-override: 99.3%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Geist Fallback';
+  font-weight: 451 550;
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 104.4%;
+  ascent-override: 96.7%;
+  descent-override: 28.7%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Geist Fallback';
+  font-weight: 551 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 101.2%;
+  ascent-override: 99.8%;
+  descent-override: 29.6%;
   line-gap-override: 0%;
 }
 /* Geist Mono is 0.6em per letter like Menlo and DejaVu Sans Mono; Windows' Consolas is 0.55em */
