@@ -133,6 +133,13 @@ async function unshareResources(doc: PDFDocument, pages: number[]) {
  * the page's resources. null when a content stream can't be decoded, so
  * nothing is removed on a guess.
  */
+/** Bytes as one char each (PDF names are bytes). Not TextDecoder('latin1'): that is windows-1252, which remaps 0x80–0x9F */
+function latin1(bytes: Uint8Array): string {
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return out;
+}
+
 async function drawnNames(page: PDFPage, xo: PdfDict): Promise<Set<PdfName> | null> {
   const { decodePDFRawStream, PDFArray, PDFName, PDFRawStream, PDFStream } = await loadPdfLibModule();
   const ctx = page.doc.context;
@@ -140,7 +147,6 @@ async function drawnNames(page: PDFPage, xo: PdfDict): Promise<Set<PdfName> | nu
   const contents = page.node.Contents();
   const todo: unknown[] = contents instanceof PDFArray ? contents.asArray().map((r) => ctx.lookup(r)) : [contents];
   const seen = new Set<unknown>();
-  const latin1 = new TextDecoder('latin1');
   while (todo.length) {
     const stream = todo.pop();
     if (stream === undefined || seen.has(stream)) continue;
@@ -152,7 +158,7 @@ async function drawnNames(page: PDFPage, xo: PdfDict): Promise<Set<PdfName> | nu
     } catch {
       return null;
     }
-    for (const [, raw] of latin1.decode(bytes).matchAll(/\/([^\s/[\]()<>{}%]+)\s*Do(?![^\s/[\]()<>{}%])/g)) {
+    for (const [, raw] of latin1(bytes).matchAll(/\/([^\s/[\]()<>{}%]+)\s*Do(?![^\s/[\]()<>{}%])/g)) {
       const key = PDFName.of(raw);
       used.add(key);
       // a form without resources of its own draws with the page's

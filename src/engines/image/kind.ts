@@ -7,7 +7,8 @@ export type ImageKind = 'jpeg' | 'png' | 'webp' | 'avif' | 'heic' | 'gif' | 'bmp
 /** Identifies an image by its first bytes, since file names and types can lie */
 export async function imageKind(file: Blob & { name?: string }): Promise<ImageKind> {
   const bytes = new Uint8Array(await file.slice(0, 64).arrayBuffer());
-  const ascii = new TextDecoder('latin1').decode(bytes);
+  // byte-for-byte text: TextDecoder('latin1') is really windows-1252, which turns 0x89 (PNG's first byte) into '‰'
+  const ascii = String.fromCharCode(...bytes);
   if (bytes[0] === 0xff && bytes[1] === 0xd8) return 'jpeg';
   if (ascii.startsWith('\x89PNG')) return 'png';
   if (ascii.startsWith('RIFF') && ascii.slice(8, 12) === 'WEBP') return 'webp';

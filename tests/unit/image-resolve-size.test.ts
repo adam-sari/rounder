@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { imageKind } from '@/engines/image/kind';
 import { resolveSize } from '@/engines/image/types';
 
 describe('resolveSize', () => {
@@ -31,5 +32,13 @@ describe('resolveSize', () => {
 
   it('never returns a zero dimension', () => {
     expect(resolveSize(5000, 2, { mode: 'scale', percent: 1 })).toEqual({ width: 50, height: 1 });
+  });
+});
+
+describe('imageKind', () => {
+  // regression: windows-1252 decoding (what TextDecoder('latin1') really is) hid PNG's 0x89 signature byte
+  it('recognises a PNG signature', async () => {
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
+    expect(await imageKind(new Blob([png]))).toBe('png');
   });
 });

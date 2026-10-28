@@ -12,7 +12,7 @@ async function fileInfo(inputs: Source[], o: { password?: string }, _ctx: Ctx): 
   const [src] = inputs;
   const head = (await src.bytes()).subarray(0, 1024);
   const base = { file: src.name, path: src.path, size: src.size };
-  if (new TextDecoder('latin1').decode(head).includes('%PDF-')) return result({ data: { ...base, ...(await pdf.info(src, o.password)) } });
+  if (String.fromCharCode(...head).includes('%PDF-')) return result({ data: { ...base, ...(await pdf.info(src, o.password)) } });
   const kind = await imageKind(Object.assign(new Blob([head.subarray(0, 64) as Uint8Array<ArrayBuffer>]), { name: src.name }));
   if (kind !== 'unknown') return result({ data: { ...base, ...(await image.info(src)) } });
   if (findFfmpeg()) {
