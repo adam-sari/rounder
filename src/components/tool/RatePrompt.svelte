@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { onToolSuccess } from '@/tools/lib/success';
   import { cleanComment, COMMENT_MAX, promptState, rememberPrompt } from '@/tools/lib/rating';
+  import { SITE } from '@/site';
 
   // "Rate this tool": appears under the tool after a run worked (toolSucceeded), never before, never in the way.
   // It gates nothing and offers nothing in return (Google's review rules ban incentivized ratings), it can be closed,
@@ -105,7 +106,13 @@
   </section>
 {:else if phase === 'thanks'}
   <section class="card rate flex items-center gap-4" aria-label="Rating sent">
-    <p bind:this={thanksEl} tabindex="-1" class="text-soft outline-none">Thanks, your rating was saved.</p>
+    <p bind:this={thanksEl} tabindex="-1" class="text-soft outline-none">
+      Thanks, your rating was saved.
+      <!-- offered only after a good rating has already been sent, so it can never read as a reward for rating -->
+      {#if SITE.donate && stars >= 4}
+        If it saved you some time, you can <a href={SITE.donate} rel="noopener" class="text-sun">buy Roundy a coffee</a>.
+      {/if}
+    </p>
     <button type="button" class="mono ml-auto hover:text-chalk" onclick={close}>Close</button>
   </section>
 {/if}

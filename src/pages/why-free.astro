@@ -39,6 +39,12 @@ import { SITE } from '@/site';
     <a href="/file-encryptor">file encryptor</a> and <a href="/redact-pdf">Redact PDF</a>.
     <a href="/security#ad-free">Here's the full list, and why.</a>
   </p>
+  {SITE.donate && (
+    <p>
+      And if Rounder saved your afternoon, you can <a href={SITE.donate} rel="noopener">buy Roundy a coffee</a>. It's
+      entirely optional: nothing is locked, and every tool works the same whether you chip in or not.
+    </p>
+  )}
 
   <h2>What you'll never see here</h2>
   <ul>
