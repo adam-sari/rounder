@@ -20,7 +20,7 @@ export const SITE = {
     /** 300×600 rail beside the text below the tool, on wide screens only */
     rail: (import.meta.env.PUBLIC_AD_SLOT_RAIL ?? '') as string,
   },
-  /** the owner's Buy Me a Coffee page (.env.production). Unset, every support link stays hidden */
+  /** the owner's donation page, Ko-fi paying into PayPal (.env.production). Unset, every support link stays hidden */
   donate: (import.meta.env.PUBLIC_DONATE_URL ?? '') as string,
   github: 'https://github.com/adam-sari/rounder',
   // TODO(owner): public profile URLs (Mastodon, X, Product Hunt…), used as Organization sameAs
