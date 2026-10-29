@@ -2,9 +2,13 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.adam-sari/roundertools",
   "title": "Rounder tools",
-  "description": "Local PDF, image, archive and video tools for AI assistants. Runs on your computer over stdio; files are never uploaded and it makes no network requests.",
+  "description": "Local PDF, image, archive and video tools for AI assistants. Files never leave your computer.",
   "websiteUrl": "https://roundertools.com/developers/mcp",
-  "repository": { "url": "https://github.com/adam-sari/rounder", "source": "github", "subfolder": "packages/mcp" },
+  "repository": {
+    "url": "https://github.com/adam-sari/rounder",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
   "version": "0.1.0",
   "packages": [
     {
@@ -12,13 +16,29 @@
       "identifier": "@roundertools/mcp",
       "version": "0.1.0",
       "runtimeHint": "npx",
-      "transport": { "type": "stdio" },
+      "transport": {
+        "type": "stdio"
+      },
       "packageArguments": [
-        { "type": "named", "name": "--allow", "description": "A folder the server may read (repeatable)", "isRepeated": true, "valueHint": "directory" }
+        {
+          "type": "named",
+          "name": "--allow",
+          "description": "A folder the server may read (repeatable)",
+          "isRepeated": true,
+          "valueHint": "directory"
+        }
       ],
       "environmentVariables": [
-        { "name": "ROUNDERTOOLS_ALLOW", "description": "Folders the server may read, as a path list", "isRequired": false },
-        { "name": "ROUNDERTOOLS_FFMPEG", "description": "Path to ffmpeg, if it isn't on the PATH", "isRequired": false }
+        {
+          "name": "ROUNDERTOOLS_ALLOW",
+          "description": "Folders the server may read, as a path list",
+          "isRequired": false
+        },
+        {
+          "name": "ROUNDERTOOLS_FFMPEG",
+          "description": "Path to ffmpeg, if it isn't on the PATH",
+          "isRequired": false
+        }
       ]
     }
   ]
