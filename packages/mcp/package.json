@@ -10,7 +10,7 @@
   "keywords": ["mcp", "model context protocol", "claude", "pdf", "image", "ffmpeg", "local", "offline"],
   "mcpName": "io.github.adam-sari/roundertools",
   "type": "module",
-  "bin": { "roundertools-mcp": "./dist/bin.mjs" },
+  "bin": { "roundertools-mcp": "dist/bin.mjs" },
   "exports": { ".": { "types": "./dist/types/main.d.ts", "default": "./dist/server.mjs" }, "./package.json": "./package.json" },
   "types": "./dist/types/main.d.ts",
   "files": ["dist", "LICENSE", "README.md"],

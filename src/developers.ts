@@ -12,7 +12,7 @@ export type { OpSpec };
  * Whether the packages are on npm. The per-tool "Use this in code" block and the install lines assume they are: set
  * this to false to hide the block if the site ships before the packages do.
  */
-export const PACKAGES_ON_NPM = false;
+export const PACKAGES_ON_NPM = true;
 
 export const NPM = { sdk: '@roundertools/sdk', cli: 'roundertools', mcp: '@roundertools/mcp' } as const;
 

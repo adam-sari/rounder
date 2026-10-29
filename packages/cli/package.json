@@ -9,7 +9,7 @@
   "bugs": "https://github.com/adam-sari/rounder/issues",
   "keywords": ["cli", "pdf", "compress pdf", "merge pdf", "image", "webp", "ffmpeg", "local", "offline"],
   "type": "module",
-  "bin": { "roundertools": "./dist/bin.mjs" },
+  "bin": { "roundertools": "dist/bin.mjs" },
   "exports": { "./package.json": "./package.json" },
   "files": ["dist", "skill", "LICENSE", "README.md"],
   "engines": { "node": ">=22.13" },
