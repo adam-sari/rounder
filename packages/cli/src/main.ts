@@ -18,6 +18,7 @@ import {
   type OpSpec,
 } from '@roundertools/sdk';
 import { coerce, COMMON, fieldsOf } from './args';
+import { config } from './config';
 import { doctor, help, list, mainHelp } from './help';
 
 export const EXIT = { ok: 0, failed: 1, usage: 2, partial: 3, dependency: 4, target: 5, password: 6, interrupted: 130 } as const;
@@ -51,6 +52,7 @@ export async function main(argv: string[], io: Io): Promise<number> {
   if (command === 'help') return rest[0] ? help(rest[0], io) : (line(io.stdout, mainHelp()), EXIT.ok);
   if (command === 'doctor') return doctor(rest, io);
   if (command === 'mcp') return mcp(rest, io);
+  if (command === 'config') return config(rest, io);
   if (command === 'suggest') {
     line(io.stdout, `Search all tools: https://roundertools.com/?q=${encodeURIComponent(rest.join(' '))}`);
     line(io.stdout, 'Or run `roundertools list` to see what the CLI can do.');

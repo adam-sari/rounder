@@ -1,6 +1,6 @@
 {
   "name": "@roundertools/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Rounder's file tools for Node: compress, merge, split and protect PDFs, convert and resize images, zip files, and shrink video with your own ffmpeg. Runs locally; files never leave your machine.",
   "license": "MIT",
   "author": "Adam Sari <hello@roundertools.com>",

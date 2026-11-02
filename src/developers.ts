@@ -26,13 +26,15 @@ export const MCP_INSTALL = {
 };
 
 // one-click installs: Cursor takes the server config as base64 JSON (cursor.com/docs/mcp/install-links), VS Code as
-// URL-encoded JSON with the name inside; Claude Code installs the plugin in plugins/roundertools
+// URL-encoded JSON with the name inside
 const serverConfig = { command: 'npx', args: ['-y', '@roundertools/mcp', '--allow', '~/Documents'] };
 export const MCP_INSTALL_LINKS = {
   cursor: `cursor://anysphere.cursor-deeplink/mcp/install?name=roundertools&config=${encodeURIComponent(btoa(JSON.stringify(serverConfig)))}`,
   vscode: `vscode:mcp/install?${encodeURIComponent(JSON.stringify({ name: 'roundertools', type: 'stdio', ...serverConfig }))}`,
-  claudePlugin: '/plugin marketplace add adam-sari/rounder\n/plugin install roundertools@roundertools',
 };
+
+/** the Claude Code plugin in plugins/roundertools: the CLI's skill, no MCP server */
+export const CLAUDE_PLUGIN = '/plugin marketplace add adam-sari/rounder\n/plugin install roundertools@roundertools';
 
 export interface CodeSnippets {
   op: OpSpec;

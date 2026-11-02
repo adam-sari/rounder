@@ -34,13 +34,15 @@ BMP or SVG input need `npm install @napi-rs/canvas`.
 `--json` prints one JSON document at the end; `--ndjson` streams `progress`, `result`, `error` and `summary` lines.
 
 ```json
-{ "schema": 1, "ok": true, "tool": "compress-pdf", "version": "0.1.0",
+{ "schema": 1, "ok": true, "tool": "compress-pdf", "version": "0.2.0",
   "results": [{ "input": "/work/report.pdf", "output": "/work/report-compressed.pdf", "outputs": [ … ],
                 "bytesIn": 3375514, "bytesOut": 118735, "ratio": 0.035, "meta": { … }, "warnings": [] }],
   "errors": [], "durationMs": 1012, "web": "https://roundertools.com/compress-pdf" }
 ```
 
-The package includes an Agent Skill, `skill/SKILL.md`, that teaches coding agents to use the CLI.
+The package includes an Agent Skill, `skill/SKILL.md`, that teaches coding agents to use the CLI. In Claude Code, the
+`roundertools` plugin installs it for you: `/plugin marketplace add adam-sari/rounder`, then
+`/plugin install roundertools@roundertools`.
 
 ## Exit codes
 
@@ -59,6 +61,21 @@ The package includes an Agent Skill, `skill/SKILL.md`, that teaches coding agent
 
 `roundertools mcp` starts [@roundertools/mcp](https://www.npmjs.com/package/@roundertools/mcp) when it's installed, and
 otherwise prints the `npx` line for it.
+
+`roundertools config` shows and changes the MCP server's settings: which tools it lists up front, and its memory of
+which tools you use (tool names, counts and dates, nothing else).
+
+```sh
+roundertools config                        # the settings folder, the settings and your favourites (--json too)
+roundertools config set tools all          # lean (the default), all, default, pdf, image, files, media or tool names
+roundertools config set memory off         # on or off; ROUNDERTOOLS_MEMORY=off works too
+roundertools config set experimental on    # on or off
+roundertools config reset                  # remove the settings and usage files
+```
+
+The files live in `%APPDATA%\roundertools` on Windows, `~/Library/Application Support/roundertools` on macOS, and
+`~/.config/roundertools` (or `$XDG_CONFIG_HOME`) elsewhere. `ROUNDERTOOLS_CONFIG_DIR` picks another folder. The tool
+commands don't read or write them.
 
 ## License
 

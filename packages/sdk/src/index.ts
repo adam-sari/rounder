@@ -18,6 +18,7 @@ export { run, describe, resolveTool, unknownTool, parseOptions, webLink, checkRe
 export { catalog, SITE, type CatalogEntry } from './catalog';
 export { findFfmpeg, ffmpegVersion } from './platform/node/ffmpeg-bin';
 export { loadCanvas } from './platform/node/canvas';
+export { settingsDir, readSettings, writeSettings, memoryEnabled, readUsage, recordUse, favourites, resetSettings, type Settings, type Usage } from './settings';
 declare const __VERSION__: string;
 /** this package's version */
 export const version: string = typeof __VERSION__ === 'string' ? __VERSION__ : '0.0.0-dev';

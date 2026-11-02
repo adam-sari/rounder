@@ -39,7 +39,7 @@ const families = [
 
   <h2>What's included</h2>
   <p>
-    {ops.length} tools in version 0.1: {families.map(([name, n], i) => `${n} ${name}${i < families.length - 1 ? (i === families.length - 2 ? ' and ' : ', ') : ''}`).join('')} tools.
+    {ops.length} tools in version 0.2: {families.map(([name, n], i) => `${n} ${name}${i < families.length - 1 ? (i === families.length - 2 ? ' and ' : ', ') : ''}`).join('')} tools.
     The <a href="/developers/tools">tool table</a> lists each one with its command and function. Video and audio tools use
     the ffmpeg already installed on your computer; nothing of ffmpeg ships in the packages. Tools that need a screen
     (recorders, editors) or a model download (the AI tools) stay on the site for now.

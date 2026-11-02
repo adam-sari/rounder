@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "roundertools": {
-      "command": "npx",
-      "args": ["-y", "@roundertools/mcp"]
-    }
-  }
-}

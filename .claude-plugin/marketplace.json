@@ -8,9 +8,9 @@
     {
       "name": "roundertools",
       "source": "./plugins/roundertools",
-      "description": "30 local file tools (PDF, image, archive, video) as an MCP server. Files never leave your computer and it makes no network requests.",
+      "description": "A skill that teaches Claude to run the roundertools CLI for PDFs, images, archives and video. No MCP server: about 100 tokens until it's used. Files never leave your computer and it makes no network requests.",
       "category": "productivity",
-      "homepage": "https://roundertools.com/developers/mcp"
+      "homepage": "https://roundertools.com/developers/cli"
     }
   ]
 }

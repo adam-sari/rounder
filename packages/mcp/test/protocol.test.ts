@@ -6,8 +6,8 @@ import { pathToFileURL } from 'node:url';
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { findFfmpeg } from '@roundertools/sdk';
-import { Access, allowList, createServer, sandboxFlags } from '../src/main';
+import { findFfmpeg, writeSettings } from '@roundertools/sdk';
+import { Access, allowList, chooseTools, createServer, sandboxFlags } from '../src/main';
 
 const FX = join(import.meta.dirname, '../../../tests/fixtures');
 const BIN = join(import.meta.dirname, '../dist/bin.mjs');
@@ -29,6 +29,14 @@ writeFileSync(join(allowed, 'id_rsa'), 'not a key');
 writeFileSync(join(allowed, 'bundle.zip'), zipSync({ 'readme.txt': strToU8('hi'), 'docs/a.txt': strToU8('a'), '.git/config': strToU8('[core]'), 'sub/.ssh/authorized_keys': strToU8('key') }));
 afterAll(() => rmSync(root, { recursive: true, force: true }));
 
+// settings and usage memory go to a folder of the test's own, never the real one
+const config = join(root, 'config');
+process.env.ROUNDERTOOLS_CONFIG_DIR = config;
+delete process.env.ROUNDERTOOLS_MEMORY;
+const forget = () => rmSync(config, { recursive: true, force: true });
+const usageFile = (dir = config) => readFileSync(join(dir, 'usage.json'), 'utf8');
+const HELPERS = ['find-tool', 'describe-tool', 'run-tool'];
+
 // the docs' JSON configs pass "~/Documents" with no shell to expand it, so the server does
 describe('allowList', () => {
   it('expands ~ itself and reads the env path list', () => {
@@ -41,9 +49,9 @@ describe('allowList', () => {
 type Result = { content: { type: string; text?: string; uri?: string }[]; structuredContent?: Record<string, unknown>; isError?: boolean };
 const text = (r: Result) => r.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n');
 
-async function connect(o: { tools?: string; roots?: string[] } = {}) {
-  const server = createServer({ access: new Access({ allow: [allowed], out: outDir }), tools: o.tools, log: () => {} });
-  const client = new Client({ name: 'test', version: '1' }, o.roots ? { capabilities: { roots: {} } } : {});
+async function connect(o: { tools?: string; roots?: string[]; memory?: boolean; name?: string } = {}) {
+  const server = createServer({ access: new Access({ allow: [allowed], out: outDir }), tools: o.tools, memory: o.memory, log: () => {} });
+  const client = new Client({ name: o.name ?? 'test', version: '1' }, o.roots ? { capabilities: { roots: {} } } : {});
   if (o.roots) client.setRequestHandler('roots/list', async () => ({ roots: o.roots!.map((p) => ({ uri: pathToFileURL(p).href, name: p })) }));
   const [a, b] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(a), client.connect(b)]);
@@ -52,10 +60,24 @@ async function connect(o: { tools?: string; roots?: string[] } = {}) {
   return client;
 }
 
+// most tests call tools directly, so this client gets the full 0.1 set listed, and remembers nothing
 let client: Client;
 beforeAll(async () => {
-  client = await connect();
+  client = await connect({ tools: 'default', memory: false });
 });
+
+/** counts notifications/tools/list_changed; next() resolves on the next one */
+function listChanged(c: Client) {
+  let seen = 0;
+  const waiting: (() => void)[] = [];
+  c.setNotificationHandler('notifications/tools/list_changed', () => {
+    seen++;
+    waiting.splice(0).forEach((resolve) => resolve());
+  });
+  return { count: () => seen, next: () => new Promise<void>((resolve) => waiting.push(resolve)) };
+}
+const names = async (c: Client) => (await c.listTools()).tools.map((t) => t.name);
+const pause = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 
 const call = (name: string, args: Record<string, unknown>, opts?: Parameters<Client['callTool']>[1]) => client.callTool({ name, arguments: args }, opts) as Promise<Result>;
 
@@ -78,6 +100,194 @@ describe('tools/list', () => {
     expect(pdf.every((n) => n.includes('pdf') || ['jpg-to-pdf', 'find-tool', 'describe-tool', 'run-tool'].includes(n))).toBe(true);
     const all = (await (await connect({ tools: 'all' })).listTools()).tools.map((t) => t.name);
     expect(all).toContain('checksum-calculator');
+  });
+});
+
+describe('lean by default', () => {
+  it('lists only find-tool, describe-tool and run-tool', async () => {
+    forget();
+    const c = await connect();
+    const { tools } = await c.listTools();
+    expect(tools.map((t) => t.name)).toEqual(HELPERS);
+    // the point of lean: a few KB of definitions, not ~55
+    expect(JSON.stringify(tools).length).toBeLessThan(4_000);
+    // find-tool says what the server covers, so an agent knows when to search it
+    expect(tools[0].description).toMatch(/PDFs \(merge, split, compress/);
+    expect(tools[0].description).toMatch(/video or audio with ffmpeg/);
+  });
+
+  it('lists a tool once run-tool runs it, with a list_changed notification', async () => {
+    const c = await connect({ memory: false });
+    const changes = listChanged(c);
+    const changed = changes.next();
+    const r = (await c.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(allowed, 'report.pdf')] } })) as Result;
+    expect(r.isError, text(r)).toBeFalsy();
+    await changed;
+    expect(await names(c)).toEqual(['file-info', ...HELPERS]);
+    // and it can be called directly now
+    expect(((await c.callTool({ name: 'file-info', arguments: { inputs: [join(allowed, 'report.pdf')] } })) as Result).isError).toBeFalsy();
+    // running it again changes nothing
+    const before = changes.count();
+    await c.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(allowed, 'report.pdf')] } });
+    await pause();
+    expect(changes.count()).toBe(before);
+  });
+
+  it('lists a tool once describe-tool describes it (presets too), but not on find-tool', async () => {
+    const c = await connect({ memory: false });
+    const changes = listChanged(c);
+    await c.callTool({ name: 'find-tool', arguments: { query: 'compress pdf' } });
+    await pause();
+    expect(changes.count()).toBe(0);
+    expect(await names(c)).toEqual(HELPERS);
+    const changed = changes.next();
+    await c.callTool({ name: 'describe-tool', arguments: { tool: 'png-to-jpg' } });
+    await changed;
+    expect(await names(c)).toEqual(['image-converter', ...HELPERS]);
+    // a client may not re-read the list, so find-tool still points at run-tool for a tool listed later
+    const found = (await c.callTool({ name: 'find-tool', arguments: { query: 'png to jpg' } })) as Result;
+    expect((found.structuredContent!.results as { tool: string }[]).find((h) => h.tool === 'image-converter')).toMatchObject({ listed: false, call: 'run-tool' });
+  });
+
+  it('lists nothing new when a run-tool call fails', async () => {
+    const c = await connect({ memory: false });
+    const changes = listChanged(c);
+    const bad = (await c.callTool({ name: 'run-tool', arguments: { tool: 'compress-pdf', inputs: [join(allowed, 'report.pdf')], options: { level: 'bogus' } } })) as Result;
+    expect(bad.isError).toBe(true);
+    const wrongType = (await c.callTool({ name: 'run-tool', arguments: { tool: 'jpg-to-pdf', inputs: [join(allowed, 'report.pdf')] } })) as Result;
+    expect(wrongType.isError).toBe(true);
+    const refused = (await c.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(outside, 'elsewhere.pdf')] } })) as Result;
+    expect(refused.isError).toBe(true);
+    await pause();
+    expect(changes.count()).toBe(0);
+    expect(await names(c)).toEqual(HELPERS);
+  });
+
+  it('gives each find-tool hit the call to make, preset options included', async () => {
+    const lean = await connect({ memory: false });
+    const results = ((await lean.callTool({ name: 'find-tool', arguments: { query: 'png to jpg' } })) as Result).structuredContent!.results as Record<string, unknown>[];
+    expect(results.find((h) => h.tool === 'image-converter')).toMatchObject({ call: 'run-tool', example: { tool: 'image-converter', inputs: ['<absolute path>'], options: { to: 'jpeg' } } });
+    const merge = ((await lean.callTool({ name: 'find-tool', arguments: { query: 'merge pdf' } })) as Result).structuredContent!.results as Record<string, unknown>[];
+    expect(merge.find((h) => h.tool === 'merge-pdf')).toMatchObject({ example: { inputs: ['<absolute path 1>', '<absolute path 2>'] } });
+    const full = ((await client.callTool({ name: 'find-tool', arguments: { query: 'png to jpg' } })) as Result).structuredContent!.results as Record<string, unknown>[];
+    expect(full.find((h) => h.tool === 'image-converter')).toMatchObject({ listed: true, call: 'image-converter', example: { inputs: ['<absolute path>'], to: 'jpeg' } });
+  });
+
+  it('says how much is listed in its instructions', async () => {
+    forget();
+    expect((await connect({ memory: false })).getInstructions()).toMatch(/Only a few tools are listed up front/);
+    expect(client.getInstructions()).toMatch(/Some tools aren't listed up front/);
+    const all = (await connect({ tools: 'all', memory: false })).getInstructions()!;
+    expect(all).not.toMatch(/aren't listed|few tools/);
+  });
+
+  it('reaches tools that are not listed yet through run-tool only', async () => {
+    const c = await connect({ memory: false });
+    await expect(c.callTool({ name: 'compress-pdf', arguments: { inputs: [join(allowed, 'report.pdf')] } })).rejects.toThrow(/disabled/);
+  });
+
+  it('--tools all lists every tool this computer can run', async () => {
+    const all = await names(await connect({ tools: 'all', memory: false }));
+    expect(all).toEqual([...chooseTools('all').map((o) => o.slug), ...HELPERS]);
+    expect(all).toContain('checksum-calculator');
+  });
+
+  it('reads --tools words in any case, and combines all and default with the rest', () => {
+    const slugs = (choice: string) => chooseTools(choice).map((o) => o.slug);
+    expect(slugs('ALL')).toEqual(slugs('all'));
+    expect(slugs('all,pdf')).toEqual(slugs('all'));
+    expect(slugs(' Default ')).toEqual(slugs('default'));
+    expect(slugs('default,checksum-calculator')).toEqual(slugs('all'));
+    expect(slugs('PDF')).toEqual(slugs('pdf'));
+    expect(slugs('nonsense')).toEqual([]);
+  });
+
+  it('takes --tools from the settings file, and the flag over it', async () => {
+    forget();
+    writeSettings({ tools: 'files' });
+    expect(await names(await connect({ memory: false }))).toEqual(['zip-files', 'unzip-files', 'checksum-calculator', 'file-info', ...HELPERS]);
+    expect(await names(await connect({ tools: 'lean', memory: false }))).toEqual(HELPERS);
+    forget();
+  });
+});
+
+describe('usage memory', () => {
+  it('lists the tools you use: after two runs, a new server lists it up front', async () => {
+    forget();
+    const c = await connect();
+    for (let i = 0; i < 2; i++) expect(((await c.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(allowed, 'report.pdf')] } })) as Result).isError).toBeFalsy();
+    // a failed run isn't counted
+    await c.callTool({ name: 'run-tool', arguments: { tool: 'compress-pdf', inputs: [join(outside, 'elsewhere.pdf')] } });
+    expect(await names(await connect())).toEqual(['file-info', ...HELPERS]);
+    // --no-memory neither lists nor records them
+    const off = await connect({ memory: false });
+    expect(await names(off)).toEqual(HELPERS);
+    await off.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(allowed, 'report.pdf')] } });
+    expect(JSON.parse(usageFile()).tools).toEqual({ 'file-info': expect.objectContaining({ count: 2 }) });
+  });
+
+  it('stores tool slugs, counts and dates only: no paths, file names or options', () => {
+    const raw = usageFile();
+    expect(JSON.parse(raw)).toEqual({ version: 1, tools: { 'file-info': { count: 2, last: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) } } });
+    for (const s of ['report', '.pdf', 'allowed', root, '/', '\\']) expect(raw).not.toContain(s);
+  });
+
+  it('is off with ROUNDERTOOLS_MEMORY=off', async () => {
+    forget();
+    process.env.ROUNDERTOOLS_MEMORY = 'off';
+    try {
+      const c = await connect();
+      await c.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(allowed, 'report.pdf')] } });
+      expect(existsSync(join(config, 'usage.json'))).toBe(false);
+    } finally {
+      delete process.env.ROUNDERTOOLS_MEMORY;
+    }
+  });
+});
+
+describe('prompts', () => {
+  it('lists the prompts', async () => {
+    const { prompts } = await client.listPrompts();
+    expect(prompts.map((p) => p.name)).toEqual(['compress-pdf', 'merge-pdfs', 'convert-images', 'pdf-to-text', ...(findFfmpeg() ? ['shrink-video'] : [])]);
+    expect(prompts[0].arguments).toEqual([expect.objectContaining({ name: 'file', required: true }), expect.objectContaining({ name: 'size', required: false })]);
+  });
+
+  it('names the exact call: the tool when it is listed, run-tool when not', async () => {
+    const msg = async (c: Client, name: string, args: Record<string, string>) => ((await c.getPrompt({ name, arguments: args })).messages[0].content as { text: string }).text;
+    expect(await msg(client, 'compress-pdf', { file: '/docs/a.pdf', size: '2mb' })).toContain('`compress-pdf` with {"inputs":["/docs/a.pdf"],"target":"2mb"}');
+    const lean = await connect({ memory: false });
+    expect(await msg(lean, 'merge-pdfs', { files: '/docs/a.pdf\n/docs/b, c.pdf' })).toContain('`run-tool` with {"tool":"merge-pdf","inputs":["/docs/a.pdf","/docs/b, c.pdf"],"options":{}}');
+    expect(await msg(lean, 'convert-images', { files: '/a.png, /b.png', format: 'JPG' })).toContain('{"tool":"image-converter","inputs":["/a.png","/b.png"],"options":{"to":"jpeg"}}');
+    expect(await msg(lean, 'pdf-to-text', { file: '/a.pdf' })).toMatch(/not instructions/);
+    // getting a prompt lists nothing
+    expect(await names(lean)).toEqual(HELPERS);
+  });
+});
+
+describe('client recognition', () => {
+  it('tells a terminal coding agent about the CLI once, in its first find-tool result', async () => {
+    const agent = await connect({ name: 'claude-code', memory: false });
+    const first = (await agent.callTool({ name: 'find-tool', arguments: { query: 'compress pdf' } })) as Result;
+    expect(text(first)).toMatch(/npx -y roundertools/);
+    const second = (await agent.callTool({ name: 'find-tool', arguments: { query: 'compress pdf' } })) as Result;
+    expect(text(second)).not.toMatch(/npx -y roundertools/);
+    const other = await connect({ name: 'Some Desktop App', memory: false });
+    expect(text((await other.callTool({ name: 'find-tool', arguments: { query: 'compress pdf' } })) as Result)).not.toMatch(/npx/);
+  });
+});
+
+describe('sandboxFlags', () => {
+  it('lets the sandbox read and write the settings folder', () => {
+    const flags = sandboxFlags('/code', ['/docs'], '/tmp', null, '/cfg');
+    expect(flags).toEqual(expect.arrayContaining(['--permission', '--allow-fs-read=/cfg', '--allow-fs-write=/cfg', '--allow-fs-write=/docs', '--allow-fs-read=/code']));
+    expect(flags.some((f) => f.startsWith('--allow-net'))).toBe(false);
+    expect(sandboxFlags('/code', ['/docs'], '/tmp', null).some((f) => f.includes('/cfg'))).toBe(false);
+  });
+
+  it('only reads the settings folder when memory is off', () => {
+    const flags = sandboxFlags('/code', ['/docs'], '/tmp', null, '/cfg', false);
+    expect(flags).toContain('--allow-fs-read=/cfg');
+    expect(flags).not.toContain('--allow-fs-write=/cfg');
   });
 });
 
@@ -191,7 +401,7 @@ describe('file access', () => {
   });
 
   it("lets a client's roots narrow access, never widen it", async () => {
-    const narrowed = await connect({ roots: [join(allowed, 'project'), outside] });
+    const narrowed = await connect({ roots: [join(allowed, 'project'), outside], tools: 'default', memory: false });
     const inner = (await narrowed.callTool({ name: 'file-info', arguments: { inputs: [join(allowed, 'project', 'inner.pdf')] } })) as Result;
     expect(inner.isError).toBeFalsy();
     const top = (await narrowed.callTool({ name: 'file-info', arguments: { inputs: [join(allowed, 'report.pdf')] } })) as Result;
@@ -224,24 +434,32 @@ describe('meta tools', () => {
 
 describe.runIf(existsSync(BIN))('over stdio, as clients run it', () => {
   let stdio: Client;
+  const stdioConfig = join(root, 'stdio-config');
+  const env = (dir: string) => ({ ...process.env, ROUNDERTOOLS_CONFIG_DIR: dir }) as Record<string, string>;
   beforeAll(async () => {
     stdio = new Client({ name: 'stdio-test', version: '1' });
-    await stdio.connect(new StdioClientTransport({ command: process.execPath, args: [BIN, '--allow', allowed, '--out', outDir], stderr: 'ignore' }));
+    await stdio.connect(new StdioClientTransport({ command: process.execPath, args: [BIN, '--allow', allowed, '--out', outDir], env: env(stdioConfig), stderr: 'ignore' }));
   });
   afterAll(() => stdio?.close());
 
-  it('lists tools and runs one', async () => {
-    const { tools } = await stdio.listTools();
-    expect(tools.length).toBeGreaterThan(15);
-    const r = (await stdio.callTool({ name: 'compress-pdf', arguments: { inputs: [join(allowed, 'photos.pdf')], output: `${outDir}/` } })) as Result;
+  it('lists the helpers, runs a tool through run-tool, then lists that tool', async () => {
+    expect(await names(stdio)).toEqual(HELPERS);
+    const changes = listChanged(stdio);
+    const changed = changes.next();
+    const r = (await stdio.callTool({ name: 'run-tool', arguments: { tool: 'compress-pdf', inputs: [join(allowed, 'photos.pdf')], output: `${outDir}/` } })) as Result;
     expect(r.isError).toBeFalsy();
     const [out] = r.structuredContent!.outputs as { path: string; bytes: number }[];
     expect(out.bytes).toBeLessThan(150_000);
     expect(readFileSync(out.path).subarray(0, 5).toString()).toBe('%PDF-');
+    await changed;
+    expect(await names(stdio)).toEqual(['compress-pdf', ...HELPERS]);
+    const direct = (await stdio.callTool({ name: 'compress-pdf', arguments: { inputs: [join(allowed, 'report.pdf')], output: `${outDir}/` } })) as Result;
+    expect(direct.isError, text(direct)).toBeFalsy();
+    expect(JSON.parse(usageFile(stdioConfig)).tools).toEqual({ 'compress-pdf': { count: 2, last: expect.any(String) } });
   });
 
   it('refuses paths outside the allowed folders', async () => {
-    const r = (await stdio.callTool({ name: 'file-info', arguments: { inputs: [join(outside, 'elsewhere.pdf')] } })) as Result;
+    const r = (await stdio.callTool({ name: 'run-tool', arguments: { tool: 'file-info', inputs: [join(outside, 'elsewhere.pdf')] } })) as Result;
     expect(r.isError).toBe(true);
   });
 
@@ -249,11 +467,14 @@ describe.runIf(existsSync(BIN))('over stdio, as clients run it', () => {
   it.runIf(process.allowedNodeEnvironmentFlags.has('--permission'))('works inside the permission sandbox, ffmpeg included', async () => {
     const ffmpeg = findFfmpeg();
     const code = join(import.meta.dirname, '../../..');
+    // made first, as the bin does before it re-runs itself
+    const sandboxConfig = join(root, 'sandbox-config');
+    mkdirSync(sandboxConfig, { recursive: true });
     const sandboxed = new Client({ name: 'sandbox-test', version: '1' });
     await sandboxed.connect(new StdioClientTransport({
       command: process.execPath,
-      args: [...sandboxFlags(code, [allowed, outDir], tmpdir(), ffmpeg), BIN, '--allow', allowed, '--out', outDir],
-      env: { ...process.env, ROUNDERTOOLS_SANDBOXED: '1', ...(ffmpeg ? { ROUNDERTOOLS_FFMPEG: ffmpeg } : {}) } as Record<string, string>,
+      args: [...sandboxFlags(code, [allowed, outDir], tmpdir(), ffmpeg, sandboxConfig), BIN, '--allow', allowed, '--out', outDir, '--tools', 'all'],
+      env: { ...env(sandboxConfig), ROUNDERTOOLS_SANDBOXED: '1', ...(ffmpeg ? { ROUNDERTOOLS_FFMPEG: ffmpeg } : {}) },
       stderr: 'ignore',
     }));
     try {
@@ -262,6 +483,8 @@ describe.runIf(existsSync(BIN))('over stdio, as clients run it', () => {
       const r = (await sandboxed.callTool({ name: 'compress-pdf', arguments: { inputs: [join(allowed, 'report.pdf')], output: `${outDir}/sandboxed.pdf` } })) as Result;
       expect(r.isError, text(r)).toBeFalsy();
       expect(readFileSync(join(outDir, 'sandboxed.pdf')).subarray(0, 5).toString()).toBe('%PDF-');
+      // usage memory works under the permission model
+      expect(JSON.parse(usageFile(sandboxConfig)).tools).toEqual({ 'compress-pdf': { count: 1, last: expect.any(String) } });
       const outsideRead = (await sandboxed.callTool({ name: 'file-info', arguments: { inputs: [join(outside, 'elsewhere.pdf')] } })) as Result;
       expect(outsideRead.isError).toBe(true);
     } finally {

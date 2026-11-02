@@ -2,7 +2,13 @@
 import Prose from '@/layouts/Prose.astro';
 import CodeBlock from '@/components/site/CodeBlock.astro';
 import DevNav from '@/components/site/DevNav.astro';
-import { MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
+import { CLAUDE_PLUGIN, MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
+
+const config = `npx roundertools config                  # the folder, the settings and your favourites
+npx roundertools config set tools all    # lean, all, default, families or tool names
+npx roundertools config set memory off   # stop counting which tools you use
+npx roundertools config reset            # forget the settings and the counts`;
+const usage = `{ "version": 1, "tools": { "compress-pdf": { "count": 4, "last": "2026-11-02" } } }`;
 ---
 
 <Prose
@@ -25,15 +31,18 @@ import { MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
   </div>
 
   <h2 id="claude-code">Claude Code</h2>
-  <p>As a plugin, from inside Claude Code:</p>
-  <CodeBlock label="claude code" code={MCP_INSTALL_LINKS.claudePlugin} />
-  <p>Or add the server directly:</p>
   <CodeBlock label="terminal" code={MCP_INSTALL.claudeCode} />
   <p>
     <code>--allow</code> names a folder it may read; <code>~</code> works in every config below, JSON included. To make it
     available in every project, with more folders:
   </p>
   <CodeBlock label="terminal" code={MCP_INSTALL.claudeCodeAllow} />
+  <p>
+    Or skip the server. The <code>roundertools</code> plugin is a skill that teaches Claude Code to run the
+    <a href="/developers/cli">CLI</a> in its terminal, so you approve each command like any other. Until it's needed it
+    costs about 100 tokens. From inside Claude Code:
+  </p>
+  <CodeBlock label="claude code" code={CLAUDE_PLUGIN} />
 
   <h2>Claude Desktop</h2>
   <p>Settings → Developer → Edit config, then add it to <code>claude_desktop_config.json</code>:</p>
@@ -53,7 +62,7 @@ import { MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
   <ul>
     <li><strong>Reading:</strong> the folders you pass with <code>--allow</code> (repeat it for more), or in <code>ROUNDERTOOLS_ALLOW</code>. Without either, your home folder and the folder it was started in. A client's roots can narrow that further, never widen it.</li>
     <li><strong>Never:</strong> hidden folders and files (<code>.ssh</code>, <code>.aws</code>, <code>.env</code>…), key and password files, and app data such as browser profiles, even inside an allowed folder. Symlinks are followed to where they really point before checking.</li>
-    <li><strong>Writing:</strong> only next to the input, or into a folder you name with <code>--out</code>. It never replaces an existing file and never touches an input.</li>
+    <li><strong>Writing:</strong> only next to the input, or into a folder you name with <code>--out</code>. It never replaces an existing file and never touches an input. Its own <a href="#settings">settings folder</a> is the one other place it writes.</li>
     <li><strong>Network:</strong> none. It has no code that makes a connection, and it blocks outgoing connections and DNS lookups in its own process as well. That guard isn't a sandbox: video and audio run on your own ffmpeg, a separate program, which it starts limited to local files.</li>
   </ul>
   <p>
@@ -61,20 +70,58 @@ import { MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
     contain words written to mislead an assistant.
   </p>
 
-  <h2>Tools</h2>
+  <h2>What gets loaded</h2>
   <p>
-    It lists about 30 tools by default: PDF (compress, merge, split, organize, protect, unlock, page numbers, watermark, to
-    text, to JPG, extract images), images (convert, compress, resize, crop, rotate, remove EXIF), ZIP files, file info, and,
-    when ffmpeg is installed, video and audio. Three more help with the rest: <code>find-tool</code> searches every tool on
-    the site by what you want done, <code>describe-tool</code> shows a tool's options, and <code>run-tool</code> runs any of
-    them that work outside a browser (<code>find-tool</code> links to the site for the rest). <code>--tools all</code> lists everything; <code>--tools pdf,image</code> lists just those.
+    An assistant reads the description of every tool a server lists at the start of every conversation, whether it uses
+    them or not. So by default the server lists only three, about 700 tokens, plus a short paragraph of instructions:
+    <code>find-tool</code> searches every tool on the site by what you want done, <code>describe-tool</code> shows a tool's
+    options, and <code>run-tool</code> runs any of them that work outside a browser (<code>find-tool</code> links to the
+    site for the rest).
   </p>
+  <p>
+    Behind them are about 30 tools: PDF (compress, merge, split, organize, protect, unlock, page numbers, watermark, to text,
+    to JPG, extract images), images (convert, compress, resize, crop, rotate, remove EXIF), ZIP files, file info, and, when
+    ffmpeg is installed, video and audio. When the assistant describes one or runs it successfully, the server adds it to
+    the list, so next time it calls it by name. Tools you use often are listed from the start (see
+    <a href="#memory">memory</a>).
+  </p>
+  <p>
+    <code>--tools all</code> lists every tool up front instead, about 14,800 tokens. <code>--tools pdf,image</code> lists just
+    those families, and <code>--tools default</code> the set 0.1 listed.
+  </p>
+  <p>
+    It also offers prompts, which cost nothing until you pick one: <code>compress-pdf</code>, <code>merge-pdfs</code>,
+    <code>convert-images</code>, <code>pdf-to-text</code> and, with ffmpeg, <code>shrink-video</code>.
+  </p>
+
+  <h2 id="memory">Memory</h2>
+  <p>
+    To know which tools you use, the server counts them. After a tool works it adds one to that tool's count and notes the
+    date. Tools used at least twice in the last 90 days, up to five, are listed from the start next time. This is all it
+    keeps, in a file on your computer:
+  </p>
+  <CodeBlock label="usage.json" code={usage} />
+  <p>
+    Tool names, counts and dates: never paths, file names, options or anything from a file. Turn it off with
+    <code>--no-memory</code>, <code>ROUNDERTOOLS_MEMORY=off</code> or <code>npx roundertools config set memory off</code>.
+  </p>
+
+  <h2 id="settings">Settings</h2>
+  <p>
+    The settings and the counts live in <code>%APPDATA%\roundertools</code> on Windows,
+    <code>~/Library/Application Support/roundertools</code> on macOS and <code>~/.config/roundertools</code> elsewhere
+    (<code>ROUNDERTOOLS_CONFIG_DIR</code> picks another folder). The CLI shows and changes them; the server reads them when
+    it starts, and its own flags win.
+  </p>
+  <CodeBlock label="terminal" code={config} />
 
   <h2>Options</h2>
   <ul>
     <li><code>--allow DIR</code>: a folder it may read (repeatable)</li>
     <li><code>--out DIR</code>: a folder it may write results to, besides next to the inputs</li>
-    <li><code>--tools LIST</code>: <code>default</code>, <code>all</code>, families or tool names</li>
+    <li><code>--tools LIST</code>: <code>lean</code> (the default), <code>all</code>, <code>default</code>, families (<code>pdf,image,files,media</code>) or tool names</li>
+    <li><code>--no-memory</code>: don't count which tools you use</li>
+    <li><code>--experimental</code>: features that aren't finished (none yet)</li>
     <li><code>--max-input SIZE</code>, <code>--timeout MINUTES</code>, <code>--max-outputs N</code>: limits per call</li>
   </ul>
   <p>

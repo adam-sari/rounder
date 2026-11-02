@@ -2,6 +2,7 @@
 import Prose from '@/layouts/Prose.astro';
 import CodeBlock from '@/components/site/CodeBlock.astro';
 import DevNav from '@/components/site/DevNav.astro';
+import { CLAUDE_PLUGIN } from '@/developers';
 
 const examples = `npx roundertools compress-pdf report.pdf --target 1mb
 npx roundertools merge-pdf a.pdf b.pdf c.pdf -o merged.pdf
@@ -12,7 +13,11 @@ cat in.pdf | npx roundertools compress-pdf - -o - > out.pdf`;
 const help = `npx roundertools list              # every tool
 npx roundertools help compress-pdf  # its options, examples and preset names
 npx roundertools doctor             # Node, ffmpeg and canvas: what's installed`;
-const json = `{ "schema": 1, "ok": true, "tool": "compress-pdf", "version": "0.1.0",
+const config = `npx roundertools config                  # the settings folder, the settings and your favourites
+npx roundertools config set tools all    # lean (the default), all, default, families or tool names
+npx roundertools config set memory off   # on or off
+npx roundertools config reset            # remove the settings and the usage counts`;
+const json = `{ "schema": 1, "ok": true, "tool": "compress-pdf", "version": "0.2.0",
   "results": [{ "input": "/work/report.pdf", "output": "/work/report-compressed.pdf",
                 "bytesIn": 3375514, "bytesOut": 118735, "ratio": 0.035,
                 "meta": { "kept": false, "images": { "found": 4, "replaced": 3 } }, "warnings": [] }],
@@ -60,8 +65,10 @@ const codes = [
   <CodeBlock label="--json" code={json} />
   <p>
     The npm package also ships an Agent Skill (<code>skill/SKILL.md</code>) that tells coding agents how to use it. Drop it
-    into your agent's skills folder and it costs no context until it's needed.
+    into your agent's skills folder and it costs about 100 tokens until it's needed. In Claude Code, the
+    <code>roundertools</code> plugin installs it for you:
   </p>
+  <CodeBlock label="claude code" code={CLAUDE_PLUGIN} />
 
   <h2>Exit codes</h2>
   <ul>
@@ -74,4 +81,13 @@ const codes = [
     <code>ROUNDERTOOLS_FFMPEG</code>. Without one they exit with code 4 and a link to
     <a href="https://ffmpeg.org/download.html">ffmpeg.org</a>. <code>roundertools doctor</code> shows what it found.
   </p>
+
+  <h2>Settings for the MCP server</h2>
+  <p>
+    <code>roundertools config</code> shows and changes the settings of the <a href="/developers/mcp">MCP server</a>: which
+    tools it lists up front, and whether it remembers which tools you use (tool names, counts and dates, nothing else). The
+    files live in <code>%APPDATA%\roundertools</code> on Windows, <code>~/Library/Application Support/roundertools</code> on
+    macOS and <code>~/.config/roundertools</code> elsewhere, or in <code>ROUNDERTOOLS_CONFIG_DIR</code>.
+  </p>
+  <CodeBlock label="terminal" code={config} />
 </Prose>

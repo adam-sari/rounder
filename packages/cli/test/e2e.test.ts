@@ -46,6 +46,54 @@ describe('basics', () => {
   });
 });
 
+describe('config', () => {
+  it('sets, prints and resets the settings, in ROUNDERTOOLS_CONFIG_DIR', () => {
+    const dir = join(folder(), 'my config');
+    const env = { ROUNDERTOOLS_CONFIG_DIR: dir, ROUNDERTOOLS_MEMORY: '' };
+    const first = cli(['config'], { env });
+    expect(first.code).toBe(0);
+    expect(first.out).toContain(`Settings folder: ${dir}`);
+    expect(first.out).toMatch(/tools +lean \(default\)/);
+    expect(first.out).toMatch(/memory +on/);
+    expect(cli(['config', 'set', 'tools', 'PDF, image'], { env }).out.trim()).toBe('tools = pdf,image');
+    expect(cli(['config', 'set', 'memory', 'off'], { env }).code).toBe(0);
+    expect(cli(['config', 'set', 'experimental', 'true'], { env }).code).toBe(0);
+    expect(JSON.parse(readFileSync(join(dir, 'settings.json'), 'utf8'))).toEqual({ tools: 'pdf,image', memory: false, experimental: true });
+    expect(JSON.parse(cli(['config', '--json'], { env }).out)).toEqual({ dir, settings: { tools: 'pdf,image', memory: false, experimental: true }, memory: false, favourites: [] });
+    const shown = cli(['config'], { env }).out;
+    expect(shown).toMatch(/tools +pdf,image/);
+    expect(shown).toMatch(/memory +off/);
+    expect(shown).toMatch(/experimental +on/);
+
+    const reset = cli(['config', 'reset'], { env });
+    expect(reset.code).toBe(0);
+    expect(existsSync(join(dir, 'settings.json'))).toBe(false);
+    expect(cli(['config'], { env }).out).toMatch(/tools +lean \(default\)/);
+  });
+
+  it('shows favourites from usage memory, and says when the environment turns memory off', () => {
+    const dir = join(folder(), 'cfg');
+    mkdirSync(dir);
+    const today = new Date().toISOString().slice(0, 10);
+    writeFileSync(join(dir, 'usage.json'), JSON.stringify({ version: 1, tools: { 'compress-pdf': { count: 3, last: today }, 'merge-pdf': { count: 1, last: today } } }));
+    const out = cli(['config'], { env: { ROUNDERTOOLS_CONFIG_DIR: dir, ROUNDERTOOLS_MEMORY: '' } }).out;
+    expect(out).toMatch(/Favourites: compress-pdf \(3\)\n/);
+    expect(cli(['config'], { env: { ROUNDERTOOLS_CONFIG_DIR: dir, ROUNDERTOOLS_MEMORY: 'off' } }).out).toMatch(/memory +off \(ROUNDERTOOLS_MEMORY\)/);
+    expect(cli(['config', 'reset'], { env: { ROUNDERTOOLS_CONFIG_DIR: dir } }).code).toBe(0);
+    expect(existsSync(join(dir, 'usage.json'))).toBe(false);
+  });
+
+  it('rejects unknown settings and values', () => {
+    const env = { ROUNDERTOOLS_CONFIG_DIR: join(folder(), 'cfg') };
+    expect(cli(['config', 'set', 'colour', 'blue'], { env }).code).toBe(2);
+    expect(cli(['config', 'set', 'memory', 'maybe'], { env }).err).toMatch(/memory takes on or off/);
+    expect(cli(['config', 'set', 'tools', 'pdf,not-a-tool'], { env }).code).toBe(2);
+    expect(cli(['config', 'set', 'tools'], { env }).code).toBe(2);
+    expect(cli(['config', 'wipe'], { env }).code).toBe(2);
+    expect(existsSync(env.ROUNDERTOOLS_CONFIG_DIR)).toBe(false);
+  });
+});
+
 describe('running tools', () => {
   it('writes next to the input, never over an existing file', () => {
     const dir = folder({ 'report.pdf': 'pdf/sample-3-pages.pdf' });

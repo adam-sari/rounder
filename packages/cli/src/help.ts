@@ -18,6 +18,7 @@ Usage
   roundertools help <tool>                  a tool's options and examples
   roundertools doctor                       what's installed (ffmpeg, canvas) and working
   roundertools mcp [--allow DIR…]           run the MCP server for AI assistants
+  roundertools config [set KEY VALUE|reset] the MCP server's settings and tool memory
 
 Examples
   roundertools compress-pdf report.pdf --target 1mb
