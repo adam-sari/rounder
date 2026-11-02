@@ -1,0 +1,16 @@
+{
+  "name": "roundertools",
+  "owner": { "name": "Adam Sari", "url": "https://roundertools.com" },
+  "metadata": {
+    "description": "Rounder's local file tools for Claude Code: PDFs, images, archives and video, run on your own computer."
+  },
+  "plugins": [
+    {
+      "name": "roundertools",
+      "source": "./plugins/roundertools",
+      "description": "30 local file tools (PDF, image, archive, video) as an MCP server. Files never leave your computer and it makes no network requests.",
+      "category": "productivity",
+      "homepage": "https://roundertools.com/developers/mcp"
+    }
+  ]
+}

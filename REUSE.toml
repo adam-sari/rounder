@@ -75,6 +75,13 @@ SPDX-FileCopyrightText = "2026 Adam Sari"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
+# the Claude Code plugin and its marketplace entry, MIT like the packages it installs
+path = [".claude-plugin/**", "plugins/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Adam Sari"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
 path = ["public/fonts/pdf/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "2022 The Noto Project Authors"

@@ -1,0 +1,10 @@
+{
+  "name": "roundertools",
+  "version": "0.1.0",
+  "description": "30 local file tools for Claude: compress, merge, split, protect and unlock PDFs; convert, compress, resize and crop images; zip and unzip; compress, convert and trim video. Runs on your computer, files are never uploaded.",
+  "author": { "name": "Adam Sari", "url": "https://roundertools.com" },
+  "homepage": "https://roundertools.com/developers/mcp",
+  "repository": "https://github.com/adam-sari/rounder",
+  "license": "MIT",
+  "keywords": ["pdf", "image", "video", "files", "local", "offline", "mcp"]
+}

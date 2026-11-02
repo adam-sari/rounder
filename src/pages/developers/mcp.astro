@@ -2,7 +2,7 @@
 import Prose from '@/layouts/Prose.astro';
 import CodeBlock from '@/components/site/CodeBlock.astro';
 import DevNav from '@/components/site/DevNav.astro';
-import { MCP_INSTALL } from '@/developers';
+import { MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
 ---
 
 <Prose
@@ -18,7 +18,16 @@ import { MCP_INSTALL } from '@/developers';
     stay where they are; the assistant only sees the results' paths, sizes and summaries.
   </p>
 
-  <h2>Claude Code</h2>
+  <div class="my-6 flex flex-wrap gap-3">
+    <a class="btn" href={MCP_INSTALL_LINKS.cursor}>Add to Cursor</a>
+    <a class="btn" href={MCP_INSTALL_LINKS.vscode}>Add to VS Code</a>
+    <a class="btn" href="#claude-code">Claude Code</a>
+  </div>
+
+  <h2 id="claude-code">Claude Code</h2>
+  <p>As a plugin, from inside Claude Code:</p>
+  <CodeBlock label="claude code" code={MCP_INSTALL_LINKS.claudePlugin} />
+  <p>Or add the server directly:</p>
   <CodeBlock label="terminal" code={MCP_INSTALL.claudeCode} />
   <p>
     <code>--allow</code> names a folder it may read; <code>~</code> works in every config below, JSON included. To make it
@@ -33,11 +42,11 @@ import { MCP_INSTALL } from '@/developers';
   <CodeBlock label="claude_desktop_config.json (Windows)" code={MCP_INSTALL.claudeDesktopWindows} />
 
   <h2>Cursor</h2>
-  <p>In <code>~/.cursor/mcp.json</code> (every project) or <code>.cursor/mcp.json</code> (one project):</p>
+  <p><a href={MCP_INSTALL_LINKS.cursor}>Add to Cursor</a> in one click, or put it in <code>~/.cursor/mcp.json</code> (every project) or <code>.cursor/mcp.json</code> (one project):</p>
   <CodeBlock label="mcp.json" code={MCP_INSTALL.cursor} />
 
   <h2>VS Code</h2>
-  <p>In <code>.vscode/mcp.json</code>:</p>
+  <p><a href={MCP_INSTALL_LINKS.vscode}>Add to VS Code</a> in one click, or put it in <code>.vscode/mcp.json</code>:</p>
   <CodeBlock label=".vscode/mcp.json" code={MCP_INSTALL.vscode} />
 
   <h2>Which files it can touch</h2>
