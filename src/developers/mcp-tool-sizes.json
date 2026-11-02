@@ -1,0 +1,45 @@
+{
+  "$comment": "Written by scripts/measure-mcp-tools.mjs: bytes of each tool as JSON in tools/list, and of the instructions. Do not edit by hand.",
+  "version": "0.2.0",
+  "instructions": {
+    "lean": 580,
+    "some": 577,
+    "all": 470
+  },
+  "helpers": {
+    "find-tool": 845,
+    "describe-tool": 488,
+    "run-tool": 1435
+  },
+  "tools": {
+    "merge-pdf": 1828,
+    "split-pdf": 1957,
+    "compress-pdf": 2406,
+    "protect-pdf": 2056,
+    "unlock-pdf": 1495,
+    "organize-pdf": 1946,
+    "add-page-numbers-to-pdf": 2559,
+    "watermark-pdf": 2621,
+    "jpg-to-pdf": 1892,
+    "pdf-to-text": 1838,
+    "pdf-to-jpg": 1808,
+    "extract-images-from-pdf": 1713,
+    "image-converter": 1976,
+    "image-compressor": 2279,
+    "image-resizer": 2471,
+    "crop-image": 2163,
+    "rotate-image": 2005,
+    "exif-remover": 1790,
+    "zip-files": 1643,
+    "unzip-files": 1799,
+    "checksum-calculator": 1702,
+    "file-info": 1497,
+    "video-compressor": 2316,
+    "video-converter": 1680,
+    "trim-video": 1983,
+    "mute-video": 1479,
+    "video-to-gif": 2003,
+    "video-to-mp3": 1679,
+    "audio-converter": 1730
+  }
+}

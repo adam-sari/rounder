@@ -24,20 +24,20 @@
     "lastmod": "2026-11-02"
   },
   "src/pages/developers/index.astro": {
-    "hash": "2c14bb1ceae20413",
+    "hash": "8c8f273d0f39c5bf",
     "lastmod": "2026-11-02"
   },
   "src/pages/developers/mcp.astro": {
-    "hash": "76d9d557b9259a3d",
+    "hash": "11e2a437a41ef4d0",
     "lastmod": "2026-11-02"
   },
   "src/pages/developers/sdk.astro": {
-    "hash": "58a814ca17e2d29e",
-    "lastmod": "2026-10-28"
+    "hash": "39e8063ddaa9eb77",
+    "lastmod": "2026-11-02"
   },
   "src/pages/developers/tools.astro": {
-    "hash": "71dde8a027f4ba3b",
-    "lastmod": "2026-10-28"
+    "hash": "3d17e3a08d433113",
+    "lastmod": "2026-11-02"
   },
   "src/pages/index.astro": {
     "hash": "da41560161df061f",

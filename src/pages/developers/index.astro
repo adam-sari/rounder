@@ -2,7 +2,8 @@
 import Prose from '@/layouts/Prose.astro';
 import CodeBlock from '@/components/site/CodeBlock.astro';
 import DevNav from '@/components/site/DevNav.astro';
-import { MCP_INSTALL, ops } from '@/developers';
+import Installer from '@/components/site/Installer.svelte';
+import { installerCatalog, ops } from '@/developers';
 import { SITE } from '@/site';
 
 const families = [
@@ -31,11 +32,11 @@ const families = [
     <li><a href="/developers/mcp"><strong>@roundertools/mcp</strong></a>: an MCP server, so Claude, Cursor or VS Code can work on files on your computer.</li>
   </ul>
 
+  <Installer client:idle catalog={installerCatalog} />
+
   <h2>Try it in 30 seconds</h2>
   <p>With Node 22.13 or newer, in a folder with a PDF in it:</p>
   <CodeBlock label="terminal" code={'npx roundertools compress-pdf report.pdf --target 1mb\nnpx roundertools list'} />
-  <p>To give Claude Code the same tools:</p>
-  <CodeBlock label="terminal" code={MCP_INSTALL.claudeCode} />
 
   <h2>What's included</h2>
   <p>

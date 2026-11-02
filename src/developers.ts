@@ -4,6 +4,21 @@ import { cliLine, sdkSnippet } from '../packages/sdk/src/ops/docs';
 import { opBySlug, ops } from '../packages/sdk/src/ops/index';
 import { acceptsFormat, type Example, type OpSpec } from '../packages/sdk/src/core/op';
 import type { Tool } from './tools/types';
+import {
+  DEFAULT_OPTIONS,
+  PACKAGES,
+  PLUGIN_COMMANDS,
+  claudeCodeCommand,
+  cursorJson,
+  cursorLink,
+  installableOps,
+  mcpServersJson,
+  upFrontTokens,
+  vscodeJson,
+  vscodeLink,
+  type InstallOptions,
+  type InstallerOp,
+} from './developers/installer';
 
 export { ops };
 export type { OpSpec };
@@ -14,27 +29,39 @@ export type { OpSpec };
  */
 export const PACKAGES_ON_NPM = true;
 
-export const NPM = { sdk: '@roundertools/sdk', cli: 'roundertools', mcp: '@roundertools/mcp' } as const;
+export const NPM = PACKAGES;
 
+/**
+ * The tool catalog as plain data for the installer island (the op specs themselves carry zod schemas): the tools an
+ * `npx @roundertools/mcp` install can list, so without pdf-to-jpg, which needs the optional @napi-rs/canvas.
+ */
+export const installerCatalog: InstallerOp[] = installableOps(ops).map((o) => ({ slug: o.slug, family: o.family, title: o.title, ...(o.requires ? { requires: [...o.requires] } : {}) }));
+
+// the docs' example install: lean, reading Documents. Built by the same code as the installer, so the two can't drift
+const example: InstallOptions = { ...DEFAULT_OPTIONS, allow: ['~/Documents'] };
 export const MCP_INSTALL = {
-  claudeCode: 'claude mcp add roundertools -- npx -y @roundertools/mcp --allow ~/Documents',
-  claudeCodeAllow: 'claude mcp add roundertools --scope user -- npx -y @roundertools/mcp --allow ~/Documents --allow ~/Downloads',
-  claudeDesktop: JSON.stringify({ mcpServers: { roundertools: { command: 'npx', args: ['-y', '@roundertools/mcp', '--allow', '/Users/you/Documents'] } } }, null, 2),
-  claudeDesktopWindows: JSON.stringify({ mcpServers: { roundertools: { command: 'cmd', args: ['/c', 'npx', '-y', '@roundertools/mcp', '--allow', 'C:\\Users\\you\\Documents'] } } }, null, 2),
-  cursor: JSON.stringify({ mcpServers: { roundertools: { command: 'npx', args: ['-y', '@roundertools/mcp', '--allow', '~/Documents'] } } }, null, 2),
-  vscode: JSON.stringify({ servers: { roundertools: { type: 'stdio', command: 'npx', args: ['-y', '@roundertools/mcp', '--allow', '~/Documents'] } } }, null, 2),
+  claudeCode: claudeCodeCommand(example, installerCatalog),
+  claudeCodeAllow: claudeCodeCommand({ ...example, allow: ['~/Documents', '~/Downloads'] }, installerCatalog),
+  // the same on Windows: the server expands ~ itself
+  claudeDesktop: mcpServersJson(example, installerCatalog),
+  cursor: cursorJson(example, installerCatalog),
+  vscode: vscodeJson(example, installerCatalog),
 };
 
-// one-click installs: Cursor takes the server config as base64 JSON (cursor.com/docs/mcp/install-links), VS Code as
-// URL-encoded JSON with the name inside
-const serverConfig = { command: 'npx', args: ['-y', '@roundertools/mcp', '--allow', '~/Documents'] };
+/** one-click installs: Cursor takes the server config as base64 JSON, VS Code as URL-encoded JSON with the name inside */
 export const MCP_INSTALL_LINKS = {
-  cursor: `cursor://anysphere.cursor-deeplink/mcp/install?name=roundertools&config=${encodeURIComponent(btoa(JSON.stringify(serverConfig)))}`,
-  vscode: `vscode:mcp/install?${encodeURIComponent(JSON.stringify({ name: 'roundertools', type: 'stdio', ...serverConfig }))}`,
+  cursor: cursorLink(example, installerCatalog),
+  vscode: vscodeLink(example, installerCatalog),
 };
 
 /** the Claude Code plugin in plugins/roundertools: the CLI's skill, no MCP server */
-export const CLAUDE_PLUGIN = '/plugin marketplace add adam-sari/rounder\n/plugin install roundertools@roundertools';
+export const CLAUDE_PLUGIN = PLUGIN_COMMANDS.join('\n');
+
+/** what the MCP server's tool list and instructions cost per conversation, in friendly tokens, for the docs' prose */
+export const MCP_TOKENS = {
+  lean: upFrontTokens(DEFAULT_OPTIONS, installerCatalog),
+  all: upFrontTokens({ ...DEFAULT_OPTIONS, preset: 'all' }, installerCatalog),
+};
 
 export interface CodeSnippets {
   op: OpSpec;

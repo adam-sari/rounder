@@ -195,7 +195,8 @@
     border-radius: 12px;
     padding: 11px 14px;
     &:focus { outline: none; border-color: var(--color-sun); }
-    &::placeholder { color: #6e6960; }
+    /* 5:1 on the field, still dimmer than typed text */
+    &::placeholder { color: #8a847a; }
   }
   textarea.field {
     font-family: var(--font-mono);
@@ -226,6 +227,13 @@
     & button[aria-pressed='true'] {
       background: var(--color-chalk);
       color: var(--color-bg);
+    }
+    /* the group clips its children to its rounded border, so the ring goes inside the button: sun on a dark inner
+       ring, which reads on a chalk (picked) button as well as a plain one */
+    & button:focus-visible {
+      outline-offset: -2px;
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 4px var(--color-bg);
     }
   }
 }

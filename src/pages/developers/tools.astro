@@ -2,10 +2,10 @@
 import Prose from '@/layouts/Prose.astro';
 import DevNav from '@/components/site/DevNav.astro';
 import { ops } from '@/developers';
+import { FAMILIES, FAMILY_NAMES } from '@/developers/installer';
 import { toolBySlug, variantsOf } from '@/tools/registry';
 
-const FAMILY: Record<string, string> = { pdf: 'PDF', image: 'Images', files: 'Files', media: 'Video and audio' };
-const groups = ['pdf', 'image', 'files', 'media'].map((f) => ({ name: FAMILY[f], ops: ops.filter((o) => o.family === f) }));
+const groups = FAMILIES.map((f) => ({ name: FAMILY_NAMES[f], ops: ops.filter((o) => o.family === f) }));
 const optionNames = (o: (typeof ops)[number]) => Object.keys(o.options.shape).map((k) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`));
 ---
 

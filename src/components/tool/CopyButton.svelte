@@ -2,9 +2,17 @@
   let {
     text,
     label = 'Copy',
+    name = '',
     disabled = false,
     class: className = '',
-  }: { text: string | (() => string); label?: string; disabled?: boolean; class?: string } = $props();
+  }: {
+    text: string | (() => string);
+    label?: string;
+    /** what it copies, read after the label by screen readers ("Copy the config") when several buttons share a page */
+    name?: string;
+    disabled?: boolean;
+    class?: string;
+  } = $props();
   let state = $state<'idle' | 'copied' | 'failed'>('idle');
   let timer: ReturnType<typeof setTimeout>;
 
@@ -24,5 +32,5 @@
 </script>
 
 <button type="button" class={`btn ${className}`} onclick={copy} disabled={disabled || (typeof text === 'string' && !text)} aria-live="polite">
-  {state === 'copied' ? 'Copied ✓' : state === 'failed' ? 'Copy blocked' : label}
+  {state === 'copied' ? 'Copied ✓' : state === 'failed' ? 'Copy blocked' : label}{#if name && state === 'idle'}<span class="sr-only">&nbsp;{name}</span>{/if}
 </button>

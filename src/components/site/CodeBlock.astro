@@ -40,8 +40,11 @@ const { code, label, class: className } = Astro.props;
     margin: 12px 0 20px;
     padding: 14px 16px;
   }
+  /* clear of the copy button, like the code under it */
   figcaption {
     margin-bottom: 6px;
+    padding-right: 72px;
+    overflow-wrap: anywhere;
   }
   pre {
     margin: 0;

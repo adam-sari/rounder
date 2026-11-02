@@ -3,10 +3,11 @@ import Prose from '@/layouts/Prose.astro';
 import CodeBlock from '@/components/site/CodeBlock.astro';
 import DevNav from '@/components/site/DevNav.astro';
 import { ops } from '@/developers';
+import { PACKAGES, SDK_INSTALL } from '@/developers/installer';
 
 const families = ['pdf', 'image', 'files', 'media'] as const;
-const install = 'npm install @roundertools/sdk';
-const basic = `import { pdf, image } from '@roundertools/sdk';
+const install = SDK_INSTALL;
+const basic = `import { pdf, image } from '${PACKAGES.sdk}';
 
 // paths, file: URLs, bytes or Blobs all work as input
 const small = await pdf.compress('report.pdf', { target: '1mb' });

@@ -2,7 +2,9 @@
 import Prose from '@/layouts/Prose.astro';
 import CodeBlock from '@/components/site/CodeBlock.astro';
 import DevNav from '@/components/site/DevNav.astro';
-import { CLAUDE_PLUGIN, MCP_INSTALL, MCP_INSTALL_LINKS } from '@/developers';
+import Installer from '@/components/site/Installer.svelte';
+import { CLAUDE_PLUGIN, MCP_INSTALL, MCP_INSTALL_LINKS, MCP_TOKENS, installerCatalog } from '@/developers';
+import { formatNumber } from '@/developers/installer';
 
 const config = `npx roundertools config                  # the folder, the settings and your favourites
 npx roundertools config set tools all    # lean, all, default, families or tool names
@@ -24,17 +26,13 @@ const usage = `{ "version": 1, "tools": { "compress-pdf": { "count": 4, "last": 
     stay where they are; the assistant only sees the results' paths, sizes and summaries.
   </p>
 
-  <div class="my-6 flex flex-wrap gap-3">
-    <a class="btn" href={MCP_INSTALL_LINKS.cursor}>Add to Cursor</a>
-    <a class="btn" href={MCP_INSTALL_LINKS.vscode}>Add to VS Code</a>
-    <a class="btn" href="#claude-code">Claude Code</a>
-  </div>
+  <Installer client:idle catalog={installerCatalog} />
 
   <h2 id="claude-code">Claude Code</h2>
   <CodeBlock label="terminal" code={MCP_INSTALL.claudeCode} />
   <p>
-    <code>--allow</code> names a folder it may read; <code>~</code> works in every config below, JSON included. To make it
-    available in every project, with more folders:
+    <code>--scope user</code> makes it available in every project. <code>--allow</code> names a folder it may read;
+    <code>~</code> works in every config below, JSON included. Repeat it for more folders:
   </p>
   <CodeBlock label="terminal" code={MCP_INSTALL.claudeCodeAllow} />
   <p>
@@ -47,8 +45,7 @@ const usage = `{ "version": 1, "tools": { "compress-pdf": { "count": 4, "last": 
   <h2>Claude Desktop</h2>
   <p>Settings → Developer → Edit config, then add it to <code>claude_desktop_config.json</code>:</p>
   <CodeBlock label="claude_desktop_config.json" code={MCP_INSTALL.claudeDesktop} />
-  <p>On Windows, if Claude can't find <code>npx</code>:</p>
-  <CodeBlock label="claude_desktop_config.json (Windows)" code={MCP_INSTALL.claudeDesktopWindows} />
+  <p>The same works on Windows, where <code>~</code> is your user folder too.</p>
 
   <h2>Cursor</h2>
   <p><a href={MCP_INSTALL_LINKS.cursor}>Add to Cursor</a> in one click, or put it in <code>~/.cursor/mcp.json</code> (every project) or <code>.cursor/mcp.json</code> (one project):</p>
@@ -73,7 +70,7 @@ const usage = `{ "version": 1, "tools": { "compress-pdf": { "count": 4, "last": 
   <h2>What gets loaded</h2>
   <p>
     An assistant reads the description of every tool a server lists at the start of every conversation, whether it uses
-    them or not. So by default the server lists only three, about 700 tokens, plus a short paragraph of instructions:
+    them or not. So by default the server lists only three, plus a short paragraph of instructions: about {formatNumber(MCP_TOKENS.lean)} tokens.
     <code>find-tool</code> searches every tool on the site by what you want done, <code>describe-tool</code> shows a tool's
     options, and <code>run-tool</code> runs any of them that work outside a browser (<code>find-tool</code> links to the
     site for the rest).
@@ -86,7 +83,7 @@ const usage = `{ "version": 1, "tools": { "compress-pdf": { "count": 4, "last": 
     <a href="#memory">memory</a>).
   </p>
   <p>
-    <code>--tools all</code> lists every tool up front instead, about 14,800 tokens. <code>--tools pdf,image</code> lists just
+    <code>--tools all</code> lists every tool up front instead, about {formatNumber(MCP_TOKENS.all)} tokens. <code>--tools pdf,image</code> lists just
     those families, and <code>--tools default</code> the set 0.1 listed.
   </p>
   <p>
