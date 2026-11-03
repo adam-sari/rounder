@@ -13,7 +13,8 @@ beforeAll(async () => {
   vi.stubGlobal('location', { href: 'http://localhost/' });
   const lib = await loadPdfjs();
   lib.GlobalWorkerOptions.workerSrc = pathToFileURL('node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs').href;
-});
+  // a cold pdf.js load on a busy CI runner (Windows especially) can take more than the default 10 s
+}, 60_000);
 
 const round = (b: Box) => ({ x: Math.round(b.x), y: Math.round(b.y), width: Math.round(b.width), height: Math.round(b.height) });
 
