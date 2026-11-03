@@ -2,19 +2,19 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.adam-sari/roundertools",
   "title": "Rounder tools",
-  "description": "Local PDF, image, archive and video tools for AI assistants. Files never leave your computer.",
+  "description": "Local PDF, Office, image, archive and video tools for AI agents. Files never leave your computer.",
   "websiteUrl": "https://roundertools.com/developers/mcp",
   "repository": {
     "url": "https://github.com/adam-sari/rounder",
     "source": "github",
     "subfolder": "packages/mcp"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@roundertools/mcp",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

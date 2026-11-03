@@ -23,7 +23,7 @@ async function pathOf(src: Source): Promise<string> {
   return p;
 }
 
-async function probeSource(src: Source): Promise<{ path: string; info: MediaInfo }> {
+export async function probeSource(src: Source): Promise<{ path: string; info: MediaInfo }> {
   const path = await pathOf(src);
   return { path, info: await probe(path, src.size) };
 }
@@ -76,7 +76,7 @@ function sameContainer(name: string, info: MediaInfo): Container {
   return info.video ? 'mp4' : 'm4a';
 }
 
-function seconds(v: number | string | undefined, label: string): number | undefined {
+export function seconds(v: number | string | undefined, label: string): number | undefined {
   if (v === undefined) return undefined;
   if (typeof v === 'number') return v;
   const s = parseTime(v);

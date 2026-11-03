@@ -133,4 +133,39 @@ export const exifRemover = defineOp({
   examples: [{ inputs: ['IMG_2041.jpg'], prompt: 'Remove the location data from IMG_2041.jpg before I post it' }],
 });
 
-export const imageOps = [imageConverter, imageCompressor, imageResizer, cropImage, rotateImage, exifRemover];
+export const imagePrep = defineOp({
+  slug: 'image-prep',
+  family: 'image',
+  fn: 'prepare',
+  title: 'Prepare image for AI',
+  summary: 'Shrink, re-encode and strip metadata so an image is small enough for an AI model to read without resizing it (by default at most 1568 px on the long side and 1.15 megapixels).',
+  inputs: { accept: IMAGES, min: 1, max: 1, mode: 'each' },
+  returns: 'file',
+  suffix: '-prepped',
+  options: z.object({
+    maxEdge: z.number().int().min(64).max(8192).default(1568).describe('Longest side, in pixels'),
+    maxMegapixels: z.number().min(0.05).max(50).default(1.15).describe('Most pixels in total, in millions'),
+    format: z.enum(['jpeg', 'webp', 'png', 'keep']).default('jpeg').describe('jpeg is smallest for photos; png keeps sharp text and transparency'),
+    quality: z.number().int().min(30).max(100).default(85),
+    maxSize: size().optional().describe('Largest file size, like 500kb or 5mb'),
+  }),
+  examples: [{ inputs: ['whiteboard.jpg'], prompt: 'Get whiteboard.jpg ready to send to a model' }],
+});
+
+export const imageDiff = defineOp({
+  slug: 'image-diff',
+  family: 'image',
+  fn: 'diff',
+  title: 'Image diff',
+  summary: 'Compare two images: how much changed, where, and a copy of the first image with the changed areas highlighted. For screenshots, renders and design checks.',
+  inputs: { accept: IMAGES, min: 2, max: 2, mode: 'all' },
+  returns: 'file',
+  readOnly: true,
+  options: z.object({
+    tolerance: z.number().int().min(0).max(255).default(40).describe("How far a pixel's colour may move before it counts as changed (0–255)"),
+    resize: z.boolean().default(true).describe('When the sizes differ, scale the second image to the first'),
+  }),
+  examples: [{ inputs: ['before.png', 'after.png'], prompt: 'What changed between before.png and after.png?' }],
+});
+
+export const imageOps = [imageConverter, imageCompressor, imageResizer, cropImage, rotateImage, exifRemover, imagePrep, imageDiff];

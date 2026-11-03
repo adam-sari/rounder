@@ -130,4 +130,27 @@ export const audioConverter = defineOp({
   presets: (p) => (typeof p.to === 'string' && ['mp3', 'm4a', 'wav', 'ogg', 'flac'].includes(p.to) ? { to: p.to as 'mp3' } : null),
 });
 
-export const mediaOps = [videoCompressor, videoConverter, trimVideo, muteVideo, videoToGif, videoToMp3, audioConverter];
+export const videoContactSheet = defineOp({
+  slug: 'video-contact-sheet',
+  family: 'media',
+  fn: 'contactSheet',
+  title: 'Video contact sheet',
+  summary: 'One image with evenly spaced frames from a video, each labelled with its time: a quick way to see (or show an AI) what a video contains.',
+  inputs: { accept: VIDEO, min: 1, max: 1, mode: 'each' },
+  returns: 'file',
+  suffix: '-contact-sheet',
+  requires: ['ffmpeg'],
+  readOnly: true,
+  options: z.object({
+    frames: z.number().int().min(1).max(100).default(12),
+    columns: z.number().int().min(1).max(10).default(4),
+    width: z.number().int().min(320).max(4096).default(1600).describe('Width of the sheet, in pixels'),
+    start: time.optional().describe('Start time, seconds or m:ss'),
+    end: time.optional().describe('End time, seconds or m:ss'),
+    timestamps: z.boolean().default(true).describe('Label each frame with its time'),
+    format: z.enum(['jpeg', 'png']).default('jpeg'),
+  }),
+  examples: [{ inputs: ['lecture.mp4'], options: { frames: 16 }, prompt: 'Make a contact sheet of lecture.mp4 so I can see what it covers' }],
+});
+
+export const mediaOps = [videoCompressor, videoConverter, trimVideo, muteVideo, videoToGif, videoToMp3, audioConverter, videoContactSheet];

@@ -1,7 +1,7 @@
 {
   "name": "@roundertools/mcp",
-  "version": "0.2.0",
-  "description": "An MCP server that gives AI assistants Rounder's file tools: compress, merge and split PDFs, convert images, shrink video. Runs locally over stdio; files never leave your machine and it makes no network requests.",
+  "version": "0.3.0",
+  "description": "An MCP server that gives AI assistants Rounder's file tools: compress, merge, redact and fill PDFs, read Word, PowerPoint and Excel as Markdown, convert images, shrink video. Runs locally over stdio; files never leave your machine and it makes no network requests.",
   "license": "MIT",
   "author": "Adam Sari <hello@roundertools.com>",
   "homepage": "https://roundertools.com/developers/mcp",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
-    "@roundertools/sdk": "0.2.0",
+    "@roundertools/sdk": "0.3.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

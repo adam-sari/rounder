@@ -262,9 +262,10 @@ describe('installer: folders', () => {
 });
 
 describe('installer: the catalog', () => {
-  it('leaves out what an npx install never lists: pdf-to-jpg needs the optional @napi-rs/canvas', () => {
+  it('leaves out what an npx install never lists: pdf-to-jpg and redact-pdf need the optional @napi-rs/canvas', () => {
     expect(catalog.map((t) => t.slug)).not.toContain('pdf-to-jpg');
-    expect(catalog.length).toBe(ops.length - 1);
+    expect(catalog.map((t) => t.slug)).not.toContain('redact-pdf');
+    expect(catalog.length).toBe(ops.length - 2);
   });
 
   it('reads "default" as the server does', () => {
@@ -310,7 +311,7 @@ describe('installer: the docs use the same strings', () => {
     expect(MCP_INSTALL_LINKS.vscode).toBe(install('vscode', o, catalog).links.vscode);
     expect(JSON.parse(MCP_INSTALL.claudeDesktop).mcpServers.roundertools).toEqual({ command: 'npx', args: serverArgs(o, catalog) });
     expect(MCP_TOKENS.lean).toBe(upFrontTokens(DEFAULT_OPTIONS, catalog));
-    // what a real npx install lists (31 tools, no pdf-to-jpg): 57,266 bytes of tools + 470 of instructions
-    expect(MCP_TOKENS.all).toBe(14400);
+    // what a real npx install lists (38 with the helpers; no pdf-to-jpg or redact-pdf), from the measured sizes
+    expect(MCP_TOKENS.all).toBe(18000);
   });
 });

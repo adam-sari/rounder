@@ -254,4 +254,64 @@ export const extractImages = defineOp({
   examples: [{ inputs: ['brochure.pdf'], prompt: 'Pull the photos out of brochure.pdf' }],
 });
 
-export const pdfOps = [mergePdf, splitPdf, compressPdf, protectPdf, unlockPdf, organizePdf, addPageNumbers, watermarkPdf, jpgToPdf, pdfToText, pdfToJpg, extractImages];
+export const pdfFormFields = defineOp({
+  slug: 'pdf-form-fields',
+  family: 'pdf',
+  fn: 'formFields',
+  title: 'PDF form fields',
+  summary: "List a PDF form's fillable fields: name, type, current value, choices, and whether each is required or read-only. Use before fill-pdf-form.",
+  inputs: { accept: ['pdf'], min: 1, max: 1, mode: 'each' },
+  returns: 'data',
+  readOnly: true,
+  untrustedText: true,
+  options: z.object({ password }),
+  examples: [{ inputs: ['application.pdf'], prompt: 'What fields does application.pdf have?' }],
+});
+
+const fieldValue = z.union([z.string(), z.boolean(), z.array(z.string())]);
+
+export const fillPdfForm = defineOp({
+  slug: 'fill-pdf-form',
+  family: 'pdf',
+  fn: 'fillForm',
+  title: 'Fill PDF form',
+  summary: "Fill in a PDF form's fields by name (text, checkboxes, radio buttons, dropdowns), optionally flattening it so the answers can't be changed.",
+  inputs: { accept: ['pdf'], min: 1, max: 1, mode: 'each' },
+  returns: 'file',
+  suffix: '-filled',
+  options: z.object({
+    values: z
+      .union([z.record(z.string(), fieldValue), z.string().min(2)])
+      .describe('Field name → value: text, true/false for a checkbox, the option for a radio button or dropdown. On the command line, JSON: {"Full name":"Jane Doe","Agree":true}'),
+    flatten: z.boolean().default(false).describe('Turn the fields into plain page content, so the answers can no longer be edited'),
+    password,
+  }),
+  examples: [{ inputs: ['application.pdf'], options: { values: { 'Full name': 'Jane Doe', Agree: true } }, prompt: 'Fill application.pdf with my name, Jane Doe, and tick Agree' }],
+});
+
+export const redactPdf = defineOp({
+  slug: 'redact-pdf',
+  family: 'pdf',
+  fn: 'redact',
+  title: 'Redact PDF',
+  summary: 'Black out words, phrases, emails, phone numbers, card numbers or SSNs for real: matching pages are flattened to images with the text gone, hidden data is stripped, and the result is checked.',
+  inputs: { accept: ['pdf'], min: 1, max: 1, mode: 'each' },
+  returns: 'file',
+  suffix: '-redacted',
+  requires: ['canvas'],
+  options: z.object({
+    terms: z.array(z.string().min(1)).optional().describe('Words or phrases to remove (any spacing or line break between words matches)'),
+    patterns: z.array(z.enum(['email', 'phone', 'card', 'ssn'])).optional().describe('Built-in patterns: email addresses, phone numbers, payment card numbers (Luhn-checked), US SSNs'),
+    regex: z.string().min(1).optional().describe('A regular expression to remove'),
+    matchCase: z.boolean().default(false),
+    wholeWords: z.boolean().default(false).describe('Only match whole words'),
+    pages,
+    dpi: z.number().int().min(72).max(300).default(150).describe('Resolution of the redacted pages'),
+    keepMetadata: z.boolean().default(false).describe('Keep the title, author and other document properties (removed by default)'),
+    password,
+  }),
+  short: { terms: 't' },
+  examples: [{ inputs: ['contract.pdf'], options: { terms: ['Jane Doe'], patterns: ['email', 'phone'] }, prompt: 'Redact the name Jane Doe and every email and phone number in contract.pdf' }],
+});
+
+export const pdfOps = [mergePdf, splitPdf, compressPdf, protectPdf, unlockPdf, organizePdf, addPageNumbers, watermarkPdf, jpgToPdf, pdfToText, pdfToJpg, extractImages, pdfFormFields, fillPdfForm, redactPdf];

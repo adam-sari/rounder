@@ -1,6 +1,6 @@
 # roundertools for Claude Code
 
-Adds a skill that teaches Claude Code to use the [Rounder CLI](https://roundertools.com/developers/cli): 29 file tools
+Adds a skill that teaches Claude Code to use the [Rounder CLI](https://roundertools.com/developers/cli): 37 file tools
 for PDFs, images, archives and video that run on your own computer. Files never leave the machine and the CLI makes no
 network requests.
 

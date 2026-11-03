@@ -1,10 +1,10 @@
 {
   "$comment": "Written by scripts/measure-mcp-tools.mjs: bytes of each tool as JSON in tools/list, and of the instructions. Do not edit by hand.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "instructions": {
-    "lean": 580,
-    "some": 577,
-    "all": 470
+    "lean": 593,
+    "some": 590,
+    "all": 483
   },
   "helpers": {
     "find-tool": 845,
@@ -24,22 +24,30 @@
     "pdf-to-text": 1838,
     "pdf-to-jpg": 1808,
     "extract-images-from-pdf": 1713,
+    "pdf-form-fields": 1558,
+    "fill-pdf-form": 2137,
+    "redact-pdf": 2560,
     "image-converter": 1976,
     "image-compressor": 2279,
     "image-resizer": 2471,
     "crop-image": 2163,
     "rotate-image": 2005,
     "exif-remover": 1790,
+    "image-prep": 2364,
+    "image-diff": 1913,
     "zip-files": 1643,
     "unzip-files": 1799,
     "checksum-calculator": 1702,
     "file-info": 1497,
+    "document-to-markdown": 2170,
+    "spreadsheet-inspector": 1775,
     "video-compressor": 2316,
     "video-converter": 1680,
     "trim-video": 1983,
     "mute-video": 1479,
     "video-to-gif": 2003,
     "video-to-mp3": 1679,
-    "audio-converter": 1730
+    "audio-converter": 1730,
+    "video-contact-sheet": 2290
   }
 }

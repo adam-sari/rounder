@@ -13,7 +13,10 @@ function cliFlag(key: string, value: unknown): string[] {
   const flag = `--${kebab(key)}`;
   if (value === true) return [flag];
   if (value === false) return [`--no-${kebab(key)}`];
-  if (Array.isArray(value)) return value.flatMap((v) => [flag, shellQuote(String(v))]);
+  // a list of plain words reads best comma-separated (--patterns email,phone); anything with a comma repeats the flag
+  if (Array.isArray(value)) return value.every((v) => /^[\w@%+=:./-]+$/.test(String(v))) ? [flag, value.join(',')] : value.flatMap((v) => [flag, shellQuote(String(v))]);
+  // an object (fill-pdf-form's values) is JSON, in single quotes so the shell leaves it alone
+  if (value && typeof value === 'object') return [flag, `'${JSON.stringify(value).replace(/'/g, "'\\''")}'`];
   return [flag, shellQuote(String(value))];
 }
 

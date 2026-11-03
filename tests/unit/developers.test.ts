@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { ops, snippetsFor } from '@/developers';
+import { SITELESS } from '../../packages/sdk/src/ops/index';
 import { toolBySlug, tools } from '@/tools/registry';
 
 describe('developer snippets', () => {
-  it('every npm op is a tool page (file-info aside)', () => {
-    for (const op of ops) if (op.slug !== 'file-info') expect(toolBySlug[op.slug], op.slug).toBeDefined();
+  it('every npm op is a tool page, except the ones made for assistants and code', () => {
+    for (const op of ops) expect(!!toolBySlug[op.slug], op.slug).toBe(!SITELESS.has(op.slug));
   });
 
   it("writes a tool's own example", () => {

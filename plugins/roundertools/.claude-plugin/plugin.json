@@ -1,7 +1,7 @@
 {
   "name": "roundertools",
-  "version": "0.2.0",
-  "description": "Local file tools for Claude, as a skill that runs the roundertools CLI: compress, merge, split, protect and unlock PDFs; convert, compress, resize and crop images; zip and unzip; compress, convert and trim video. No MCP server, about 100 tokens until it's used. Runs on your computer, files are never uploaded.",
+  "version": "0.3.0",
+  "description": "Local file tools for Claude, as a skill that runs the roundertools CLI: compress, merge, split, redact and fill PDFs; read Word, PowerPoint and Excel as Markdown; convert, compress, resize and compare images; zip and unzip; compress, convert and trim video. No MCP server, about 100 tokens until it's used. Runs on your computer, files are never uploaded.",
   "author": { "name": "Adam Sari", "url": "https://roundertools.com" },
   "homepage": "https://roundertools.com/developers/cli",
   "repository": "https://github.com/adam-sari/rounder",

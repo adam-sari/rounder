@@ -58,7 +58,7 @@ Everything throws `RounderError` with a readable `message`, an optional `hint` a
 
 | PDF | Images | Files | Video and audio (ffmpeg) |
 | --- | --- | --- | --- |
-| `pdf.merge`, `split`, `compress`, `protect`, `unlock`, `organize`, `addPageNumbers`, `watermark`, `fromImages`, `toText`, `toImages`, `extractImages` | `image.convert`, `compress`, `resize`, `crop`, `rotate`, `stripMetadata` | `files.zip`, `unzip`, `checksum`, `info` | `media.compress`, `convert`, `trim`, `mute`, `toGif`, `toAudio`, `convertAudio` |
+| `pdf.merge`, `split`, `compress`, `protect`, `unlock`, `organize`, `addPageNumbers`, `watermark`, `fromImages`, `toText`, `toImages`, `extractImages`, `formFields`, `fillForm`, `redact` | `image.convert`, `compress`, `resize`, `crop`, `rotate`, `stripMetadata`, `prepare`, `diff` | `files.zip`, `unzip`, `checksum`, `info`, `toMarkdown`, `inspectSpreadsheet` | `media.compress`, `convert`, `trim`, `mute`, `toGif`, `toAudio`, `convertAudio`, `contactSheet` |
 
 Options for each: [roundertools.com/developers/tools](https://roundertools.com/developers/tools), or your editor's
 autocomplete.

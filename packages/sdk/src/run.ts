@@ -5,7 +5,7 @@ import { RounderError, toRounderError } from './core/errors';
 import { toSource, type FileInput, type Source } from './core/io';
 import { acceptsFormat, type OpSpec } from './core/op';
 import type { OpResult, RunOptions } from './core/run';
-import { opBySlug, ops } from './ops/index';
+import { opBySlug, ops, SITELESS } from './ops/index';
 import { loadCanvas } from './platform/node/canvas';
 import { requireFfmpeg } from './platform/node/ffmpeg-bin';
 
@@ -92,7 +92,8 @@ export async function run(slug: string, inputs: FileInput[], options: Record<str
 
 /** the same tool on the site, with the same preset where the page reads one from its address */
 export function webLink(spec: OpSpec, options: Record<string, unknown> = {}): string {
-  if (spec.slug === 'file-info') return SITE;
+  // tools made for assistants and code have no page of their own
+  if (SITELESS.has(spec.slug)) return `${SITE}/developers/tools`;
   return `${SITE}/${spec.slug}${spec.deepLink?.(options as never) ?? ''}`;
 }
 

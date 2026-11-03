@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { catalog, describe as describeOp, opBySlug, ops, parseOptions, parseSize, resolveTool, RounderError, run, snippets, webLink } from '@roundertools/sdk';
+import { catalog, describe as describeOp, opBySlug, ops, parseOptions, parseSize, resolveTool, RounderError, run, SITELESS, snippets, webLink } from '@roundertools/sdk';
 
 describe('op specs', () => {
-  it('every op is a tool page on the site (file-info is the one exception)', () => {
+  it('every op is a tool page on the site, except the ones made for assistants and code', () => {
     const slugs = new Set(catalog().map((t) => t.slug));
-    for (const op of ops) if (op.slug !== 'file-info') expect(slugs.has(op.slug), op.slug).toBe(true);
+    for (const op of ops) expect(slugs.has(op.slug), op.slug).toBe(!SITELESS.has(op.slug));
+    expect(webLink(opBySlug['image-diff'])).toBe('https://roundertools.com/developers/tools');
   });
 
   it('slugs and SDK names are unique', () => {
@@ -14,8 +15,8 @@ describe('op specs', () => {
 
   it.each(ops.map((o) => [o.slug, o] as const))('%s: defaults apply and every example validates', (_, op) => {
     const defaults = op.options.safeParse({});
-    // protect-pdf needs a password; everything else runs on defaults
-    expect(defaults.success).toBe(op.slug !== 'protect-pdf');
+    // protect-pdf needs a password and fill-pdf-form its values; everything else runs on defaults
+    expect(defaults.success).toBe(op.slug !== 'protect-pdf' && op.slug !== 'fill-pdf-form');
     for (const ex of op.examples) {
       expect(() => parseOptions(op, ex.options ?? {})).not.toThrow();
       expect(ex.inputs.length).toBeGreaterThanOrEqual(op.inputs.min);

@@ -57,13 +57,13 @@ Needs Node 22.13 or newer; video and audio tools appear when `ffmpeg` is on the 
 - **Checked before touching the disk:** a path outside the allowed folders is refused before anything looks it up, so a
   tool call can't probe which files exist, or (on Windows) make the computer connect to a `\\server\share`.
 
-Text and details read out of files (pdf-to-text, a PDF's title, EXIF fields) come back framed as the file's content, not
+Text and details read out of files (document-to-markdown, pdf-to-text, form fields, a PDF's title, EXIF fields) come back framed as the file's content, not
 instructions, between tags with a random name the file can't guess.
 
 ## What gets loaded
 
 A client sends every tool a server lists to the model at the start of every conversation, used or not. Listing every
-tool up front (32 with ffmpeg) costs about 14,800 tokens. So by default the server lists three helpers, about 700 tokens,
+tool up front (38 with ffmpeg) costs about 18,000 tokens. So by default the server lists three helpers, about 700 tokens,
 plus a short paragraph of instructions (about 150):
 
 - `find-tool`: searches every tool on the site by what you want done
@@ -71,10 +71,12 @@ plus a short paragraph of instructions (about 150):
 - `run-tool`: runs any tool that works outside a browser, with the same checks
 
 Behind them are `merge-pdf`, `split-pdf`, `compress-pdf`, `protect-pdf`, `unlock-pdf`, `organize-pdf`,
-`add-page-numbers-to-pdf`, `watermark-pdf`, `jpg-to-pdf`, `pdf-to-text`, `pdf-to-jpg` (with @napi-rs/canvas),
-`extract-images-from-pdf`, `image-converter`, `image-compressor`, `image-resizer`, `crop-image`, `rotate-image`,
-`exif-remover`, `zip-files`, `unzip-files`, `file-info`, and with ffmpeg `video-compressor`, `video-converter`,
-`trim-video`, `mute-video`, `video-to-gif`, `video-to-mp3`, `audio-converter`, plus the site's other tools that run
+`add-page-numbers-to-pdf`, `watermark-pdf`, `jpg-to-pdf`, `pdf-to-text`, `extract-images-from-pdf`, `pdf-form-fields`,
+`fill-pdf-form`, with @napi-rs/canvas `pdf-to-jpg` and `redact-pdf`, then `image-converter`, `image-compressor`,
+`image-resizer`, `crop-image`, `rotate-image`, `exif-remover`, `image-prep`, `image-diff`, `zip-files`, `unzip-files`,
+`checksum-calculator`, `file-info`, `document-to-markdown`, `spreadsheet-inspector`, and with ffmpeg
+`video-compressor`, `video-converter`, `trim-video`, `mute-video`, `video-to-gif`, `video-to-mp3`, `audio-converter`,
+`video-contact-sheet`, plus the site's other tools that run
 outside a browser.
 
 The list grows with use:
@@ -110,6 +112,9 @@ Prompts cost nothing until you pick one. Each tells the assistant which tool to 
 | `merge-pdfs` | `files` |
 | `convert-images` | `files`, `format` |
 | `pdf-to-text` | `file` |
+| `read-document` | `file` (PDF, Word, PowerPoint, Excel or CSV) |
+| `fill-pdf-form` | `file` (lists the fields, asks you, then fills) |
+| `redact-pdf` | `file`, `what` (only with @napi-rs/canvas) |
 | `shrink-video` | `file`, optional `size` (only with ffmpeg) |
 
 ## Memory

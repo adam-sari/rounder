@@ -15,4 +15,4 @@ export const ops: readonly OpSpec[] = [...pdfOps, ...imageOps, ...fileOps, ...me
 export const opBySlug: Readonly<Record<string, OpSpec>> = Object.fromEntries(ops.map((o) => [o.slug, o]));
 
 /** ops that aren't a page on the site */
-export const SITELESS = new Set(['file-info']);
+export const SITELESS = new Set(['file-info', 'pdf-form-fields', 'image-prep', 'image-diff', 'video-contact-sheet', 'document-to-markdown', 'spreadsheet-inspector']);

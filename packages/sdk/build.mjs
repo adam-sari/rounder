@@ -19,7 +19,7 @@ const { modules } = await bundlePackage({
   input: { index: join(here, 'src/index.ts'), 'no-network': join(here, 'src/no-network.ts') },
   outDir: dist,
   // pure JS, permissive, and big when installed whole (pdfjs-dist would also pull in a 39 MB native canvas)
-  inline: ['pdf-lib', '@pdf-lib/fontkit', '@pdf-lib/standard-fonts', '@pdf-lib/upng', 'pako', 'tslib', 'pdfjs-dist', 'fflate', 'comlink', 'gifenc'],
+  inline: ['pdf-lib', '@pdf-lib/fontkit', '@pdf-lib/standard-fonts', '@pdf-lib/upng', 'pako', 'tslib', 'pdfjs-dist', 'fflate', 'comlink', 'gifenc', 'papaparse'],
   swaps: {
     'engines/pdf/qpdf': twin('qpdf.ts'),
     'engines/pdf/pdfjs-env': twin('pdfjs-env.ts'),

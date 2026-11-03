@@ -3,7 +3,12 @@ import { RounderError } from '../core/errors';
 import type { Source } from '../core/io';
 import { result, type Ctx, type Impl, type OpResult } from '../core/run';
 import { findFfmpeg } from '../platform/node/ffmpeg-bin';
+import { contactSheet } from './contact-sheet';
+import * as docs from './docs';
 import * as files from './files';
+import { diff as imageDiff, prepare as imagePrep } from './image-agent';
+import { fillForm, formFields } from './pdf-forms';
+import { redact } from './redact';
 import * as image from './image';
 import * as media from './media';
 import * as pdf from './pdf';
@@ -39,16 +44,23 @@ export const impls: Record<string, Impl> = {
   'pdf-to-text': pdf.toTextOp,
   'pdf-to-jpg': pdf.toImages,
   'extract-images-from-pdf': pdf.extractImagesOp,
+  'pdf-form-fields': formFields,
+  'fill-pdf-form': fillForm,
+  'redact-pdf': redact,
   'image-converter': image.convert,
   'image-compressor': image.compress,
   'image-resizer': image.resizeOp,
   'crop-image': image.crop,
   'rotate-image': image.rotate,
   'exif-remover': image.strip,
+  'image-prep': imagePrep,
+  'image-diff': imageDiff,
   'zip-files': files.zip,
   'unzip-files': files.unzip,
   'checksum-calculator': files.checksum,
   'file-info': fileInfo,
+  'document-to-markdown': docs.toMarkdown,
+  'spreadsheet-inspector': docs.inspectSpreadsheet,
   'video-compressor': media.compress,
   'video-converter': media.convert,
   'trim-video': media.trim,
@@ -56,4 +68,5 @@ export const impls: Record<string, Impl> = {
   'video-to-gif': media.toGif,
   'video-to-mp3': media.toAudio,
   'audio-converter': media.convertAudio,
+  'video-contact-sheet': contactSheet,
 } as unknown as Record<string, Impl>;

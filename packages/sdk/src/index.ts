@@ -12,7 +12,7 @@ export { toSource, type FileInput, type Source } from './core/io';
 export { parseSize, formatSize } from './core/size';
 export type { OpSpec, OptionsIn, OptionsOut, Family, Returns, Example } from './core/op';
 export type { Progress, RunOptions, OpResult } from './core/run';
-export { ops, opBySlug } from './ops/index';
+export { ops, opBySlug, SITELESS } from './ops/index';
 export { snippets, cliLine, sdkSnippet, kebab } from './ops/docs';
 export { run, describe, resolveTool, unknownTool, parseOptions, webLink, checkRequirements, type ResolvedTool } from './run';
 export { catalog, SITE, type CatalogEntry } from './catalog';
@@ -61,6 +61,9 @@ export const pdf = {
   toText: text(op.pdfToText),
   toImages: many(op.pdfToJpg),
   extractImages: many(op.extractImages),
+  formFields: data(op.pdfFormFields),
+  fillForm: one(op.fillPdfForm),
+  redact: one(op.redactPdf),
 };
 
 export const image = {
@@ -70,6 +73,8 @@ export const image = {
   crop: one(op.cropImage),
   rotate: one(op.rotateImage),
   stripMetadata: one(op.exifRemover),
+  prepare: one(op.imagePrep),
+  diff: fromMany(op.imageDiff),
 };
 
 export const files = {
@@ -77,6 +82,8 @@ export const files = {
   unzip: many(op.unzipFiles),
   checksum: data(op.checksum),
   info: data(op.fileInfo),
+  toMarkdown: text(op.documentToMarkdown),
+  inspectSpreadsheet: data(op.spreadsheetInspector),
 };
 
 /** needs the user's own ffmpeg (on PATH or ROUNDERTOOLS_FFMPEG) */
@@ -88,4 +95,5 @@ export const media = {
   toGif: one(op.videoToGif),
   toAudio: one(op.videoToMp3),
   convertAudio: one(op.audioConverter),
+  contactSheet: one(op.videoContactSheet),
 };

@@ -62,4 +62,45 @@ export const fileInfo = defineOp({
   examples: [{ inputs: ['clip.mov'], prompt: 'How long is clip.mov and what resolution is it?' }],
 });
 
-export const fileOps = [zipFiles, unzipFiles, checksum, fileInfo];
+const DOCUMENTS = ['pdf', 'docx', 'docm', 'dotx', 'pptx', 'pptm', 'ppsx', 'xlsx', 'xlsm', 'csv', 'tsv'];
+
+export const documentToMarkdown = defineOp({
+  slug: 'document-to-markdown',
+  family: 'files',
+  fn: 'toMarkdown',
+  title: 'Document to Markdown',
+  summary: 'Read a PDF, Word, PowerPoint, Excel or CSV file as Markdown: headings, lists, tables, slide notes and chart data kept, so an AI can read it cheaply.',
+  inputs: { accept: DOCUMENTS, min: 1, max: 1, mode: 'each' },
+  returns: 'text',
+  readOnly: true,
+  untrustedText: true,
+  options: z.object({
+    pages: z.string().min(1).optional().describe('PDF pages, like "1-3, 5" (default: all)'),
+    sheets: z.array(z.string().min(1)).optional().describe('Spreadsheet sheets to include, by name (default: all visible)'),
+    maxRows: z.number().int().min(1).max(100000).default(200).describe('Rows per sheet in the table'),
+    notes: z.boolean().default(true).describe("Include a presentation's speaker notes"),
+    hidden: z.boolean().default(false).describe('Include hidden sheets'),
+    password: z.string().min(1).optional().describe('Password that opens the PDF, if it has one'),
+  }),
+  examples: [{ inputs: ['report.docx'], prompt: 'Summarise report.docx' }],
+});
+
+export const spreadsheetInspector = defineOp({
+  slug: 'spreadsheet-inspector',
+  family: 'files',
+  fn: 'inspectSpreadsheet',
+  title: 'Spreadsheet inspector',
+  summary: "A spreadsheet's shape without reading all of it: sheets, header row, each column's type and stats (min, max, sum, mean, top values), sample rows and formulas.",
+  inputs: { accept: ['xlsx', 'xlsm', 'csv', 'tsv'], min: 1, max: 1, mode: 'each' },
+  returns: 'data',
+  readOnly: true,
+  untrustedText: true,
+  options: z.object({
+    sheets: z.array(z.string().min(1)).optional().describe('Sheets to inspect, by name (default: all)'),
+    sampleRows: z.number().int().min(0).max(50).default(5),
+    maxColumns: z.number().int().min(1).max(500).default(100),
+  }),
+  examples: [{ inputs: ['sales.xlsx'], prompt: 'What columns does sales.xlsx have, and what do the numbers look like?' }],
+});
+
+export const fileOps = [zipFiles, unzipFiles, checksum, fileInfo, documentToMarkdown, spreadsheetInspector];

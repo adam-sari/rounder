@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { findFfmpeg, writeSettings } from '@roundertools/sdk';
+import { findFfmpeg, loadCanvas, writeSettings } from '@roundertools/sdk';
 import { Access, allowList, chooseTools, createServer, sandboxFlags } from '../src/main';
 
 const FX = join(import.meta.dirname, '../../../tests/fixtures');
@@ -205,7 +205,7 @@ describe('lean by default', () => {
   it('takes --tools from the settings file, and the flag over it', async () => {
     forget();
     writeSettings({ tools: 'files' });
-    expect(await names(await connect({ memory: false }))).toEqual(['zip-files', 'unzip-files', 'checksum-calculator', 'file-info', ...HELPERS]);
+    expect(await names(await connect({ memory: false }))).toEqual(['zip-files', 'unzip-files', 'checksum-calculator', 'file-info', 'document-to-markdown', 'spreadsheet-inspector', ...HELPERS]);
     expect(await names(await connect({ tools: 'lean', memory: false }))).toEqual(HELPERS);
     forget();
   });
@@ -248,7 +248,7 @@ describe('usage memory', () => {
 describe('prompts', () => {
   it('lists the prompts', async () => {
     const { prompts } = await client.listPrompts();
-    expect(prompts.map((p) => p.name)).toEqual(['compress-pdf', 'merge-pdfs', 'convert-images', 'pdf-to-text', ...(findFfmpeg() ? ['shrink-video'] : [])]);
+    expect(prompts.map((p) => p.name)).toEqual(['compress-pdf', 'merge-pdfs', 'convert-images', 'pdf-to-text', 'read-document', 'fill-pdf-form', ...(loadCanvas() ? ['redact-pdf'] : []), ...(findFfmpeg() ? ['shrink-video'] : [])]);
     expect(prompts[0].arguments).toEqual([expect.objectContaining({ name: 'file', required: true }), expect.objectContaining({ name: 'size', required: false })]);
   });
 
