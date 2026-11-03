@@ -33,9 +33,10 @@ jobs:
       - run: npm ci
       # the site's runtime files in public/vendor are generated, not committed; some unit tests check them
       - run: npm run vendor
-      - run: npm test
-      # the package tests type-check against the built packages' declarations, so build first
+      # built first: the package tests type-check against the built declarations, and the site's installer tests
+      # import the MCP server, which imports the built SDK
       - run: npm run sdk:build
+      - run: npm test
       - run: npm run sdk:check
       - run: npm run sdk:test
 
